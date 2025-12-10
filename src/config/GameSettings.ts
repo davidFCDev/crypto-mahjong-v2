@@ -14,12 +14,12 @@ export const GameSettings = {
 
   // Tile dimensions and styling
   tile: {
-    width: 80,
-    height: 90,
-    depth: 8, // Profundidad 3D para efecto de capas
+    width: 88,
+    height: 100,
+    depth: 10, // Profundidad 3D para efecto de capas
     padding: 3,
-    cornerRadius: 8,
-    shadowOffset: 4,
+    cornerRadius: 10,
+    shadowOffset: 5,
     // Colores base de la ficha
     colors: {
       face: 0xfaf6f0, // Marfil suave
@@ -49,10 +49,10 @@ export const GameSettings = {
   // Hand configuration - Acumulador estilo minimalista
   hand: {
     maxSlots: 5,
-    slotWidth: 85,
-    slotHeight: 95,
+    slotWidth: 95,
+    slotHeight: 108,
     slotPadding: 6,
-    bottomMargin: 100,
+    bottomMargin: 110,
     backgroundColor: 0x2d5a3d, // Verde oscuro
     slotColor: 0x3d7a4d, // Verde slot
     slotBorderColor: 0x5a9a6a, // Borde verde claro
@@ -63,7 +63,7 @@ export const GameSettings = {
     matchCount: 3, // Fichas necesarias para hacer match
     scorePerMatch: 100,
     bonusPerLevel: 50,
-    animationSpeed: 250, // ms para animaciones (más rápido)
+    animationSpeed: 150, // ms para animaciones (muy rápido)
   },
 
   // Level progression - generates config based on level
@@ -103,7 +103,7 @@ export const GameSettings = {
       button: 18,
     },
     colors: {
-      background: 0x1a472a, // Verde bambú oscuro
+      background: 0xd4c4a8, // Beige cálido
       primary: 0x2d5a27, // Verde bosque
       secondary: 0x3d7a3d, // Verde claro
       accent: 0xffd700, // Dorado

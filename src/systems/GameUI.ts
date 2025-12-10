@@ -17,9 +17,6 @@ export class GameUI extends Phaser.GameObjects.Container {
   private handTileSprites: Map<string, Phaser.GameObjects.Container> =
     new Map();
 
-  // Buttons
-  private restartButton!: Phaser.GameObjects.Container;
-
   // State
   private currentScore: number = 0;
   private currentLevel: number = 1;
@@ -29,7 +26,6 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     this.createScoreBadge();
     this.createHand();
-    this.createRestartButton();
 
     scene.add.existing(this);
     this.setDepth(1000);
@@ -40,39 +36,61 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   private createScoreBadge(): void {
     const { canvas, ui } = GameSettings;
-    
-    this.scoreBadge = this.scene.add.container(canvas.width / 2, 35);
 
-    const badgeWidth = 180;
-    const badgeHeight = 40;
+    this.scoreBadge = this.scene.add.container(canvas.width / 2, 45);
+
+    const badgeWidth = 260;
+    const badgeHeight = 55;
+    const badgeDepth = 8;
 
     const bg = this.scene.add.graphics();
-    
+
     // Sombra
-    bg.fillStyle(0x000000, 0.3);
-    bg.fillRoundedRect(-badgeWidth/2 + 3, 3, badgeWidth, badgeHeight, 8);
-    
-    // Fondo rojo del badge
+    bg.fillStyle(0x000000, 0.25);
+    bg.fillRoundedRect(
+      -badgeWidth / 2 + 4,
+      badgeDepth + 4,
+      badgeWidth,
+      badgeHeight,
+      10
+    );
+
+    // Cara inferior (volumen 3D)
+    bg.fillStyle(0x7a2a2a, 1);
+    bg.fillRoundedRect(
+      -badgeWidth / 2,
+      badgeDepth,
+      badgeWidth,
+      badgeHeight,
+      10
+    );
+
+    // Fondo rojo del badge (cara principal)
     bg.fillStyle((ui.colors as any).badge || 0xc94a4a, 1);
-    bg.fillRoundedRect(-badgeWidth/2, 0, badgeWidth, badgeHeight, 8);
-    
+    bg.fillRoundedRect(-badgeWidth / 2, 0, badgeWidth, badgeHeight, 10);
+
     // Borde
     bg.lineStyle(3, (ui.colors as any).badgeBorder || 0x8a2a2a, 1);
-    bg.strokeRoundedRect(-badgeWidth/2, 0, badgeWidth, badgeHeight, 8);
-    
-    // Línea decorativa superior
+    bg.strokeRoundedRect(-badgeWidth / 2, 0, badgeWidth, badgeHeight, 10);
+
+    // Brillo superior
     bg.fillStyle(0xffffff, 0.2);
-    bg.fillRoundedRect(-badgeWidth/2 + 5, 3, badgeWidth - 10, 8, {tl: 4, tr: 4, bl: 0, br: 0});
-    
+    bg.fillRoundedRect(-badgeWidth / 2 + 5, 3, badgeWidth - 10, 10, {
+      tl: 6,
+      tr: 6,
+      bl: 0,
+      br: 0,
+    });
+
     this.scoreBadge.add(bg);
 
     // Texto del score
-    this.scoreText = this.scene.add.text(0, badgeHeight/2, "Score: 0", {
-      fontSize: `${ui.fontSize.score}px`,
+    this.scoreText = this.scene.add.text(0, badgeHeight / 2, "Score: 0", {
+      fontSize: "28px",
       fontFamily: "Arial Black, Impact, sans-serif",
       color: "#ffffff",
       stroke: "#000000",
-      strokeThickness: 2,
+      strokeThickness: 3,
     });
     this.scoreText.setOrigin(0.5);
     this.scoreBadge.add(this.scoreText);
@@ -87,7 +105,8 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas, hand } = GameSettings;
 
     const handY = canvas.height - hand.bottomMargin;
-    const totalSlotWidth = hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
+    const totalSlotWidth =
+      hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
     const handWidth = totalSlotWidth + 30;
     const handX = (canvas.width - handWidth) / 2;
     const handHeight = hand.slotHeight + 20;
@@ -96,15 +115,33 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     // Sombra suave
     this.handBg.fillStyle(0x000000, 0.25);
-    this.handBg.fillRoundedRect(handX + 4, handY - handHeight/2 + 4, handWidth, handHeight, 15);
+    this.handBg.fillRoundedRect(
+      handX + 4,
+      handY - handHeight / 2 + 4,
+      handWidth,
+      handHeight,
+      15
+    );
 
     // Fondo del acumulador
     this.handBg.fillStyle(hand.backgroundColor, 0.95);
-    this.handBg.fillRoundedRect(handX, handY - handHeight/2, handWidth, handHeight, 15);
+    this.handBg.fillRoundedRect(
+      handX,
+      handY - handHeight / 2,
+      handWidth,
+      handHeight,
+      15
+    );
 
     // Borde exterior
     this.handBg.lineStyle(3, hand.slotBorderColor, 1);
-    this.handBg.strokeRoundedRect(handX, handY - handHeight/2, handWidth, handHeight, 15);
+    this.handBg.strokeRoundedRect(
+      handX,
+      handY - handHeight / 2,
+      handWidth,
+      handHeight,
+      15
+    );
 
     this.add(this.handBg);
 
@@ -165,53 +202,6 @@ export class GameUI extends Phaser.GameObjects.Container {
       x: startX + index * (hand.slotWidth + hand.slotPadding),
       y: canvas.height - hand.bottomMargin,
     };
-  }
-
-  /**
-   * Crea el botón de reinicio - Pequeño en esquina
-   */
-  private createRestartButton(): void {
-    const { canvas } = GameSettings;
-
-    this.restartButton = this.scene.add.container(canvas.width - 40, 40);
-
-    const btnBg = this.scene.add.graphics();
-    btnBg.fillStyle(0xe94560, 1);
-    btnBg.fillCircle(0, 0, 22);
-    btnBg.lineStyle(2, 0xffffff, 0.5);
-    btnBg.strokeCircle(0, 0, 22);
-    this.restartButton.add(btnBg);
-
-    const btnText = this.scene.add.text(0, 0, "↺", {
-      fontSize: "22px",
-      fontFamily: "Arial Black, sans-serif",
-      color: "#ffffff",
-    });
-    btnText.setOrigin(0.5);
-    this.restartButton.add(btnText);
-
-    this.restartButton.setSize(44, 44);
-    this.restartButton.setInteractive({ useHandCursor: true });
-
-    this.restartButton.on("pointerover", () => {
-      this.scene.tweens.add({
-        targets: this.restartButton,
-        scaleX: 1.15,
-        scaleY: 1.15,
-        duration: 80,
-      });
-    });
-
-    this.restartButton.on("pointerout", () => {
-      this.scene.tweens.add({
-        targets: this.restartButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 80,
-      });
-    });
-
-    this.add(this.restartButton);
   }
 
   /**
@@ -349,30 +339,46 @@ export class GameUI extends Phaser.GameObjects.Container {
       }
     });
 
-    // Animación sutil: levantar las 3 fichas y desvanecerlas
+    // Animación sutil: levantar las 3 fichas, shake y desvanecer
     sprites.forEach((sprite, index) => {
+      const originalX = sprite.x;
+      const originalY = sprite.y;
+
       // Primero: levantar las fichas suavemente
       this.scene.tweens.add({
         targets: sprite,
-        y: sprite.y - 30,
-        scaleX: 1.1,
-        scaleY: 1.1,
-        duration: 200,
+        y: originalY - 25,
+        scaleX: 1.15,
+        scaleY: 1.15,
+        duration: 150,
         ease: "Power2",
         onComplete: () => {
-          // Después: pequeño movimiento lateral y desvanecer
+          // Shake suave horizontal
           this.scene.tweens.add({
             targets: sprite,
-            y: sprite.y - 20,
-            alpha: 0,
-            duration: 250,
-            ease: "Power1",
+            x: originalX + 4,
+            duration: 40,
+            yoyo: true,
+            repeat: 3,
+            ease: "Sine.easeInOut",
             onComplete: () => {
-              sprite.destroy();
-              this.handTileSprites.delete(tileIds[index]);
-              if (index === sprites.length - 1 && onComplete) {
-                onComplete();
-              }
+              // Finalmente: desvanecer hacia arriba
+              this.scene.tweens.add({
+                targets: sprite,
+                y: originalY - 50,
+                alpha: 0,
+                scaleX: 0.8,
+                scaleY: 0.8,
+                duration: 180,
+                ease: "Power2",
+                onComplete: () => {
+                  sprite.destroy();
+                  this.handTileSprites.delete(tileIds[index]);
+                  if (index === sprites.length - 1 && onComplete) {
+                    onComplete();
+                  }
+                },
+              });
             },
           });
         },
@@ -417,13 +423,6 @@ export class GameUI extends Phaser.GameObjects.Container {
       yoyo: true,
       ease: "Power2",
     });
-  }
-
-  /**
-   * Callback cuando se pulsa reiniciar
-   */
-  public onRestart(callback: () => void): void {
-    this.restartButton.on("pointerdown", callback);
   }
 
   /**

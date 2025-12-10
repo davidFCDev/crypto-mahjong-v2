@@ -73,9 +73,6 @@ export class MahjongScene extends Phaser.Scene {
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
-    // Configurar callbacks de UI
-    this.gameUI.onRestart(() => this.restartGame());
-
     // Iniciar nivel 1
     this.startLevel(1);
   }
@@ -250,6 +247,9 @@ export class MahjongScene extends Phaser.Scene {
     originalTile.isInHand = true;
     originalTile.isAccessible = false;
 
+    // Actualizar accesibilidad inmediatamente para que otras fichas se desbloqueen
+    this.updateBoardAccessibility();
+
     // Animar la ficha hacia la mano
     tileSprite.animateToHand(slotPos.x, slotPos.y, () => {
       // Eliminar sprite del tablero
@@ -259,14 +259,18 @@ export class MahjongScene extends Phaser.Scene {
       // Añadir a la mano (el estado ya está actualizado)
       this.handManager.addTile(originalTile);
 
-      // Actualizar accesibilidad del tablero
-      this.updateBoardAccessibility();
-
       // Actualizar UI de la mano
       this.gameUI.updateHand(this.handManager.getSlots());
 
       // Verificar match
       this.checkForMatch();
+    });
+
+    // Permitir clicks de otras fichas casi inmediatamente
+    this.time.delayedCall(50, () => {
+      if (!this.handManager.isFull()) {
+        this.isAnimating = false;
+      }
     });
   }
 
@@ -277,8 +281,8 @@ export class MahjongScene extends Phaser.Scene {
     const matchResult = this.handManager.checkMatch();
 
     if (matchResult.matched) {
-      // Delay para que se vea la tercera ficha antes del match
-      this.time.delayedCall(200, () => {
+      // Delay breve para que se vea la tercera ficha antes del match
+      this.time.delayedCall(100, () => {
         // Animar match
         const matchedIds = matchResult.tiles.map((t) => t.id);
         this.gameUI.animateMatch(matchedIds, () => {
