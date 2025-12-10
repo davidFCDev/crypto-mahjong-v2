@@ -227,7 +227,9 @@ export class MahjongScene extends Phaser.Scene {
     this.isAnimating = true;
 
     // IMPORTANTE: Buscar la ficha en gameState.tiles para modificar el original
-    const originalTile = this.gameState.tiles.find(t => t.id === tileState.id);
+    const originalTile = this.gameState.tiles.find(
+      (t) => t.id === tileState.id
+    );
     if (!originalTile) {
       this.isAnimating = false;
       return;
@@ -317,7 +319,7 @@ export class MahjongScene extends Phaser.Scene {
     // Actualizar sprites de las fichas que aún están en el tablero
     for (const tile of this.gameState.tiles) {
       if (tile.isInHand || tile.isMatched) continue;
-      
+
       const sprite = this.tileSprites.get(tile.id);
       if (sprite) {
         sprite.updateState({ isAccessible: tile.isAccessible });

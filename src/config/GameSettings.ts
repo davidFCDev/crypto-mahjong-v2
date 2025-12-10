@@ -14,18 +14,18 @@ export const GameSettings = {
 
   // Tile dimensions and styling
   tile: {
-    width: 70,
-    height: 80,
+    width: 80,
+    height: 90,
     depth: 8, // Profundidad 3D para efecto de capas
-    padding: 2,
+    padding: 3,
     cornerRadius: 8,
     shadowOffset: 4,
-    // Colores base de la ficha - Estilo elegante
+    // Colores base de la ficha
     colors: {
       face: 0xfaf6f0, // Marfil suave
-      side: 0xc9b896, // Beige cálido
-      bottom: 0xa89070, // Marrón suave
-      border: 0x8b7355, // Borde marrón dorado
+      side: 0x5a8f5a, // Verde lateral
+      bottom: 0x3d6b3d, // Verde oscuro base
+      border: 0x4a7a4a, // Borde verde
       highlight: 0xffffff, // Brillo
       blocked: 0x666666,
       blockedOverlay: 0x000000,
@@ -46,16 +46,16 @@ export const GameSettings = {
     layerOffsetY: 6, // Desplazamiento Y por capa
   },
 
-  // Hand configuration - Estilo Cartoon
+  // Hand configuration - Acumulador estilo minimalista
   hand: {
-    maxSlots: 7,
-    slotWidth: 75,
-    slotHeight: 85,
-    slotPadding: 4,
-    bottomMargin: 95,
-    backgroundColor: 0x4a3728, // Marrón madera
-    slotColor: 0x6b5344, // Slot madera clara
-    slotBorderColor: 0x8b7355, // Borde dorado
+    maxSlots: 5,
+    slotWidth: 85,
+    slotHeight: 95,
+    slotPadding: 6,
+    bottomMargin: 100,
+    backgroundColor: 0x2d5a3d, // Verde oscuro
+    slotColor: 0x3d7a4d, // Verde slot
+    slotBorderColor: 0x5a9a6a, // Borde verde claro
   },
 
   // Game rules
@@ -68,17 +68,16 @@ export const GameSettings = {
 
   // Level progression - generates config based on level
   getLevelConfig: (level: number): LevelConfig => {
-    // Con fichas de 70x80 caben más en pantalla
-    // Sistema de capas estilo Mahjong clásico
+    // Menos fichas por nivel, más manejable
     const configs = [
-      { rows: 6, cols: 8, layers: 3, tileTypes: 6 }, // Nivel 1
-      { rows: 7, cols: 8, layers: 3, tileTypes: 7 }, // Nivel 2
-      { rows: 7, cols: 9, layers: 3, tileTypes: 8 }, // Nivel 3
-      { rows: 8, cols: 9, layers: 4, tileTypes: 9 }, // Nivel 4
-      { rows: 8, cols: 10, layers: 4, tileTypes: 10 }, // Nivel 5
-      { rows: 8, cols: 10, layers: 4, tileTypes: 11 }, // Nivel 6
-      { rows: 9, cols: 10, layers: 5, tileTypes: 12 }, // Nivel 7
-      { rows: 9, cols: 10, layers: 5, tileTypes: 12 }, // Nivel 8+
+      { rows: 4, cols: 5, layers: 2, tileTypes: 4 }, // Nivel 1
+      { rows: 4, cols: 6, layers: 2, tileTypes: 5 }, // Nivel 2
+      { rows: 5, cols: 6, layers: 2, tileTypes: 6 }, // Nivel 3
+      { rows: 5, cols: 6, layers: 3, tileTypes: 6 }, // Nivel 4
+      { rows: 5, cols: 7, layers: 3, tileTypes: 7 }, // Nivel 5
+      { rows: 6, cols: 7, layers: 3, tileTypes: 8 }, // Nivel 6
+      { rows: 6, cols: 7, layers: 3, tileTypes: 9 }, // Nivel 7
+      { rows: 6, cols: 8, layers: 3, tileTypes: 10 }, // Nivel 8+
     ];
 
     const configIndex = Math.min(level - 1, configs.length - 1);
@@ -94,13 +93,13 @@ export const GameSettings = {
     };
   },
 
-  // UI configuration - Estilo Cartoon Mahjong
+  // UI configuration - Minimalista
   ui: {
-    headerHeight: 70,
+    headerHeight: 0, // Sin header
     fontSize: {
       title: 28,
-      score: 26,
-      level: 26,
+      score: 22,
+      level: 20,
       button: 18,
     },
     colors: {
@@ -110,6 +109,8 @@ export const GameSettings = {
       accent: 0xffd700, // Dorado
       text: 0xfff8dc, // Crema
       textSecondary: 0xaaaaaa,
+      badge: 0xc94a4a, // Rojo para el badge
+      badgeBorder: 0x8a2a2a, // Borde del badge
     },
   },
 };

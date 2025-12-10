@@ -60,10 +60,10 @@ export class BoardGenerator {
       // Cada capa es más pequeña: pierde filas/columnas de forma asimétrica
       const shrinkRows = z * 2;
       const shrinkCols = z * 2;
-      
+
       const layerRows = Math.max(2, config.rows - shrinkRows);
       const layerCols = Math.max(2, config.cols - shrinkCols);
-      
+
       // Offset para centrar (pero con pequeña variación para efecto visual)
       const offsetX = z;
       const offsetY = z;
@@ -75,10 +75,13 @@ export class BoardGenerator {
           if (z > 0) {
             // En capas superiores, crear patrón de tablero de ajedrez disperso
             // Solo colocar fichas en algunas posiciones
-            const isEdge = row === 0 || row === layerRows - 1 || 
-                          col === 0 || col === layerCols - 1;
+            const isEdge =
+              row === 0 ||
+              row === layerRows - 1 ||
+              col === 0 ||
+              col === layerCols - 1;
             const isChecker = (row + col + z) % 2 === 0;
-            
+
             // Colocar en bordes y en patrón de ajedrez interior
             if (!isEdge && !isChecker && z > 1) {
               continue; // Saltar esta posición en capas muy altas
@@ -141,7 +144,7 @@ export class BoardGenerator {
 
   /**
    * Comprueba si una ficha está bloqueada por otra encima
-   * LÓGICA SIMPLE: Una ficha está bloqueada si hay CUALQUIER ficha 
+   * LÓGICA SIMPLE: Una ficha está bloqueada si hay CUALQUIER ficha
    * en una capa superior que esté cerca (a menos de 1 unidad de distancia)
    */
   private static isTileBlocked(
@@ -154,7 +157,7 @@ export class BoardGenerator {
     for (const other of allTiles) {
       if (other.id === tile.id) continue;
       if (other.isInHand || other.isMatched) continue;
-      
+
       // Solo considerar fichas en capas SUPERIORES
       if (other.position.z <= z) continue;
 
@@ -192,7 +195,7 @@ export class BoardGenerator {
   ): { x: number; y: number } {
     const tileW = GameSettings.tile.width + GameSettings.tile.padding;
     const tileH = GameSettings.tile.height + GameSettings.tile.padding;
-    
+
     // Offset por capa para efecto 3D (hacia arriba-izquierda)
     const layerOffsetX = (GameSettings.board as any).layerOffsetX || 6;
     const layerOffsetY = (GameSettings.board as any).layerOffsetY || 6;

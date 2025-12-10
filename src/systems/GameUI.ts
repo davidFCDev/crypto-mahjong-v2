@@ -1,15 +1,14 @@
 /**
  * GameUI - Componente de interfaz de usuario del juego
- * Estilo Cartoon Mahjong
+ * Diseño minimalista con badge de score
  */
 
 import GameSettings from "../config/GameSettings";
 import { TILE_COLORS, type HandSlot, type TileState } from "../types";
 
 export class GameUI extends Phaser.GameObjects.Container {
-  // Header elements
-  private headerBg!: Phaser.GameObjects.Graphics;
-  private levelText!: Phaser.GameObjects.Text;
+  // Badge de score
+  private scoreBadge!: Phaser.GameObjects.Container;
   private scoreText!: Phaser.GameObjects.Text;
 
   // Hand elements
@@ -28,107 +27,84 @@ export class GameUI extends Phaser.GameObjects.Container {
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0);
 
-    this.createHeader();
+    this.createScoreBadge();
     this.createHand();
-    this.createButtons();
+    this.createRestartButton();
 
     scene.add.existing(this);
     this.setDepth(1000);
   }
 
   /**
-   * Crea el header con Level y Score centrados - Estilo Cartoon
+   * Crea el badge de score estilo "Daily Challenge"
    */
-  private createHeader(): void {
+  private createScoreBadge(): void {
     const { canvas, ui } = GameSettings;
+    
+    this.scoreBadge = this.scene.add.container(canvas.width / 2, 35);
 
-    // Fondo del header con gradiente simulado
-    this.headerBg = this.scene.add.graphics();
-    this.headerBg.fillStyle(ui.colors.primary, 0.95);
-    this.headerBg.fillRect(0, 0, canvas.width, ui.headerHeight);
-    // Borde dorado inferior
-    this.headerBg.fillStyle(ui.colors.accent, 1);
-    this.headerBg.fillRect(0, ui.headerHeight - 4, canvas.width, 4);
-    this.add(this.headerBg);
+    const badgeWidth = 180;
+    const badgeHeight = 40;
 
-    // Nivel - Izquierda centrada
-    this.levelText = this.scene.add.text(
-      canvas.width / 4,
-      ui.headerHeight / 2,
-      "🎯 LVL 1",
-      {
-        fontSize: `${ui.fontSize.level}px`,
-        fontFamily: "Arial Black, Impact, sans-serif",
-        color: "#ffd700",
-        stroke: "#4a3000",
-        strokeThickness: 4,
-      }
-    );
-    this.levelText.setOrigin(0.5);
-    this.add(this.levelText);
+    const bg = this.scene.add.graphics();
+    
+    // Sombra
+    bg.fillStyle(0x000000, 0.3);
+    bg.fillRoundedRect(-badgeWidth/2 + 3, 3, badgeWidth, badgeHeight, 8);
+    
+    // Fondo rojo del badge
+    bg.fillStyle((ui.colors as any).badge || 0xc94a4a, 1);
+    bg.fillRoundedRect(-badgeWidth/2, 0, badgeWidth, badgeHeight, 8);
+    
+    // Borde
+    bg.lineStyle(3, (ui.colors as any).badgeBorder || 0x8a2a2a, 1);
+    bg.strokeRoundedRect(-badgeWidth/2, 0, badgeWidth, badgeHeight, 8);
+    
+    // Línea decorativa superior
+    bg.fillStyle(0xffffff, 0.2);
+    bg.fillRoundedRect(-badgeWidth/2 + 5, 3, badgeWidth - 10, 8, {tl: 4, tr: 4, bl: 0, br: 0});
+    
+    this.scoreBadge.add(bg);
 
-    // Puntuación - Derecha centrada
-    this.scoreText = this.scene.add.text(
-      (canvas.width * 3) / 4,
-      ui.headerHeight / 2,
-      "💰 0",
-      {
-        fontSize: `${ui.fontSize.score}px`,
-        fontFamily: "Arial Black, Impact, sans-serif",
-        color: "#00ff88",
-        stroke: "#004422",
-        strokeThickness: 4,
-      }
-    );
+    // Texto del score
+    this.scoreText = this.scene.add.text(0, badgeHeight/2, "Score: 0", {
+      fontSize: `${ui.fontSize.score}px`,
+      fontFamily: "Arial Black, Impact, sans-serif",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 2,
+    });
     this.scoreText.setOrigin(0.5);
-    this.add(this.scoreText);
+    this.scoreBadge.add(this.scoreText);
+
+    this.add(this.scoreBadge);
   }
 
   /**
-   * Crea el área de la mano en el footer - Estilo Cartoon Madera
+   * Crea el área del acumulador - Diseño limpio y moderno
    */
   private createHand(): void {
     const { canvas, hand } = GameSettings;
 
-    const handY = canvas.height - hand.bottomMargin - hand.slotHeight / 2 - 25;
-    const handWidth = hand.maxSlots * (hand.slotWidth + hand.slotPadding) + 30;
+    const handY = canvas.height - hand.bottomMargin;
+    const totalSlotWidth = hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
+    const handWidth = totalSlotWidth + 30;
     const handX = (canvas.width - handWidth) / 2;
+    const handHeight = hand.slotHeight + 20;
 
     this.handBg = this.scene.add.graphics();
 
-    // Sombra
-    this.handBg.fillStyle(0x000000, 0.3);
-    this.handBg.fillRoundedRect(
-      handX + 4,
-      handY - 6,
-      handWidth,
-      hand.slotHeight + 50,
-      18
-    );
+    // Sombra suave
+    this.handBg.fillStyle(0x000000, 0.25);
+    this.handBg.fillRoundedRect(handX + 4, handY - handHeight/2 + 4, handWidth, handHeight, 15);
 
-    // Fondo principal madera
-    this.handBg.fillStyle(hand.backgroundColor, 1);
-    this.handBg.fillRoundedRect(
-      handX,
-      handY - 10,
-      handWidth,
-      hand.slotHeight + 50,
-      18
-    );
+    // Fondo del acumulador
+    this.handBg.fillStyle(hand.backgroundColor, 0.95);
+    this.handBg.fillRoundedRect(handX, handY - handHeight/2, handWidth, handHeight, 15);
 
-    // Borde dorado
-    this.handBg.lineStyle(4, hand.slotBorderColor, 1);
-    this.handBg.strokeRoundedRect(
-      handX,
-      handY - 10,
-      handWidth,
-      hand.slotHeight + 50,
-      18
-    );
-
-    // Decoración superior
-    this.handBg.fillStyle(0x8b7355, 1);
-    this.handBg.fillRect(handX + 20, handY - 5, handWidth - 40, 6);
+    // Borde exterior
+    this.handBg.lineStyle(3, hand.slotBorderColor, 1);
+    this.handBg.strokeRoundedRect(handX, handY - handHeight/2, handWidth, handHeight, 15);
 
     this.add(this.handBg);
 
@@ -141,7 +117,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea un slot individual de la mano - Estilo Cartoon
+   * Crea un slot individual - Diseño simple
    */
   private createSlot(index: number): Phaser.GameObjects.Container {
     const { hand } = GameSettings;
@@ -149,37 +125,26 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const container = this.scene.add.container(pos.x, pos.y);
 
-    // Fondo del slot con sombra interior
     const slotBg = this.scene.add.graphics();
 
-    // Sombra interior
-    slotBg.fillStyle(0x2a1a0a, 1);
-    slotBg.fillRoundedRect(
-      -hand.slotWidth / 2 + 2,
-      -hand.slotHeight / 2 + 2,
-      hand.slotWidth,
-      hand.slotHeight,
-      10
-    );
-
-    // Fondo slot
-    slotBg.fillStyle(hand.slotColor, 1);
-    slotBg.fillRoundedRect(
-      -hand.slotWidth / 2,
-      -hand.slotHeight / 2,
-      hand.slotWidth,
-      hand.slotHeight,
-      10
-    );
-
-    // Borde
-    slotBg.lineStyle(3, hand.slotBorderColor, 0.8);
+    // Borde del slot sutil
+    slotBg.lineStyle(2, hand.slotBorderColor, 0.5);
     slotBg.strokeRoundedRect(
       -hand.slotWidth / 2,
       -hand.slotHeight / 2,
       hand.slotWidth,
       hand.slotHeight,
-      10
+      8
+    );
+
+    // Fondo semi-transparente
+    slotBg.fillStyle(0x000000, 0.15);
+    slotBg.fillRoundedRect(
+      -hand.slotWidth / 2,
+      -hand.slotHeight / 2,
+      hand.slotWidth,
+      hand.slotHeight,
+      8
     );
 
     container.add(slotBg);
@@ -203,26 +168,22 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea los botones de control - Estilo Cartoon
+   * Crea el botón de reinicio - Pequeño en esquina
    */
-  private createButtons(): void {
-    const { canvas, ui } = GameSettings;
+  private createRestartButton(): void {
+    const { canvas } = GameSettings;
 
-    // Botón de reinicio en el centro del header
-    this.restartButton = this.scene.add.container(
-      canvas.width / 2,
-      ui.headerHeight / 2
-    );
+    this.restartButton = this.scene.add.container(canvas.width - 40, 40);
 
     const btnBg = this.scene.add.graphics();
     btnBg.fillStyle(0xe94560, 1);
-    btnBg.fillRoundedRect(-22, -22, 44, 44, 22);
-    btnBg.lineStyle(3, 0xffffff, 0.5);
-    btnBg.strokeRoundedRect(-22, -22, 44, 44, 22);
+    btnBg.fillCircle(0, 0, 22);
+    btnBg.lineStyle(2, 0xffffff, 0.5);
+    btnBg.strokeCircle(0, 0, 22);
     this.restartButton.add(btnBg);
 
     const btnText = this.scene.add.text(0, 0, "↺", {
-      fontSize: "26px",
+      fontSize: "22px",
       fontFamily: "Arial Black, sans-serif",
       color: "#ffffff",
     });
@@ -303,68 +264,70 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { hand } = GameSettings;
     const tileColors = GameSettings.tile.colors;
 
-    const w = hand.slotWidth - 12;
-    const h = hand.slotHeight - 12;
-    const d = 8;
+    // Dimensiones basadas en el slot, mismo estilo que Tile3D
+    const w = hand.slotWidth - 16;
+    const h = hand.slotHeight - 16;
+    const d = 6; // Profundidad 3D
+    const r = 8; // Radio de esquinas
+    const margin = 6;
 
     const g = this.scene.add.graphics();
 
-    // Sombra
-    g.fillStyle(0x000000, 0.3);
-    g.fillRoundedRect(-w / 2 + 4, -h / 2 + d + 4, w, h, 8);
+    // === SOMBRA SUAVE ===
+    g.fillStyle(0x000000, 0.2);
+    g.fillRoundedRect(-w / 2 + 3, -h / 2 + d + 3, w, h, r);
 
-    // Lado derecho 3D - Madera
-    g.fillStyle(tileColors.side, 1);
-    g.beginPath();
-    g.moveTo(w / 2, -h / 2 + 6);
-    g.lineTo(w / 2 + d, -h / 2 + d + 6);
-    g.lineTo(w / 2 + d, h / 2 + d - 6);
-    g.lineTo(w / 2, h / 2 - 6);
-    g.closePath();
-    g.fillPath();
-
-    // Lado inferior 3D
+    // === BORDE 3D SUTIL (solo inferior) ===
     g.fillStyle(tileColors.bottom, 1);
-    g.beginPath();
-    g.moveTo(-w / 2 + 6, h / 2);
-    g.lineTo(-w / 2 + d + 6, h / 2 + d);
-    g.lineTo(w / 2 + d - 6, h / 2 + d);
-    g.lineTo(w / 2 - 6, h / 2);
-    g.closePath();
-    g.fillPath();
+    g.fillRoundedRect(-w / 2, -h / 2 + d, w, h, r);
 
-    // Cara frontal - Marfil
+    // === CARA PRINCIPAL ===
     g.fillStyle(tileColors.face, 1);
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 8);
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
 
-    // Borde exterior
+    // Borde exterior elegante
     g.lineStyle(2, tileColors.border, 1);
-    g.strokeRoundedRect(-w / 2, -h / 2, w, h, 8);
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
 
-    // Interior con color
-    const m = 8;
+    // === ÁREA DE COLOR (interior) ===
+    const innerW = w - margin * 2;
+    const innerH = h - margin * 2;
+    const innerR = r - 2;
+
+    // Fondo del color principal
     g.fillStyle(colors.main, 1);
-    g.fillRoundedRect(-w / 2 + m, -h / 2 + m, w - m * 2, h - m * 2, 5);
+    g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
 
-    // Brillo
+    // Borde interior sutil
+    g.lineStyle(1, this.darkenColor(colors.main, 0.25), 1);
+    g.strokeRoundedRect(
+      -w / 2 + margin,
+      -h / 2 + margin,
+      innerW,
+      innerH,
+      innerR
+    );
+
+    // === EFECTOS DE LUZ ===
+    // Brillo superior
     g.fillStyle(0xffffff, 0.25);
     g.fillRoundedRect(
-      -w / 2 + m + 2,
-      -h / 2 + m + 2,
-      w - m * 2 - 4,
-      (h - m * 2) * 0.3,
-      { tl: 4, tr: 4, bl: 0, br: 0 }
+      -w / 2 + margin + 3,
+      -h / 2 + margin + 3,
+      innerW - 6,
+      innerH * 0.25,
+      { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
     );
 
     container.add(g);
 
     // Símbolo
     const symbol = this.scene.add.text(0, -d / 2, colors.symbol, {
-      fontSize: "28px",
+      fontSize: "24px",
       fontFamily: "Arial Black, sans-serif",
       color: "#ffffff",
       stroke: "#333333",
-      strokeThickness: 3,
+      strokeThickness: 2,
     });
     symbol.setOrigin(0.5);
     container.add(symbol);
@@ -374,6 +337,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
   /**
    * Anima la eliminación de fichas que hicieron match
+   * Efecto sutil: las fichas se levantan un poco y desaparecen
    */
   public animateMatch(tileIds: string[], onComplete?: () => void): void {
     const sprites: Phaser.GameObjects.Container[] = [];
@@ -385,59 +349,43 @@ export class GameUI extends Phaser.GameObjects.Container {
       }
     });
 
-    // Efecto de partículas o flash
+    // Animación sutil: levantar las 3 fichas y desvanecerlas
     sprites.forEach((sprite, index) => {
-      // Efecto de brillos
-      const flash = this.scene.add.graphics();
-      flash.setPosition(sprite.x, sprite.y);
-      flash.fillStyle(0xffff00, 1);
-      flash.fillCircle(0, 0, 40);
-      this.add(flash);
-
-      this.scene.tweens.add({
-        targets: flash,
-        scaleX: 2,
-        scaleY: 2,
-        alpha: 0,
-        duration: 300,
-        onComplete: () => flash.destroy(),
-      });
-
-      // Animar desaparición
+      // Primero: levantar las fichas suavemente
       this.scene.tweens.add({
         targets: sprite,
-        scaleX: 0,
-        scaleY: 0,
-        alpha: 0,
-        duration: 300,
-        delay: 100,
+        y: sprite.y - 30,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 200,
+        ease: "Power2",
         onComplete: () => {
-          sprite.destroy();
-          this.handTileSprites.delete(tileIds[index]);
-          if (index === sprites.length - 1 && onComplete) {
-            onComplete();
-          }
+          // Después: pequeño movimiento lateral y desvanecer
+          this.scene.tweens.add({
+            targets: sprite,
+            y: sprite.y - 20,
+            alpha: 0,
+            duration: 250,
+            ease: "Power1",
+            onComplete: () => {
+              sprite.destroy();
+              this.handTileSprites.delete(tileIds[index]);
+              if (index === sprites.length - 1 && onComplete) {
+                onComplete();
+              }
+            },
+          });
         },
       });
     });
   }
 
   /**
-   * Actualiza el nivel mostrado
+   * Actualiza el nivel mostrado (ahora solo guarda el estado)
    */
   public updateLevel(level: number): void {
     this.currentLevel = level;
-    this.levelText.setText(`🎯 LVL ${level}`);
-
-    // Animación de cambio de nivel
-    this.scene.tweens.add({
-      targets: this.levelText,
-      scaleX: 1.3,
-      scaleY: 1.3,
-      duration: 150,
-      yoyo: true,
-      ease: "Power2",
-    });
+    // Ya no hay texto de nivel visible, el badge solo muestra score
   }
 
   /**
@@ -455,16 +403,16 @@ export class GameUI extends Phaser.GameObjects.Container {
       onUpdate: (tween) => {
         const value = tween.getValue();
         if (value !== null) {
-          this.scoreText.setText(`💰 ${Math.floor(value)}`);
+          this.scoreText.setText(`Score: ${Math.floor(value)}`);
         }
       },
     });
 
-    // Efecto de pulso
+    // Efecto de pulso en el badge
     this.scene.tweens.add({
-      targets: this.scoreText,
-      scaleX: 1.15,
-      scaleY: 1.15,
+      targets: this.scoreBadge,
+      scaleX: 1.1,
+      scaleY: 1.1,
       duration: 120,
       yoyo: true,
       ease: "Power2",
