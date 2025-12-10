@@ -6,7 +6,8 @@
     <title>crypto-mahjong-v2</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
     <style>
-      html, body {
+      html,
+      body {
         margin: 0;
         padding: 0;
         width: 100%;
@@ -14,13 +15,13 @@
         overflow: hidden;
         background-color: #1a472a;
       }
-      
+
       body {
         display: flex;
         justify-content: center;
         align-items: flex-start;
       }
-      
+
       canvas {
         outline: none;
         margin: 0;
@@ -35,16 +36,17 @@
       // Development only - build script replaces this entire block
       if (import.meta.env.DEV) {
         // Load CSS for dev dashboard
-        const link = document.createElement('link')
-        link.rel = 'stylesheet'
-        link.href = '/node_modules/@insidethesim/remix-dev/dist/styles/remix-dev.css'
-        document.head.appendChild(link)
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href =
+          "/node_modules/@insidethesim/remix-dev/dist/styles/remix-dev.css";
+        document.head.appendChild(link);
 
-        import('@insidethesim/remix-dev/dev-init')
+        import("@insidethesim/remix-dev/dev-init");
 
         // Only load the game in iframe, not in top window (dashboard handles iframes)
         if (window !== window.top) {
-          import('/src/main.ts')
+          import("/src/main.ts");
         }
       }
     </script>

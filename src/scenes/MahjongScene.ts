@@ -226,22 +226,36 @@ export class MahjongScene extends Phaser.Scene {
 
     this.isAnimating = true;
 
+    // IMPORTANTE: Buscar la ficha en gameState.tiles para modificar el original
+    const originalTile = this.gameState.tiles.find(t => t.id === tileState.id);
+    if (!originalTile) {
+      this.isAnimating = false;
+      return;
+    }
+
     // Obtener posición del slot destino
     const slotIndex = this.handManager.getTileCount();
     const slotPos = this.gameUI.getSlotPosition(slotIndex);
 
     // Obtener el sprite de la ficha
     const tileSprite = this.tileSprites.get(tileState.id);
-    if (!tileSprite) return;
+    if (!tileSprite) {
+      this.isAnimating = false;
+      return;
+    }
+
+    // Marcar como en mano ANTES de animar (para que updateAccessibility funcione)
+    originalTile.isInHand = true;
+    originalTile.isAccessible = false;
 
     // Animar la ficha hacia la mano
     tileSprite.animateToHand(slotPos.x, slotPos.y, () => {
       // Eliminar sprite del tablero
       tileSprite.destroy();
-      this.tileSprites.delete(tileState.id);
+      this.tileSprites.delete(originalTile.id);
 
-      // Añadir a la mano
-      this.handManager.addTile(tileState);
+      // Añadir a la mano (el estado ya está actualizado)
+      this.handManager.addTile(originalTile);
 
       // Actualizar accesibilidad del tablero
       this.updateBoardAccessibility();
@@ -296,16 +310,14 @@ export class MahjongScene extends Phaser.Scene {
    * Actualiza la accesibilidad de las fichas del tablero
    */
   private updateBoardAccessibility(): void {
-    // Obtener fichas que aún están en el tablero
-    const boardTiles = this.gameState.tiles.filter(
-      (t) => !t.isInHand && !t.isMatched
-    );
+    // IMPORTANTE: Pasar TODAS las fichas para que el cálculo de bloqueo sea correcto
+    // Las fichas isInHand/isMatched serán ignoradas en el cálculo
+    BoardGenerator.updateAccessibility(this.gameState.tiles);
 
-    // Actualizar accesibilidad
-    BoardGenerator.updateAccessibility(boardTiles);
-
-    // Actualizar sprites
-    for (const tile of boardTiles) {
+    // Actualizar sprites de las fichas que aún están en el tablero
+    for (const tile of this.gameState.tiles) {
+      if (tile.isInHand || tile.isMatched) continue;
+      
       const sprite = this.tileSprites.get(tile.id);
       if (sprite) {
         sprite.updateState({ isAccessible: tile.isAccessible });

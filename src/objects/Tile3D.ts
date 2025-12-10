@@ -42,18 +42,19 @@ export class Tile3D extends Phaser.GameObjects.Container {
     this.blockedOverlay.setVisible(!state.isAccessible);
     this.add(this.blockedOverlay);
 
-    // Crear texto del símbolo con estilo elegante
+    // Crear texto del símbolo - tamaño proporcional a la ficha
     const tileColors = TILE_COLORS[state.type];
+    const fontSize = Math.floor(this.tileWidth * 0.5);
     this.symbolText = scene.add.text(
       0,
       -this.tileDepth / 2,
       tileColors.symbol,
       {
-        fontSize: "52px",
+        fontSize: `${fontSize}px`,
         fontFamily: "Arial Black, Impact, sans-serif",
         color: "#ffffff",
         stroke: "#222222",
-        strokeThickness: 4,
+        strokeThickness: 3,
       }
     );
     this.symbolText.setOrigin(0.5);

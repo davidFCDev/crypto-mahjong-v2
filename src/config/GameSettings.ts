@@ -12,14 +12,14 @@ export const GameSettings = {
     height: 1280,
   },
 
-  // Tile dimensions and styling - FICHAS GRANDES
+  // Tile dimensions and styling
   tile: {
-    width: 110,
-    height: 130,
-    depth: 6, // Profundidad 3D sutil
-    padding: 4,
-    cornerRadius: 10,
-    shadowOffset: 3,
+    width: 70,
+    height: 80,
+    depth: 8, // Profundidad 3D para efecto de capas
+    padding: 2,
+    cornerRadius: 8,
+    shadowOffset: 4,
     // Colores base de la ficha - Estilo elegante
     colors: {
       face: 0xfaf6f0, // Marfil suave
@@ -37,20 +37,22 @@ export const GameSettings = {
     colors: Record<string, number>;
   },
 
-  // Board configuration - Maximizar uso del canvas
+  // Board configuration
   board: {
-    offsetY: 75, // Offset desde arriba para dejar espacio al UI
-    maxWidth: 710, // Usar casi todo el ancho
-    maxHeight: 950, // Usar más altura disponible
+    offsetY: 80, // Offset desde arriba para dejar espacio al UI
+    maxWidth: 650, // No usar todo el ancho
+    maxHeight: 850, // Alto disponible
+    layerOffsetX: 6, // Desplazamiento X por capa (efecto 3D)
+    layerOffsetY: 6, // Desplazamiento Y por capa
   },
 
   // Hand configuration - Estilo Cartoon
   hand: {
-    maxSlots: 5,
-    slotWidth: 115,
-    slotHeight: 135,
-    slotPadding: 6,
-    bottomMargin: 100,
+    maxSlots: 7,
+    slotWidth: 75,
+    slotHeight: 85,
+    slotPadding: 4,
+    bottomMargin: 95,
     backgroundColor: 0x4a3728, // Marrón madera
     slotColor: 0x6b5344, // Slot madera clara
     slotBorderColor: 0x8b7355, // Borde dorado
@@ -66,17 +68,17 @@ export const GameSettings = {
 
   // Level progression - generates config based on level
   getLevelConfig: (level: number): LevelConfig => {
-    // Con fichas de 110x130 y padding 4, cada ficha = 114x134px
-    // Canvas 720px ancho -> ~6 columnas máximo
+    // Con fichas de 70x80 caben más en pantalla
+    // Sistema de capas estilo Mahjong clásico
     const configs = [
-      { rows: 4, cols: 5, layers: 2, tileTypes: 4 }, // Nivel 1: 2 capas
-      { rows: 4, cols: 6, layers: 2, tileTypes: 5 }, // Nivel 2
-      { rows: 5, cols: 6, layers: 2, tileTypes: 6 }, // Nivel 3
-      { rows: 5, cols: 6, layers: 3, tileTypes: 6 }, // Nivel 4
-      { rows: 6, cols: 6, layers: 3, tileTypes: 7 }, // Nivel 5
-      { rows: 6, cols: 6, layers: 3, tileTypes: 8 }, // Nivel 6
-      { rows: 6, cols: 6, layers: 3, tileTypes: 9 }, // Nivel 7
-      { rows: 6, cols: 6, layers: 4, tileTypes: 10 }, // Nivel 8+
+      { rows: 6, cols: 8, layers: 3, tileTypes: 6 }, // Nivel 1
+      { rows: 7, cols: 8, layers: 3, tileTypes: 7 }, // Nivel 2
+      { rows: 7, cols: 9, layers: 3, tileTypes: 8 }, // Nivel 3
+      { rows: 8, cols: 9, layers: 4, tileTypes: 9 }, // Nivel 4
+      { rows: 8, cols: 10, layers: 4, tileTypes: 10 }, // Nivel 5
+      { rows: 8, cols: 10, layers: 4, tileTypes: 11 }, // Nivel 6
+      { rows: 9, cols: 10, layers: 5, tileTypes: 12 }, // Nivel 7
+      { rows: 9, cols: 10, layers: 5, tileTypes: 12 }, // Nivel 8+
     ];
 
     const configIndex = Math.min(level - 1, configs.length - 1);
