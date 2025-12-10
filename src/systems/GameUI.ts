@@ -1,6 +1,6 @@
 /**
  * GameUI - Componente de interfaz de usuario del juego
- * Muestra puntuación, nivel, mano de fichas y botones de control
+ * Estilo Cartoon Mahjong
  */
 
 import GameSettings from '../config/GameSettings'
@@ -11,7 +11,6 @@ export class GameUI extends Phaser.GameObjects.Container {
   private headerBg!: Phaser.GameObjects.Graphics
   private levelText!: Phaser.GameObjects.Text
   private scoreText!: Phaser.GameObjects.Text
-  private titleText!: Phaser.GameObjects.Text
 
   // Hand elements
   private handBg!: Phaser.GameObjects.Graphics
@@ -33,66 +32,75 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.createButtons()
     
     scene.add.existing(this)
-    this.setDepth(1000)  // Siempre por encima del tablero
+    this.setDepth(1000)
   }
 
   /**
-   * Crea el header con título, nivel y puntuación
+   * Crea el header con Level y Score centrados - Estilo Cartoon
    */
   private createHeader(): void {
     const { canvas, ui } = GameSettings
 
-    // Fondo del header
+    // Fondo del header con gradiente simulado
     this.headerBg = this.scene.add.graphics()
-    this.headerBg.fillStyle(ui.colors.primary, 0.9)
+    this.headerBg.fillStyle(ui.colors.primary, 0.95)
     this.headerBg.fillRect(0, 0, canvas.width, ui.headerHeight)
+    // Borde dorado inferior
+    this.headerBg.fillStyle(ui.colors.accent, 1)
+    this.headerBg.fillRect(0, ui.headerHeight - 4, canvas.width, 4)
     this.add(this.headerBg)
 
-    // Título
-    this.titleText = this.scene.add.text(canvas.width / 2, 25, '🀄 CRYPTO MAHJONG', {
-      fontSize: `${ui.fontSize.title}px`,
-      fontFamily: 'Arial Black, sans-serif',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 3,
-    })
-    this.titleText.setOrigin(0.5)
-    this.add(this.titleText)
-
-    // Nivel
-    this.levelText = this.scene.add.text(30, 65, 'NIVEL 1', {
+    // Nivel - Izquierda centrada
+    this.levelText = this.scene.add.text(canvas.width / 4, ui.headerHeight / 2, '🎯 LVL 1', {
       fontSize: `${ui.fontSize.level}px`,
-      fontFamily: 'Arial, sans-serif',
-      color: '#ffcc00',
+      fontFamily: 'Arial Black, Impact, sans-serif',
+      color: '#ffd700',
+      stroke: '#4a3000',
+      strokeThickness: 4,
     })
+    this.levelText.setOrigin(0.5)
     this.add(this.levelText)
 
-    // Puntuación
-    this.scoreText = this.scene.add.text(canvas.width - 30, 65, 'SCORE: 0', {
+    // Puntuación - Derecha centrada
+    this.scoreText = this.scene.add.text(canvas.width * 3 / 4, ui.headerHeight / 2, '💰 0', {
       fontSize: `${ui.fontSize.score}px`,
-      fontFamily: 'Arial, sans-serif',
+      fontFamily: 'Arial Black, Impact, sans-serif',
       color: '#00ff88',
+      stroke: '#004422',
+      strokeThickness: 4,
     })
-    this.scoreText.setOrigin(1, 0)
+    this.scoreText.setOrigin(0.5)
     this.add(this.scoreText)
   }
 
   /**
-   * Crea el área de la mano en el footer
+   * Crea el área de la mano en el footer - Estilo Cartoon Madera
    */
   private createHand(): void {
     const { canvas, hand } = GameSettings
 
-    // Fondo de la mano
-    const handY = canvas.height - hand.bottomMargin - hand.slotHeight / 2 - 30
-    const handWidth = hand.maxSlots * (hand.slotWidth + hand.slotPadding) + 20
+    const handY = canvas.height - hand.bottomMargin - hand.slotHeight / 2 - 25
+    const handWidth = hand.maxSlots * (hand.slotWidth + hand.slotPadding) + 30
     const handX = (canvas.width - handWidth) / 2
 
     this.handBg = this.scene.add.graphics()
-    this.handBg.fillStyle(hand.backgroundColor, 0.9)
-    this.handBg.fillRoundedRect(handX, handY - 10, handWidth, hand.slotHeight + 40, 15)
-    this.handBg.lineStyle(3, hand.slotBorderColor, 1)
-    this.handBg.strokeRoundedRect(handX, handY - 10, handWidth, hand.slotHeight + 40, 15)
+    
+    // Sombra
+    this.handBg.fillStyle(0x000000, 0.3)
+    this.handBg.fillRoundedRect(handX + 4, handY - 6, handWidth, hand.slotHeight + 50, 18)
+    
+    // Fondo principal madera
+    this.handBg.fillStyle(hand.backgroundColor, 1)
+    this.handBg.fillRoundedRect(handX, handY - 10, handWidth, hand.slotHeight + 50, 18)
+    
+    // Borde dorado
+    this.handBg.lineStyle(4, hand.slotBorderColor, 1)
+    this.handBg.strokeRoundedRect(handX, handY - 10, handWidth, hand.slotHeight + 50, 18)
+    
+    // Decoración superior
+    this.handBg.fillStyle(0x8b7355, 1)
+    this.handBg.fillRect(handX + 20, handY - 5, handWidth - 40, 6)
+    
     this.add(this.handBg)
 
     // Crear slots
@@ -104,7 +112,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea un slot individual de la mano
+   * Crea un slot individual de la mano - Estilo Cartoon
    */
   private createSlot(index: number): Phaser.GameObjects.Container {
     const { hand } = GameSettings
@@ -112,23 +120,22 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const container = this.scene.add.container(pos.x, pos.y)
 
-    // Fondo del slot
+    // Fondo del slot con sombra interior
     const slotBg = this.scene.add.graphics()
+    
+    // Sombra interior
+    slotBg.fillStyle(0x2a1a0a, 1)
+    slotBg.fillRoundedRect(-hand.slotWidth / 2 + 2, -hand.slotHeight / 2 + 2, hand.slotWidth, hand.slotHeight, 10)
+    
+    // Fondo slot
     slotBg.fillStyle(hand.slotColor, 1)
-    slotBg.fillRoundedRect(-hand.slotWidth / 2, -hand.slotHeight / 2, hand.slotWidth, hand.slotHeight, 8)
-    slotBg.lineStyle(2, hand.slotBorderColor, 0.5)
-    slotBg.strokeRoundedRect(-hand.slotWidth / 2, -hand.slotHeight / 2, hand.slotWidth, hand.slotHeight, 8)
+    slotBg.fillRoundedRect(-hand.slotWidth / 2, -hand.slotHeight / 2, hand.slotWidth, hand.slotHeight, 10)
+    
+    // Borde
+    slotBg.lineStyle(3, hand.slotBorderColor, 0.8)
+    slotBg.strokeRoundedRect(-hand.slotWidth / 2, -hand.slotHeight / 2, hand.slotWidth, hand.slotHeight, 10)
+    
     container.add(slotBg)
-
-    // Número del slot
-    const slotNum = this.scene.add.text(0, 0, `${index + 1}`, {
-      fontSize: '24px',
-      fontFamily: 'Arial, sans-serif',
-      color: '#555555',
-    })
-    slotNum.setOrigin(0.5)
-    slotNum.setAlpha(0.3)
-    container.add(slotNum)
 
     return container
   }
@@ -148,36 +155,38 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea los botones de control
+   * Crea los botones de control - Estilo Cartoon
    */
   private createButtons(): void {
     const { canvas, ui } = GameSettings
 
-    // Botón de reinicio
-    this.restartButton = this.scene.add.container(canvas.width - 50, 35)
+    // Botón de reinicio en el centro del header
+    this.restartButton = this.scene.add.container(canvas.width / 2, ui.headerHeight / 2)
     
     const btnBg = this.scene.add.graphics()
-    btnBg.fillStyle(ui.colors.accent, 1)
-    btnBg.fillRoundedRect(-30, -15, 60, 30, 8)
+    btnBg.fillStyle(0xe94560, 1)
+    btnBg.fillRoundedRect(-22, -22, 44, 44, 22)
+    btnBg.lineStyle(3, 0xffffff, 0.5)
+    btnBg.strokeRoundedRect(-22, -22, 44, 44, 22)
     this.restartButton.add(btnBg)
 
     const btnText = this.scene.add.text(0, 0, '↺', {
-      fontSize: '20px',
-      fontFamily: 'Arial, sans-serif',
+      fontSize: '26px',
+      fontFamily: 'Arial Black, sans-serif',
       color: '#ffffff',
     })
     btnText.setOrigin(0.5)
     this.restartButton.add(btnText)
 
-    this.restartButton.setSize(60, 30)
+    this.restartButton.setSize(44, 44)
     this.restartButton.setInteractive({ useHandCursor: true })
     
     this.restartButton.on('pointerover', () => {
       this.scene.tweens.add({
         targets: this.restartButton,
-        scaleX: 1.1,
-        scaleY: 1.1,
-        duration: 100,
+        scaleX: 1.15,
+        scaleY: 1.15,
+        duration: 80,
       })
     })
 
@@ -186,7 +195,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         targets: this.restartButton,
         scaleX: 1,
         scaleY: 1,
-        duration: 100,
+        duration: 80,
       })
     })
 
@@ -235,56 +244,70 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea una versión mini de una ficha para la mano
+   * Crea una versión mini de una ficha para la mano - Estilo Cartoon
    */
   private createMiniTile(tile: TileState): Phaser.GameObjects.Container {
     const container = this.scene.add.container(0, 0)
     const colors = TILE_COLORS[tile.type]
     const { hand } = GameSettings
+    const tileColors = GameSettings.tile.colors
 
-    const w = hand.slotWidth - 10
-    const h = hand.slotHeight - 10
-    const d = 6
+    const w = hand.slotWidth - 12
+    const h = hand.slotHeight - 12
+    const d = 8
 
     const g = this.scene.add.graphics()
 
-    // Lado derecho 3D
-    g.fillStyle(this.darkenColor(colors.main, 0.5), 1)
+    // Sombra
+    g.fillStyle(0x000000, 0.3)
+    g.fillRoundedRect(-w / 2 + 4, -h / 2 + d + 4, w, h, 8)
+
+    // Lado derecho 3D - Madera
+    g.fillStyle(tileColors.side, 1)
     g.beginPath()
-    g.moveTo(w / 2, -h / 2 + 5)
-    g.lineTo(w / 2 + d, -h / 2 + d + 5)
-    g.lineTo(w / 2 + d, h / 2 + d - 5)
-    g.lineTo(w / 2, h / 2 - 5)
+    g.moveTo(w / 2, -h / 2 + 6)
+    g.lineTo(w / 2 + d, -h / 2 + d + 6)
+    g.lineTo(w / 2 + d, h / 2 + d - 6)
+    g.lineTo(w / 2, h / 2 - 6)
     g.closePath()
     g.fillPath()
 
     // Lado inferior 3D
-    g.fillStyle(this.darkenColor(colors.main, 0.6), 1)
+    g.fillStyle(tileColors.bottom, 1)
     g.beginPath()
-    g.moveTo(-w / 2 + 5, h / 2)
-    g.lineTo(-w / 2 + d + 5, h / 2 + d)
-    g.lineTo(w / 2 + d - 5, h / 2 + d)
-    g.lineTo(w / 2 - 5, h / 2)
+    g.moveTo(-w / 2 + 6, h / 2)
+    g.lineTo(-w / 2 + d + 6, h / 2 + d)
+    g.lineTo(w / 2 + d - 6, h / 2 + d)
+    g.lineTo(w / 2 - 6, h / 2)
     g.closePath()
     g.fillPath()
 
-    // Cara frontal
-    g.fillStyle(colors.main, 1)
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 6)
+    // Cara frontal - Marfil
+    g.fillStyle(tileColors.face, 1)
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, 8)
 
-    // Interior
-    g.fillStyle(this.lightenColor(colors.main, 0.3), 1)
-    g.fillRoundedRect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8, 4)
+    // Borde exterior
+    g.lineStyle(2, tileColors.border, 1)
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, 8)
+
+    // Interior con color
+    const m = 8
+    g.fillStyle(colors.main, 1)
+    g.fillRoundedRect(-w / 2 + m, -h / 2 + m, w - m * 2, h - m * 2, 5)
+
+    // Brillo
+    g.fillStyle(0xffffff, 0.25)
+    g.fillRoundedRect(-w / 2 + m + 2, -h / 2 + m + 2, w - m * 2 - 4, (h - m * 2) * 0.3, { tl: 4, tr: 4, bl: 0, br: 0 })
 
     container.add(g)
 
     // Símbolo
     const symbol = this.scene.add.text(0, -d / 2, colors.symbol, {
-      fontSize: '24px',
-      fontFamily: 'Arial, sans-serif',
+      fontSize: '28px',
+      fontFamily: 'Arial Black, sans-serif',
       color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 2,
+      stroke: '#333333',
+      strokeThickness: 3,
     })
     symbol.setOrigin(0.5)
     container.add(symbol)
@@ -347,14 +370,14 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   public updateLevel(level: number): void {
     this.currentLevel = level
-    this.levelText.setText(`NIVEL ${level}`)
+    this.levelText.setText(`🎯 LVL ${level}`)
     
     // Animación de cambio de nivel
     this.scene.tweens.add({
       targets: this.levelText,
       scaleX: 1.3,
       scaleY: 1.3,
-      duration: 200,
+      duration: 150,
       yoyo: true,
       ease: 'Power2',
     })
@@ -371,11 +394,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.scene.tweens.addCounter({
       from: oldScore,
       to: score,
-      duration: 300,
+      duration: 250,
       onUpdate: (tween) => {
         const value = tween.getValue()
         if (value !== null) {
-          this.scoreText.setText(`SCORE: ${Math.floor(value)}`)
+          this.scoreText.setText(`💰 ${Math.floor(value)}`)
         }
       },
     })
@@ -383,9 +406,9 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Efecto de pulso
     this.scene.tweens.add({
       targets: this.scoreText,
-      scaleX: 1.2,
-      scaleY: 1.2,
-      duration: 150,
+      scaleX: 1.15,
+      scaleY: 1.15,
+      duration: 120,
       yoyo: true,
       ease: 'Power2',
     })

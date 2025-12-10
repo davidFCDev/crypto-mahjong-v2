@@ -76,26 +76,24 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego
+   * Crea el fondo del juego - Estilo Bambú Cartoon
    */
   private createBackground(): void {
     const { canvas, ui } = GameSettings
 
-    // Fondo con gradiente simulado
+    // Fondo sólido (más eficiente que patrones complejos)
     const bg = this.add.graphics()
     
-    // Color base
+    // Color base verde bambú
     bg.fillStyle(ui.colors.background, 1)
     bg.fillRect(0, 0, canvas.width, canvas.height)
 
-    // Patrón decorativo sutil
-    bg.lineStyle(1, 0x2a2a4a, 0.3)
-    for (let i = 0; i < canvas.width; i += 40) {
-      bg.lineBetween(i, 0, i, canvas.height)
-    }
-    for (let i = 0; i < canvas.height; i += 40) {
-      bg.lineBetween(0, i, canvas.width, i)
-    }
+    // Marco decorativo simple (sin bucles costosos)
+    bg.lineStyle(8, 0x0d3d1a, 0.5)
+    bg.strokeRect(10, 10, canvas.width - 20, canvas.height - 20)
+    
+    bg.lineStyle(3, 0x4a7c59, 0.4)
+    bg.strokeRect(20, 20, canvas.width - 40, canvas.height - 40)
   }
 
   /**

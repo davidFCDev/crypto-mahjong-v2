@@ -12,20 +12,20 @@ export const GameSettings = {
     height: 1280,
   },
 
-  // Tile dimensions and styling
+  // Tile dimensions and styling - FICHAS MÁS GRANDES
   tile: {
-    width: 70,
-    height: 90,
-    depth: 12,        // Profundidad 3D
-    padding: 4,
-    cornerRadius: 8,
-    shadowOffset: 4,
-    // Colores base de la ficha
+    width: 85,
+    height: 105,
+    depth: 14,        // Profundidad 3D
+    padding: 6,
+    cornerRadius: 12,
+    shadowOffset: 5,
+    // Colores base de la ficha - Estilo Cartoon
     colors: {
-      face: 0xffffff,
-      side: 0xcccccc,
-      bottom: 0x999999,
-      border: 0x333333,
+      face: 0xfff8e7,      // Marfil cálido
+      side: 0xd4a574,      // Madera clara
+      bottom: 0x8b6914,    // Madera oscura
+      border: 0x5d4e37,    // Borde marrón
       blocked: 0x666666,
       blockedOverlay: 0x000000,
       blockedAlpha: 0.4,
@@ -34,21 +34,21 @@ export const GameSettings = {
 
   // Board configuration
   board: {
-    offsetY: 120,     // Offset desde arriba para dejar espacio al UI
-    maxWidth: 680,    // Ancho máximo del tablero
-    maxHeight: 800,   // Alto máximo del tablero
+    offsetY: 80,      // Offset desde arriba para dejar espacio al UI
+    maxWidth: 700,    // Ancho máximo del tablero
+    maxHeight: 850,   // Alto máximo del tablero
   },
 
-  // Hand configuration
+  // Hand configuration - Estilo Cartoon
   hand: {
     maxSlots: 5,
-    slotWidth: 80,
-    slotHeight: 100,
-    slotPadding: 10,
-    bottomMargin: 80,
-    backgroundColor: 0x2a2a2a,
-    slotColor: 0x3a3a3a,
-    slotBorderColor: 0x555555,
+    slotWidth: 95,
+    slotHeight: 115,
+    slotPadding: 8,
+    bottomMargin: 90,
+    backgroundColor: 0x4a3728,   // Marrón madera
+    slotColor: 0x6b5344,         // Slot madera clara
+    slotBorderColor: 0x8b7355,   // Borde dorado
   },
 
   // Game rules
@@ -56,55 +56,51 @@ export const GameSettings = {
     matchCount: 3,    // Fichas necesarias para hacer match
     scorePerMatch: 100,
     bonusPerLevel: 50,
-    animationSpeed: 300,  // ms para animaciones
+    animationSpeed: 250,  // ms para animaciones (más rápido)
   },
 
   // Level progression - generates config based on level
   getLevelConfig: (level: number): LevelConfig => {
-    // Incremento progresivo de dificultad
-    const baseRows = 4
-    const baseCols = 5
-    const baseLayers = 2
-    const baseTileTypes = 4
+    // Configuración más controlada para asegurar múltiplos de 3
+    const configs = [
+      { rows: 3, cols: 4, layers: 2, tileTypes: 4 },   // Nivel 1: 24 fichas -> 21 (7 grupos)
+      { rows: 3, cols: 5, layers: 2, tileTypes: 5 },   // Nivel 2
+      { rows: 4, cols: 4, layers: 2, tileTypes: 5 },   // Nivel 3
+      { rows: 4, cols: 5, layers: 2, tileTypes: 6 },   // Nivel 4
+      { rows: 4, cols: 5, layers: 3, tileTypes: 6 },   // Nivel 5
+      { rows: 5, cols: 5, layers: 3, tileTypes: 7 },   // Nivel 6
+      { rows: 5, cols: 6, layers: 3, tileTypes: 8 },   // Nivel 7
+      { rows: 5, cols: 6, layers: 4, tileTypes: 9 },   // Nivel 8+
+    ]
 
-    // Cada 3 niveles aumenta la complejidad
-    const difficultyTier = Math.floor((level - 1) / 3)
-    
-    const rows = Math.min(baseRows + difficultyTier, 8)
-    const cols = Math.min(baseCols + difficultyTier, 8)
-    const layers = Math.min(baseLayers + Math.floor(difficultyTier / 2), 5)
-    const tileTypes = Math.min(baseTileTypes + difficultyTier, 12)
-
-    // Calcular cantidad de fichas (debe ser múltiplo de 3)
-    const totalPositions = rows * cols * layers
-    const tilesPerType = 3  // Siempre grupos de 3
-    const totalTileTypes = Math.min(tileTypes, Math.floor(totalPositions / tilesPerType))
+    const configIndex = Math.min(level - 1, configs.length - 1)
+    const config = configs[configIndex]
 
     return {
       level,
-      rows,
-      cols,
-      layers,
-      tileTypes: totalTileTypes,
-      tilesPerType,
+      rows: config.rows,
+      cols: config.cols,
+      layers: config.layers,
+      tileTypes: config.tileTypes,
+      tilesPerType: 3,
     }
   },
 
-  // UI configuration
+  // UI configuration - Estilo Cartoon Mahjong
   ui: {
-    headerHeight: 100,
+    headerHeight: 70,
     fontSize: {
-      title: 32,
-      score: 24,
-      level: 20,
+      title: 28,
+      score: 26,
+      level: 26,
       button: 18,
     },
     colors: {
-      background: 0x1a1a2e,
-      primary: 0x16213e,
-      secondary: 0x0f3460,
-      accent: 0xe94560,
-      text: 0xffffff,
+      background: 0x1a472a,    // Verde bambú oscuro
+      primary: 0x2d5a27,       // Verde bosque
+      secondary: 0x3d7a3d,     // Verde claro
+      accent: 0xffd700,        // Dorado
+      text: 0xfff8dc,          // Crema
       textSecondary: 0xaaaaaa,
     },
   },
