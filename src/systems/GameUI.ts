@@ -32,52 +32,65 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea el badge de score estilo "Daily Challenge"
+   * Crea el badge de score estilo dibujo/cartoon
    */
   private createScoreBadge(): void {
     const { canvas, ui } = GameSettings;
 
-    this.scoreBadge = this.scene.add.container(canvas.width / 2, 45);
+    this.scoreBadge = this.scene.add.container(canvas.width / 2, 50);
 
     const badgeWidth = 260;
-    const badgeHeight = 55;
-    const badgeDepth = 8;
+    const badgeHeight = 65;
+    const badgeDepth = 10;
+    const borderRadius = 5;
 
     const bg = this.scene.add.graphics();
 
-    // Sombra
-    bg.fillStyle(0x000000, 0.25);
+    // Sombra suave
+    bg.fillStyle(0x000000, 0.3);
     bg.fillRoundedRect(
-      -badgeWidth / 2 + 4,
-      badgeDepth + 4,
+      -badgeWidth / 2 + 5,
+      badgeDepth + 5,
       badgeWidth,
       badgeHeight,
-      10
+      borderRadius
     );
 
-    // Cara inferior (volumen 3D)
+    // Cara inferior (volumen 3D) - mismo tamaño que la cara principal
     bg.fillStyle(0x7a2a2a, 1);
     bg.fillRoundedRect(
       -badgeWidth / 2,
       badgeDepth,
       badgeWidth,
       badgeHeight,
-      10
+      borderRadius
     );
 
-    // Fondo rojo del badge (cara principal)
+    // Fondo del badge (cara principal)
     bg.fillStyle((ui.colors as any).badge || 0xc94a4a, 1);
-    bg.fillRoundedRect(-badgeWidth / 2, 0, badgeWidth, badgeHeight, 10);
+    bg.fillRoundedRect(
+      -badgeWidth / 2,
+      0,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
 
-    // Borde
-    bg.lineStyle(3, (ui.colors as any).badgeBorder || 0x8a2a2a, 1);
-    bg.strokeRoundedRect(-badgeWidth / 2, 0, badgeWidth, badgeHeight, 10);
+    // Borde grueso estilo cartoon
+    bg.lineStyle(4, (ui.colors as any).badgeBorder || 0x5a1a1a, 1);
+    bg.strokeRoundedRect(
+      -badgeWidth / 2,
+      0,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
 
-    // Brillo superior
-    bg.fillStyle(0xffffff, 0.2);
-    bg.fillRoundedRect(-badgeWidth / 2 + 5, 3, badgeWidth - 10, 10, {
-      tl: 6,
-      tr: 6,
+    // Brillo superior estilo dibujo
+    bg.fillStyle(0xffffff, 0.25);
+    bg.fillRoundedRect(-badgeWidth / 2 + 8, 6, badgeWidth - 16, 12, {
+      tl: 3,
+      tr: 3,
       bl: 0,
       br: 0,
     });
@@ -86,11 +99,11 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     // Texto del score
     this.scoreText = this.scene.add.text(0, badgeHeight / 2, "Score: 0", {
-      fontSize: "28px",
+      fontSize: "32px",
       fontFamily: "Arial Black, Impact, sans-serif",
       color: "#ffffff",
       stroke: "#000000",
-      strokeThickness: 3,
+      strokeThickness: 4,
     });
     this.scoreText.setOrigin(0.5);
     this.scoreBadge.add(this.scoreText);
@@ -311,16 +324,29 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     container.add(g);
 
-    // Símbolo
-    const symbol = this.scene.add.text(0, -d / 2, colors.symbol, {
-      fontSize: "24px",
-      fontFamily: "Arial Black, sans-serif",
-      color: "#ffffff",
-      stroke: "#333333",
-      strokeThickness: 2,
-    });
-    symbol.setOrigin(0.5);
-    container.add(symbol);
+    // Icono - usar imagen si existe, sino texto
+    const iconKey = `tile-icon-${tile.type}`;
+    
+    if (this.scene.textures.exists(iconKey)) {
+      // Usar imagen
+      const iconImage = this.scene.add.image(0, -d / 2, iconKey);
+      // Escalar la imagen para que quepa en la mini-ficha
+      const maxSize = Math.min(w, h) * 0.6;
+      const scale = maxSize / Math.max(iconImage.width, iconImage.height);
+      iconImage.setScale(scale);
+      container.add(iconImage);
+    } else {
+      // Fallback a texto del símbolo
+      const symbol = this.scene.add.text(0, -d / 2, colors.symbol, {
+        fontSize: "24px",
+        fontFamily: "Arial Black, sans-serif",
+        color: "#ffffff",
+        stroke: "#333333",
+        strokeThickness: 2,
+      });
+      symbol.setOrigin(0.5);
+      container.add(symbol);
+    }
 
     return container;
   }

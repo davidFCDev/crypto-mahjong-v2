@@ -10,6 +10,7 @@ import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
 import { HandManager } from "../systems/HandManager";
 import type { GameState, LevelConfig, TileState } from "../types";
+import { TILE_COLORS, TileType } from "../types";
 
 declare global {
   interface Window {
@@ -59,7 +60,13 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // No necesitamos cargar assets externos, usamos gráficos generados
+    // Cargar imágenes de las fichas
+    Object.entries(TILE_COLORS).forEach(([typeKey, config]) => {
+      if (config.imageUrl) {
+        const type = parseInt(typeKey);
+        this.load.image(`tile-icon-${type}`, config.imageUrl);
+      }
+    });
   }
 
   create(): void {
