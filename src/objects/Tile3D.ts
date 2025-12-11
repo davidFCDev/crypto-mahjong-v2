@@ -42,24 +42,46 @@ export class Tile3D extends Phaser.GameObjects.Container {
     this.blockedOverlay.setVisible(!state.isAccessible);
     this.add(this.blockedOverlay);
 
-    // Crear icono de la ficha - usar imagen si existe, sino texto
+    // Crear icono - usar imagen si existe, sino texto
     const tileColors = TILE_COLORS[state.type];
     const iconKey = `tile-icon-${state.type}`;
     
+    // Calcular el centro visual real de la cara de la ficha
+    // La textura tiene: offsetX=4, offsetY=4 para la cara, y depth añade espacio abajo
+    // El centro de la textura NO es el centro de la cara visible
+    const textureWidth = this.tileWidth + this.tileDepth + 8;
+    const textureHeight = this.tileHeight + this.tileDepth + 8;
+    const faceOffsetX = 4; // offset de la cara en la textura
+    const faceOffsetY = 4;
+    
+    // Centro de la cara dentro de la textura
+    const faceCenterX = faceOffsetX + this.tileWidth / 2;
+    const faceCenterY = faceOffsetY + this.tileHeight / 2;
+    
+    // Centro de la textura (donde Phaser posiciona el origen)
+    const textureCenterX = textureWidth / 2;
+    const textureCenterY = textureHeight / 2;
+    
+    // Offset que necesitamos aplicar al icono para centrarlo en la cara
+    const iconOffsetX = faceCenterX - textureCenterX;
+    const iconOffsetY = faceCenterY - textureCenterY;
+    
     if (scene.textures.exists(iconKey)) {
-      // Usar imagen
-      const iconImage = scene.add.image(0, -this.tileDepth / 2, iconKey);
-      // Escalar la imagen para que quepa en la ficha
-      const maxSize = Math.min(this.tileWidth, this.tileHeight) * 0.65;
-      const scale = maxSize / Math.max(iconImage.width, iconImage.height);
+      // Usar imagen en el área interior
+      const margin = 8;
+      const innerSize = this.tileWidth - margin * 2;
+      
+      const iconImage = scene.add.image(iconOffsetX, iconOffsetY, iconKey);
+      // Escalar para ocupar todo el interior (cuadrado)
+      const scale = innerSize / iconImage.width;
       iconImage.setScale(scale);
       this.add(iconImage);
     } else {
       // Fallback a texto del símbolo
       const fontSize = Math.floor(this.tileWidth * 0.5);
       this.symbolText = scene.add.text(
-        0,
-        -this.tileDepth / 2,
+        iconOffsetX,
+        iconOffsetY,
         tileColors.symbol,
         {
           fontSize: `${fontSize}px`,
@@ -90,11 +112,13 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
   private ensureTextures(): void {
     const type = this.tileState.type;
+    const iconKey = `tile-icon-${type}`;
+    const hasImage = this.scene.textures.exists(iconKey);
 
     // Textura normal
     const normalKey = this.getTextureName(type);
     if (!textureCache.has(normalKey)) {
-      this.generateTileTexture(normalKey, type);
+      this.generateTileTexture(normalKey, type, hasImage);
       textureCache.set(normalKey, true);
     }
 
@@ -109,7 +133,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     return `tile-${type}`;
   }
 
-  private generateTileTexture(key: string, type: TileType): void {
+  private generateTileTexture(key: string, type: TileType, hasImage: boolean = false): void {
     const w = this.tileWidth;
     const h = this.tileHeight;
     const d = this.tileDepth;
@@ -142,42 +166,44 @@ export class Tile3D extends Phaser.GameObjects.Container {
     g.lineStyle(2.5, tileColors.border, 1);
     g.strokeRoundedRect(offsetX, offsetY, w, h, r);
 
-    // === ÁREA DE COLOR (interior) ===
+    // === ÁREA DE COLOR (interior) - solo si no tiene imagen ===
     const margin = 8;
     const innerW = w - margin * 2;
     const innerH = h - margin * 2;
     const innerR = r - 3;
 
-    // Fondo del color principal
-    g.fillStyle(colors.main, 1);
-    g.fillRoundedRect(
-      offsetX + margin,
-      offsetY + margin,
-      innerW,
-      innerH,
-      innerR
-    );
+    if (!hasImage) {
+      // Fondo del color principal
+      g.fillStyle(colors.main, 1);
+      g.fillRoundedRect(
+        offsetX + margin,
+        offsetY + margin,
+        innerW,
+        innerH,
+        innerR
+      );
 
-    // Borde interior sutil
-    g.lineStyle(1.5, this.darkenColor(colors.main, 0.25), 1);
-    g.strokeRoundedRect(
-      offsetX + margin,
-      offsetY + margin,
-      innerW,
-      innerH,
-      innerR
-    );
+      // Borde interior sutil
+      g.lineStyle(1.5, this.darkenColor(colors.main, 0.25), 1);
+      g.strokeRoundedRect(
+        offsetX + margin,
+        offsetY + margin,
+        innerW,
+        innerH,
+        innerR
+      );
 
-    // === EFECTOS DE LUZ ===
-    // Brillo superior (reflejo de luz)
-    g.fillStyle(0xffffff, 0.25);
-    g.fillRoundedRect(
-      offsetX + margin + 4,
-      offsetY + margin + 4,
-      innerW - 8,
-      innerH * 0.25,
-      { tl: innerR - 2, tr: innerR - 2, bl: 0, br: 0 }
-    );
+      // === EFECTOS DE LUZ ===
+      // Brillo superior (reflejo de luz)
+      g.fillStyle(0xffffff, 0.25);
+      g.fillRoundedRect(
+        offsetX + margin + 4,
+        offsetY + margin + 4,
+        innerW - 8,
+        innerH * 0.25,
+        { tl: innerR - 2, tr: innerR - 2, bl: 0, br: 0 }
+      );
+    }
 
     // Línea de brillo en el borde superior de la ficha
     g.lineStyle(1, 0xffffff, 0.3);

@@ -267,12 +267,17 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { hand } = GameSettings;
     const tileColors = GameSettings.tile.colors;
 
-    // Dimensiones basadas en el slot, mismo estilo que Tile3D
-    const w = hand.slotWidth - 16;
-    const h = hand.slotHeight - 16;
+    // Dimensiones basadas en el slot, mismo estilo que Tile3D (cuadrado)
+    const size = hand.slotWidth - 10;
+    const w = size;
+    const h = size;
     const d = 6; // Profundidad 3D
     const r = 8; // Radio de esquinas
     const margin = 6;
+
+    // Verificar si tiene imagen
+    const iconKey = `tile-icon-${tile.type}`;
+    const hasImage = this.scene.textures.exists(iconKey);
 
     const g = this.scene.add.graphics();
 
@@ -292,47 +297,48 @@ export class GameUI extends Phaser.GameObjects.Container {
     g.lineStyle(2, tileColors.border, 1);
     g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
 
-    // === ÁREA DE COLOR (interior) ===
+    // === ÁREA DE COLOR (interior) - solo si no tiene imagen ===
     const innerW = w - margin * 2;
     const innerH = h - margin * 2;
     const innerR = r - 2;
 
-    // Fondo del color principal
-    g.fillStyle(colors.main, 1);
-    g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
+    if (!hasImage) {
+      // Fondo del color principal
+      g.fillStyle(colors.main, 1);
+      g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
 
-    // Borde interior sutil
-    g.lineStyle(1, this.darkenColor(colors.main, 0.25), 1);
-    g.strokeRoundedRect(
-      -w / 2 + margin,
-      -h / 2 + margin,
-      innerW,
-      innerH,
-      innerR
-    );
+      // Borde interior sutil
+      g.lineStyle(1, this.darkenColor(colors.main, 0.25), 1);
+      g.strokeRoundedRect(
+        -w / 2 + margin,
+        -h / 2 + margin,
+        innerW,
+        innerH,
+        innerR
+      );
 
-    // === EFECTOS DE LUZ ===
-    // Brillo superior
-    g.fillStyle(0xffffff, 0.25);
-    g.fillRoundedRect(
-      -w / 2 + margin + 3,
-      -h / 2 + margin + 3,
-      innerW - 6,
-      innerH * 0.25,
-      { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
-    );
+      // === EFECTOS DE LUZ ===
+      // Brillo superior
+      g.fillStyle(0xffffff, 0.25);
+      g.fillRoundedRect(
+        -w / 2 + margin + 3,
+        -h / 2 + margin + 3,
+        innerW - 6,
+        innerH * 0.25,
+        { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
+      );
+    }
 
     container.add(g);
 
     // Icono - usar imagen si existe, sino texto
-    const iconKey = `tile-icon-${tile.type}`;
-    
-    if (this.scene.textures.exists(iconKey)) {
-      // Usar imagen
+    if (hasImage) {
+      // Usar imagen en el área interior
       const iconImage = this.scene.add.image(0, -d / 2, iconKey);
-      // Escalar la imagen para que quepa en la mini-ficha
-      const maxSize = Math.min(w, h) * 0.6;
-      const scale = maxSize / Math.max(iconImage.width, iconImage.height);
+      // Escalar para ocupar el área interior
+      const scaleX = innerW / iconImage.width;
+      const scaleY = innerH / iconImage.height;
+      const scale = Math.min(scaleX, scaleY);
       iconImage.setScale(scale);
       container.add(iconImage);
     } else {

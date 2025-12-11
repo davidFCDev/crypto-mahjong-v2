@@ -14,12 +14,12 @@ export const GameSettings = {
 
   // Tile dimensions and styling
   tile: {
-    width: 88,
-    height: 100,
-    depth: 10, // Profundidad 3D para efecto de capas
+    width: 110,
+    height: 110,
+    depth: 12, // Profundidad 3D para efecto de capas
     padding: 3,
-    cornerRadius: 10,
-    shadowOffset: 5,
+    cornerRadius: 12,
+    shadowOffset: 6,
     // Colores base de la ficha
     colors: {
       face: 0xfaf6f0, // Marfil suave
@@ -49,10 +49,10 @@ export const GameSettings = {
   // Hand configuration - Acumulador estilo minimalista
   hand: {
     maxSlots: 5,
-    slotWidth: 95,
-    slotHeight: 108,
+    slotWidth: 118,
+    slotHeight: 118,
     slotPadding: 6,
-    bottomMargin: 110,
+    bottomMargin: 120,
     backgroundColor: 0x2d5a3d, // Verde oscuro
     slotColor: 0x3d7a4d, // Verde slot
     slotBorderColor: 0x5a9a6a, // Borde verde claro

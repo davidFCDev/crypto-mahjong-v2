@@ -9,8 +9,7 @@ import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
 import { HandManager } from "../systems/HandManager";
-import type { GameState, LevelConfig, TileState } from "../types";
-import { TILE_COLORS, TileType } from "../types";
+import { TILE_COLORS, type GameState, type LevelConfig, type TileState } from "../types";
 
 declare global {
   interface Window {

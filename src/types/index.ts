@@ -23,54 +23,14 @@ export const TILE_COLORS: Record<
   TileType,
   { main: number; accent: number; symbol: string; imageUrl?: string }
 > = {
-  [TileType.BITCOIN]: { 
-    main: 0xf7931a, 
-    accent: 0xffa726, 
-    symbol: "₿",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/1-pWFHJ2CQzYEAWouIfqsu1dDfZawx1r.webp?vhLu"
-  },
-  [TileType.ETHEREUM]: { 
-    main: 0x627eea, 
-    accent: 0x7c4dff, 
-    symbol: "Ξ",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/2-bGIEAHV5opz6IVMzAsVxgWx3pcUJs4.webp?yZNc"
-  },
-  [TileType.DOGE]: { 
-    main: 0xc3a634, 
-    accent: 0xfdd835, 
-    symbol: "Ð",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/4-nJgDOZgu8nVMFHe9ABG4pB6oomdU5r.webp?j7fP"
-  },
-  [TileType.PEPE]: { 
-    main: 0x3cb043, 
-    accent: 0x66bb6a, 
-    symbol: "🐸",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/3-qWDDeosN0LH4nqHhttuINuvBicVYAa.webp?vA4s"
-  },
-  [TileType.SHIBA]: { 
-    main: 0xffa000, 
-    accent: 0xffca28, 
-    symbol: "🐕",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/5-FT0OtcVGKh7sYxr50R0bmJYrkGPOyX.webp?H9iD"
-  },
-  [TileType.SOLANA]: { 
-    main: 0x9945ff, 
-    accent: 0x14f195, 
-    symbol: "◎",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/6-r2y59uifIPUq4Zyhe3ACeYE7lCGbc8.webp?4jFc"
-  },
-  [TileType.CARDANO]: { 
-    main: 0x0033ad, 
-    accent: 0x2196f3, 
-    symbol: "₳",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/7-Vle5YmFiVgTb5aGWFMOpK3bwXlLXdU.webp?ozOW"
-  },
-  [TileType.POLKADOT]: { 
-    main: 0xe6007a, 
-    accent: 0xf06292, 
-    symbol: "●",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/8-JMjauX1DNM60uomJSTxw5AwWRNqQVQ.webp?2R9I"
-  },
+  [TileType.BITCOIN]: { main: 0xf7931a, accent: 0xffa726, symbol: "₿", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/1-pWFHJ2CQzYEAWouIfqsu1dDfZawx1r.webp?vhLu" },
+  [TileType.ETHEREUM]: { main: 0x627eea, accent: 0x7c4dff, symbol: "Ξ", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/2-bGIEAHV5opz6IVMzAsVxgWx3pcUJs4.webp?yZNc" },
+  [TileType.DOGE]: { main: 0xc3a634, accent: 0xfdd835, symbol: "Ð", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/4-nJgDOZgu8nVMFHe9ABG4pB6oomdU5r.webp?j7fP" },
+  [TileType.PEPE]: { main: 0x3cb043, accent: 0x66bb6a, symbol: "🐸", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/3-qWDDeosN0LH4nqHhttuINuvBicVYAa.webp?vA4s" },
+  [TileType.SHIBA]: { main: 0xffa000, accent: 0xffca28, symbol: "🐕", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/5-FT0OtcVGKh7sYxr50R0bmJYrkGPOyX.webp?H9iD" },
+  [TileType.SOLANA]: { main: 0x9945ff, accent: 0x14f195, symbol: "◎", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/6-r2y59uifIPUq4Zyhe3ACeYE7lCGbc8.webp?4jFc" },
+  [TileType.CARDANO]: { main: 0x0033ad, accent: 0x2196f3, symbol: "₳", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/7-Vle5YmFiVgTb5aGWFMOpK3bwXlLXdU.webp?ozOW" },
+  [TileType.POLKADOT]: { main: 0xe6007a, accent: 0xf06292, symbol: "●", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/8-JMjauX1DNM60uomJSTxw5AwWRNqQVQ.webp?2R9I" },
   [TileType.AVALANCHE]: { main: 0xe84142, accent: 0xef5350, symbol: "▲" },
   [TileType.CHAINLINK]: { main: 0x2a5ada, accent: 0x42a5f5, symbol: "⬡" },
   [TileType.POLYGON]: { main: 0x8247e5, accent: 0xab47bc, symbol: "⬢" },
