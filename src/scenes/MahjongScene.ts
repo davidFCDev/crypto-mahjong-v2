@@ -59,13 +59,7 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // Cargar imágenes de las fichas
-    Object.entries(TILE_COLORS).forEach(([typeKey, config]) => {
-      if (config.imageUrl) {
-        const type = parseInt(typeKey);
-        this.load.image(`tile-icon-${type}`, config.imageUrl);
-      }
-    });
+    // No se necesitan cargar assets externos
   }
 
   create(): void {

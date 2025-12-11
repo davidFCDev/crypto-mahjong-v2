@@ -18,23 +18,23 @@ export enum TileType {
   LITECOIN = 11,
 }
 
-// Configuración de colores e imágenes para cada tipo de ficha
+// Configuración de colores y símbolos para cada tipo de ficha (temática crypto)
 export const TILE_COLORS: Record<
   TileType,
-  { main: number; accent: number; symbol: string; imageUrl?: string }
+  { main: number; accent: number; symbol: string; letter: string }
 > = {
-  [TileType.BITCOIN]: { main: 0xf7931a, accent: 0xffa726, symbol: "₿", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/1-pWFHJ2CQzYEAWouIfqsu1dDfZawx1r.webp?vhLu" },
-  [TileType.ETHEREUM]: { main: 0x627eea, accent: 0x7c4dff, symbol: "Ξ", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/2-bGIEAHV5opz6IVMzAsVxgWx3pcUJs4.webp?yZNc" },
-  [TileType.DOGE]: { main: 0xc3a634, accent: 0xfdd835, symbol: "Ð", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/4-nJgDOZgu8nVMFHe9ABG4pB6oomdU5r.webp?j7fP" },
-  [TileType.PEPE]: { main: 0x3cb043, accent: 0x66bb6a, symbol: "🐸", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/3-qWDDeosN0LH4nqHhttuINuvBicVYAa.webp?vA4s" },
-  [TileType.SHIBA]: { main: 0xffa000, accent: 0xffca28, symbol: "🐕", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/5-FT0OtcVGKh7sYxr50R0bmJYrkGPOyX.webp?H9iD" },
-  [TileType.SOLANA]: { main: 0x9945ff, accent: 0x14f195, symbol: "◎", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/6-r2y59uifIPUq4Zyhe3ACeYE7lCGbc8.webp?4jFc" },
-  [TileType.CARDANO]: { main: 0x0033ad, accent: 0x2196f3, symbol: "₳", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/7-Vle5YmFiVgTb5aGWFMOpK3bwXlLXdU.webp?ozOW" },
-  [TileType.POLKADOT]: { main: 0xe6007a, accent: 0xf06292, symbol: "●", imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/8-JMjauX1DNM60uomJSTxw5AwWRNqQVQ.webp?2R9I" },
-  [TileType.AVALANCHE]: { main: 0xe84142, accent: 0xef5350, symbol: "▲" },
-  [TileType.CHAINLINK]: { main: 0x2a5ada, accent: 0x42a5f5, symbol: "⬡" },
-  [TileType.POLYGON]: { main: 0x8247e5, accent: 0xab47bc, symbol: "⬢" },
-  [TileType.LITECOIN]: { main: 0xbfbbbb, accent: 0xe0e0e0, symbol: "Ł" },
+  [TileType.BITCOIN]: { main: 0xf7931a, accent: 0x4d2f00, symbol: "₿", letter: "B" },
+  [TileType.ETHEREUM]: { main: 0x627eea, accent: 0x1a1a4d, symbol: "Ξ", letter: "E" },
+  [TileType.DOGE]: { main: 0xc3a634, accent: 0x4d4000, symbol: "Ð", letter: "D" },
+  [TileType.PEPE]: { main: 0x3cb043, accent: 0x0d3010, symbol: "🐸", letter: "P" },
+  [TileType.SHIBA]: { main: 0xffa000, accent: 0x4d3000, symbol: "🐕", letter: "S" },
+  [TileType.SOLANA]: { main: 0x9945ff, accent: 0x2a0050, symbol: "◎", letter: "O" },
+  [TileType.CARDANO]: { main: 0x0033ad, accent: 0x000d33, symbol: "₳", letter: "A" },
+  [TileType.POLKADOT]: { main: 0xe6007a, accent: 0x400022, symbol: "●", letter: "K" },
+  [TileType.AVALANCHE]: { main: 0xe84142, accent: 0x400d0d, symbol: "▲", letter: "X" },
+  [TileType.CHAINLINK]: { main: 0x2a5ada, accent: 0x0a1a40, symbol: "⬡", letter: "L" },
+  [TileType.POLYGON]: { main: 0x8247e5, accent: 0x200d40, symbol: "⬢", letter: "M" },
+  [TileType.LITECOIN]: { main: 0x345d9d, accent: 0x0d1a33, symbol: "Ł", letter: "C" },
 };
 
 // Posición de una ficha en el tablero

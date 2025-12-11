@@ -50,51 +50,66 @@ export class BoardGenerator {
 
   /**
    * Genera posiciones para las fichas en múltiples capas
-   * Sistema estilo Mahjong: capas superiores desplazadas y más pequeñas
-   * Patrón NO simétrico para efecto visual más interesante
+   * Capas superiores usan posiciones aleatorias dispersas
    */
   private static generatePositions(config: LevelConfig): TilePosition[] {
     const positions: TilePosition[] = [];
 
-    for (let z = 0; z < config.layers; z++) {
-      // Cada capa es más pequeña: pierde filas/columnas de forma asimétrica
-      const shrinkRows = z * 2;
-      const shrinkCols = z * 2;
+    // Capa base (z=0): grid completo
+    for (let row = 0; row < config.rows; row++) {
+      for (let col = 0; col < config.cols; col++) {
+        positions.push({
+          x: col,
+          y: row,
+          z: 0,
+        });
+      }
+    }
 
-      const layerRows = Math.max(2, config.rows - shrinkRows);
-      const layerCols = Math.max(2, config.cols - shrinkCols);
-
-      // Offset para centrar (pero con pequeña variación para efecto visual)
-      const offsetX = z;
-      const offsetY = z;
-
+    // Capas superiores: posiciones aleatorias dispersas
+    for (let z = 1; z < config.layers; z++) {
+      // Área disponible para esta capa (más pequeña que la anterior)
+      const layerRows = Math.max(2, config.rows - z);
+      const layerCols = Math.max(2, config.cols - z);
+      
+      // Generar todas las posiciones posibles para esta capa
+      const possiblePositions: TilePosition[] = [];
+      
       for (let row = 0; row < layerRows; row++) {
         for (let col = 0; col < layerCols; col++) {
-          // Añadir variación: en capas superiores, no todas las posiciones tienen ficha
-          // Esto crea un patrón más orgánico como en la imagen
-          if (z > 0) {
-            // En capas superiores, crear patrón de tablero de ajedrez disperso
-            // Solo colocar fichas en algunas posiciones
-            const isEdge =
-              row === 0 ||
-              row === layerRows - 1 ||
-              col === 0 ||
-              col === layerCols - 1;
-            const isChecker = (row + col + z) % 2 === 0;
-
-            // Colocar en bordes y en patrón de ajedrez interior
-            if (!isEdge && !isChecker && z > 1) {
-              continue; // Saltar esta posición en capas muy altas
-            }
-          }
-
-          positions.push({
-            x: offsetX + col,
-            y: offsetY + row,
+          // Offset de 0.5 para solapar 4 fichas de abajo
+          possiblePositions.push({
+            x: (z * 0.5) + col + 0.5,
+            y: (z * 0.5) + row + 0.5,
             z: z,
           });
         }
       }
+      
+      // Mezclar posiciones aleatoriamente
+      this.shuffleArray(possiblePositions);
+      
+      // Seleccionar solo algunas posiciones (patrón disperso)
+      // Cuanto más alta la capa, menos fichas
+      const maxTiles = Math.max(3, Math.floor(possiblePositions.length * (0.7 - z * 0.1)));
+      const selectedPositions: TilePosition[] = [];
+      
+      for (const pos of possiblePositions) {
+        if (selectedPositions.length >= maxTiles) break;
+        
+        // Verificar que no esté demasiado cerca de otra ficha seleccionada en la misma capa
+        const tooClose = selectedPositions.some(existing => {
+          const dx = Math.abs(existing.x - pos.x);
+          const dy = Math.abs(existing.y - pos.y);
+          return dx < 1 && dy < 1;
+        });
+        
+        if (!tooClose) {
+          selectedPositions.push(pos);
+        }
+      }
+      
+      positions.push(...selectedPositions);
     }
 
     // Asegurar que el número de posiciones sea múltiplo de 3
@@ -196,9 +211,9 @@ export class BoardGenerator {
     const tileW = GameSettings.tile.width + GameSettings.tile.padding;
     const tileH = GameSettings.tile.height + GameSettings.tile.padding;
 
-    // Offset por capa para efecto 3D (hacia arriba-izquierda)
-    const layerOffsetX = (GameSettings.board as any).layerOffsetX || 6;
-    const layerOffsetY = (GameSettings.board as any).layerOffsetY || 6;
+    // Offset por capa para efecto 3D (hacia arriba)
+    const layerOffsetX = GameSettings.board.layerOffsetX ?? 0;
+    const layerOffsetY = GameSettings.board.layerOffsetY ?? 6;
 
     // Calcular tamaño total del tablero base
     const boardWidth = levelConfig.cols * tileW;

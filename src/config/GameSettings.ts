@@ -14,11 +14,11 @@ export const GameSettings = {
 
   // Tile dimensions and styling
   tile: {
-    width: 110,
-    height: 110,
-    depth: 12, // Profundidad 3D para efecto de capas
-    padding: 3,
-    cornerRadius: 12,
+    width: 125,
+    height: 125,
+    depth: 10, // Profundidad 3D para efecto de capas
+    padding: 2,
+    cornerRadius: 14,
     shadowOffset: 6,
     // Colores base de la ficha
     colors: {
@@ -42,15 +42,15 @@ export const GameSettings = {
     offsetY: 80, // Offset desde arriba para dejar espacio al UI
     maxWidth: 650, // No usar todo el ancho
     maxHeight: 850, // Alto disponible
-    layerOffsetX: 6, // Desplazamiento X por capa (efecto 3D)
-    layerOffsetY: 6, // Desplazamiento Y por capa
+    layerOffsetX: 0, // Sin desplazamiento X - solo efecto 3D vertical
+    layerOffsetY: 6, // Desplazamiento Y por capa (efecto 3D hacia abajo)
   },
 
   // Hand configuration - Acumulador estilo minimalista
   hand: {
     maxSlots: 5,
-    slotWidth: 118,
-    slotHeight: 118,
+    slotWidth: 130,
+    slotHeight: 130,
     slotPadding: 6,
     bottomMargin: 120,
     backgroundColor: 0x2d5a3d, // Verde oscuro
@@ -67,17 +67,21 @@ export const GameSettings = {
   },
 
   // Level progression - generates config based on level
+  // El ancho (cols) se mantiene constante, aumentan filas y capas
   getLevelConfig: (level: number): LevelConfig => {
-    // Menos fichas por nivel, más manejable
+    const BASE_COLS = 5; // Ancho fijo del tablero
+    
     const configs = [
-      { rows: 4, cols: 5, layers: 2, tileTypes: 4 }, // Nivel 1
-      { rows: 4, cols: 6, layers: 2, tileTypes: 5 }, // Nivel 2
-      { rows: 5, cols: 6, layers: 2, tileTypes: 6 }, // Nivel 3
-      { rows: 5, cols: 6, layers: 3, tileTypes: 6 }, // Nivel 4
-      { rows: 5, cols: 7, layers: 3, tileTypes: 7 }, // Nivel 5
-      { rows: 6, cols: 7, layers: 3, tileTypes: 8 }, // Nivel 6
-      { rows: 6, cols: 7, layers: 3, tileTypes: 9 }, // Nivel 7
-      { rows: 6, cols: 8, layers: 3, tileTypes: 10 }, // Nivel 8+
+      { rows: 4, cols: BASE_COLS, layers: 2, tileTypes: 5 },  // Nivel 1: Introducción con 2 capas
+      { rows: 4, cols: BASE_COLS, layers: 3, tileTypes: 5 },  // Nivel 2: Tercera capa
+      { rows: 5, cols: BASE_COLS, layers: 3, tileTypes: 6 },  // Nivel 3: Más filas
+      { rows: 5, cols: BASE_COLS, layers: 4, tileTypes: 6 },  // Nivel 4: Cuarta capa
+      { rows: 5, cols: BASE_COLS, layers: 4, tileTypes: 7 },  // Nivel 5: Más tipos
+      { rows: 6, cols: BASE_COLS, layers: 4, tileTypes: 7 },  // Nivel 6: Más filas
+      { rows: 6, cols: BASE_COLS, layers: 5, tileTypes: 8 },  // Nivel 7: Quinta capa
+      { rows: 6, cols: BASE_COLS, layers: 5, tileTypes: 8 },  // Nivel 8: Todos los tipos
+      { rows: 7, cols: BASE_COLS, layers: 5, tileTypes: 8 },  // Nivel 9: Más filas
+      { rows: 7, cols: BASE_COLS, layers: 6, tileTypes: 8 },  // Nivel 10+: Máxima dificultad
     ];
 
     const configIndex = Math.min(level - 1, configs.length - 1);
