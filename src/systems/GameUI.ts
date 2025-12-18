@@ -47,21 +47,21 @@ export class GameUI extends Phaser.GameObjects.Container {
    * Crea el badge de nivel - A la izquierda del score
    */
   private createLevelBadge(): void {
-    const { canvas } = GameSettings;
+    const { canvas, ui } = GameSettings;
 
-    // Posición a la izquierda del score
-    this.levelBadge = this.scene.add.container(95, 55);
+    // Posición a la izquierda del score (más cerca)
+    this.levelBadge = this.scene.add.container(canvas.width / 2 - 150, 55);
 
     const badgeWidth = 90;
-    const badgeHeight = 55;
-    const badgeDepth = 12;
-    const borderRadius = 10;
+    const badgeHeight = 75; // Misma altura que score
+    const badgeDepth = 16;
+    const borderRadius = 12;
 
     const bg = this.scene.add.graphics();
 
-    // Color naranja/ámbar para el nivel
-    const badgeColor = 0xe67e22;
-    const borderColor = 0xc0660a;
+    // Color verde claro (variante del score)
+    const badgeColor = 0x27ae60;
+    const borderColor = 0x1e8449;
 
     // Cara inferior (volumen 3D)
     bg.fillStyle(borderColor, 1);
@@ -107,10 +107,10 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     // Texto del nivel
     this.levelText = this.scene.add.text(0, badgeHeight / 2, "Lv.1", {
-      fontSize: "28px",
+      fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#8b4513",
+      stroke: "#145a32",
       strokeThickness: 3,
     });
     this.levelText.setOrigin(0.5);
@@ -198,21 +198,21 @@ export class GameUI extends Phaser.GameObjects.Container {
    * Crea el badge de tiempo - A la derecha del score
    */
   private createTimeBadge(): void {
-    const { canvas } = GameSettings;
+    const { canvas, ui } = GameSettings;
 
-    // Posición a la derecha del score
-    this.timeBadge = this.scene.add.container(canvas.width - 95, 55);
+    // Posición a la derecha del score (más cerca)
+    this.timeBadge = this.scene.add.container(canvas.width / 2 + 150, 55);
 
     const badgeWidth = 90;
-    const badgeHeight = 55;
-    const badgeDepth = 12;
-    const borderRadius = 10;
+    const badgeHeight = 75; // Misma altura que score
+    const badgeDepth = 16;
+    const borderRadius = 12;
 
     const bg = this.scene.add.graphics();
 
-    // Color azul para el tiempo
-    const badgeColor = 0x3498db;
-    const borderColor = 0x2171a8;
+    // Color verde azulado (variante del score)
+    const badgeColor = 0x1abc9c;
+    const borderColor = 0x16a085;
 
     // Cara inferior (volumen 3D)
     bg.fillStyle(borderColor, 1);
@@ -258,10 +258,10 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     // Texto del tiempo
     this.timeText = this.scene.add.text(0, badgeHeight / 2, "60", {
-      fontSize: "28px",
+      fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#1a5276",
+      stroke: "#0e6655",
       strokeThickness: 3,
     });
     this.timeText.setOrigin(0.5);
