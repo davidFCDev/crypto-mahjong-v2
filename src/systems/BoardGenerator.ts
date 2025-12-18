@@ -66,21 +66,24 @@ export class BoardGenerator {
       }
     }
 
-    // Capas superiores: posiciones aleatorias dispersas
+    // Capas superiores: posiciones con offset aleatorio para solapar fichas
     for (let z = 1; z < config.layers; z++) {
-      // Área disponible para esta capa (más pequeña que la anterior)
-      const layerRows = Math.max(2, config.rows - z);
-      const layerCols = Math.max(2, config.cols - z);
+      // Área disponible para esta capa (se reduce menos para más fichas)
+      const layerRows = Math.max(3, config.rows - Math.floor(z * 0.7));
+      const layerCols = Math.max(3, config.cols - Math.floor(z * 0.5));
       
-      // Generar todas las posiciones posibles para esta capa
+      // Generar posiciones con offsets aleatorios
       const possiblePositions: TilePosition[] = [];
       
       for (let row = 0; row < layerRows; row++) {
         for (let col = 0; col < layerCols; col++) {
-          // Offset de 0.5 para solapar 4 fichas de abajo
+          // Offset aleatorio entre 0.3 y 0.7 para que cada ficha solape varias de abajo
+          const randomOffsetX = 0.3 + Math.random() * 0.4;
+          const randomOffsetY = 0.3 + Math.random() * 0.4;
+          
           possiblePositions.push({
-            x: (z * 0.5) + col + 0.5,
-            y: (z * 0.5) + row + 0.5,
+            x: (z * 0.3) + col + randomOffsetX,
+            y: (z * 0.3) + row + randomOffsetY,
             z: z,
           });
         }
@@ -89,9 +92,8 @@ export class BoardGenerator {
       // Mezclar posiciones aleatoriamente
       this.shuffleArray(possiblePositions);
       
-      // Seleccionar solo algunas posiciones (patrón disperso)
-      // Cuanto más alta la capa, menos fichas
-      const maxTiles = Math.max(3, Math.floor(possiblePositions.length * (0.7 - z * 0.1)));
+      // Seleccionar más fichas por capa (80% - 5% por nivel de capa)
+      const maxTiles = Math.max(6, Math.floor(possiblePositions.length * (0.8 - z * 0.05)));
       const selectedPositions: TilePosition[] = [];
       
       for (const pos of possiblePositions) {
@@ -101,7 +103,7 @@ export class BoardGenerator {
         const tooClose = selectedPositions.some(existing => {
           const dx = Math.abs(existing.x - pos.x);
           const dy = Math.abs(existing.y - pos.y);
-          return dx < 1 && dy < 1;
+          return dx < 0.9 && dy < 0.9; // Distancia mínima reducida
         });
         
         if (!tooClose) {

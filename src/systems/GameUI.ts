@@ -268,12 +268,12 @@ export class GameUI extends Phaser.GameObjects.Container {
     const tileColors = GameSettings.tile.colors;
 
     // Dimensiones basadas en el slot, mismo estilo que Tile3D (cuadrado)
-    const size = hand.slotWidth - 8;
+    const size = hand.slotWidth - 6;
     const w = size;
     const h = size;
-    const d = 5; // Profundidad 3D
-    const r = 10; // Radio de esquinas
-    const margin = 3;
+    const d = 4; // Profundidad 3D
+    const r = 6; // Radio de esquinas
+    const margin = 2;
 
     const g = this.scene.add.graphics();
 
@@ -290,13 +290,13 @@ export class GameUI extends Phaser.GameObjects.Container {
     g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
 
     // Borde exterior grueso del mismo color que la base 3D
-    g.lineStyle(3, tileColors.bottom, 1);
+    g.lineStyle(2, tileColors.bottom, 1);
     g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
 
     // === ÁREA DE COLOR (interior) ===
     const innerW = w - margin * 2;
     const innerH = h - margin * 2;
-    const innerR = r - 2;
+    const innerR = r - 1;
 
     // Fondo del color principal
     g.fillStyle(colors.main, 1);
@@ -325,14 +325,14 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     container.add(g);
 
-    // Letra con estilo
-    const fontSize = Math.floor(size * 0.45);
+    // Letra con estilo - ajustada para fichas pequeñas
+    const fontSize = Math.floor(size * 0.5);
     const symbol = this.scene.add.text(0, -d / 2, colors.letter, {
       fontSize: `${fontSize}px`,
       fontFamily: "'Bangers', 'Impact', 'Arial Black', sans-serif",
       color: "#ffffff",
       stroke: this.colorToHex(colors.accent),
-      strokeThickness: 4,
+      strokeThickness: 3,
     });
     symbol.setOrigin(0.5);
     container.add(symbol);

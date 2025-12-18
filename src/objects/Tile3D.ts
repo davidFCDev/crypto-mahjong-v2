@@ -60,7 +60,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const iconOffsetY = faceCenterY - textureCenterY;
     
     // Letra grande con estilo
-    const fontSize = Math.floor(this.tileWidth * 0.55);
+    const fontSize = Math.floor(this.tileWidth * 0.5);
     this.symbolText = scene.add.text(
       iconOffsetX,
       iconOffsetY,
@@ -70,12 +70,12 @@ export class Tile3D extends Phaser.GameObjects.Container {
         fontFamily: "'Bangers', 'Impact', 'Arial Black', sans-serif",
         color: "#ffffff",
         stroke: this.colorToHex(tileColors.accent),
-        strokeThickness: 6,
+        strokeThickness: 4,
         shadow: {
-          offsetX: 2,
-          offsetY: 2,
+          offsetX: 1,
+          offsetY: 1,
           color: "#000000",
-          blur: 4,
+          blur: 2,
           fill: true
         }
       }
@@ -214,26 +214,13 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     const g = this.scene.add.graphics();
     
-    // Overlay oscuro semi-transparente - más visible
-    g.fillStyle(0x000000, 0.55);
+    // Overlay oscuro muy visible para fichas bloqueadas
+    g.fillStyle(0x1a1a1a, 0.7);
     g.fillRoundedRect(4, 4, w, h, r);
     
-    // Icono de candado o X para indicar bloqueo (opcional - líneas cruzadas sutiles)
-    g.lineStyle(3, 0x000000, 0.3);
-    const centerX = 4 + w / 2;
-    const centerY = 4 + h / 2;
-    const size = Math.min(w, h) * 0.2;
-    
-    // X sutil en el centro
-    g.beginPath();
-    g.moveTo(centerX - size, centerY - size);
-    g.lineTo(centerX + size, centerY + size);
-    g.strokePath();
-    
-    g.beginPath();
-    g.moveTo(centerX + size, centerY - size);
-    g.lineTo(centerX - size, centerY + size);
-    g.strokePath();
+    // Borde oscuro adicional para destacar
+    g.lineStyle(2, 0x000000, 0.5);
+    g.strokeRoundedRect(4, 4, w, h, r);
 
     g.generateTexture("tile-blocked-overlay", w + d + 8, h + d + 8);
     g.destroy();
