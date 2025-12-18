@@ -336,13 +336,21 @@ export class Tile3D extends Phaser.GameObjects.Container {
   }
 
   public setLayerDepth(layer: number): void {
-    // Fórmula de profundidad: capas superiores siempre encima
-    // Dentro de la misma capa, fichas con mayor Y (más abajo) se dibujan encima
-    // Usamos valores sin truncar para mantener precisión con offsets decimales
-    const zDepth = layer * 10000;
-    const yDepth = this.tileState.position.y * 1000;
-    const xDepth = this.tileState.position.x * 10;
-    this.setDepth(zDepth + yDepth + xDepth);
+    // El depth debe asegurar que fichas visualmente más abajo se dibujen encima
+    // Combinamos Y + Z para el ordenamiento vertical visual correcto
+    // Las fichas de capas superiores están ligeramente más arriba en pantalla,
+    // pero su borde 3D baja, así que necesitan dibujarse encima de fichas 
+    // que están debajo visualmente
+    const pos = this.tileState.position;
+    
+    // Posición visual vertical: Y es la fila, Z afecta ligeramente (las capas superiores suben)
+    // Pero para el depth, queremos que las fichas con borde inferior más bajo se dibujen encima
+    // El borde inferior está en: Y + altura_ficha - Z * layerOffset (aprox)
+    // Simplificamos: usamos Y * 1000 + Z * 100 para que capas superiores ganen en empate
+    const visualY = pos.y * 1000 + pos.z * 500;
+    const xOffset = pos.x;
+    
+    this.setDepth(visualY + xOffset);
   }
 }
 
