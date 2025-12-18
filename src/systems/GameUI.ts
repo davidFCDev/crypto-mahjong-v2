@@ -37,12 +37,12 @@ export class GameUI extends Phaser.GameObjects.Container {
   private createScoreBadge(): void {
     const { canvas, ui } = GameSettings;
 
-    this.scoreBadge = this.scene.add.container(canvas.width / 2, 50);
+    this.scoreBadge = this.scene.add.container(canvas.width / 2, 55);
 
-    const badgeWidth = 260;
-    const badgeHeight = 60;
-    const badgeDepth = 18; // Más profundidad 3D
-    const borderRadius = 12;
+    const badgeWidth = 200;
+    const badgeHeight = 75;
+    const badgeDepth = 20; // Más profundidad 3D
+    const borderRadius = 6; // Esquinas menos redondeadas
 
     const bg = this.scene.add.graphics();
 
@@ -101,9 +101,9 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     this.scoreBadge.add(bg);
 
-    // Texto del score con fuente cartoon
-    this.scoreText = this.scene.add.text(0, badgeHeight / 2, "Score: 0", {
-      fontSize: "30px",
+    // Solo el número del score, sin texto "Score:"
+    this.scoreText = this.scene.add.text(0, badgeHeight / 2, "0", {
+      fontSize: "42px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
       stroke: "#2a1f4a",
@@ -427,7 +427,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       onUpdate: (tween) => {
         const value = tween.getValue();
         if (value !== null) {
-          this.scoreText.setText(`Score: ${Math.floor(value)}`);
+          this.scoreText.setText(`${Math.floor(value)}`);
         }
       },
     });

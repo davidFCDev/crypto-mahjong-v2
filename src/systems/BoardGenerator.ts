@@ -109,10 +109,10 @@ export class BoardGenerator {
       // Mezclar para selección aleatoria de cuáles usar
       this.shuffleArray(possiblePositions);
 
-      // Seleccionar fichas por capa (65% - 5% por nivel de capa)
+      // Seleccionar más fichas por capa (85% - 3% por nivel de capa) para capas más pobladas
       const maxTiles = Math.max(
-        3,
-        Math.floor(possiblePositions.length * (0.65 - z * 0.05))
+        4,
+        Math.floor(possiblePositions.length * (0.85 - z * 0.03))
       );
       const selectedPositions: TilePosition[] = [];
 
