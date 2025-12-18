@@ -50,7 +50,7 @@ export class BoardGenerator {
 
   /**
    * Genera posiciones para las fichas en múltiples capas
-   * Capas superiores usan posiciones aleatorias DENTRO de la zona de la capa base
+   * Capas superiores usan posiciones en patrón: alineadas (0) o desplazadas (0.5)
    */
   private static generatePositions(config: LevelConfig): TilePosition[] {
     const positions: TilePosition[] = [];
@@ -66,42 +66,41 @@ export class BoardGenerator {
       }
     }
 
-    // Capas superiores: posiciones DENTRO del área de la capa base
+    // Capas superiores: patrón ordenado con offsets de 0 o 0.5
     for (let z = 1; z < config.layers; z++) {
-      // Cada capa se reduce proporcionalmente para quedar dentro de la base
-      // Reducción progresiva: cada capa es ~0.5-0.7 unidades más pequeña por lado
+      // Cada capa se reduce para quedar dentro de la base
       const shrinkFactor = z * 0.5;
       const layerRows = Math.max(2, config.rows - Math.ceil(shrinkFactor));
       const layerCols = Math.max(2, config.cols - Math.ceil(shrinkFactor));
 
-      // Offset para centrar la capa dentro de la base
-      const startOffsetX = shrinkFactor / 2;
-      const startOffsetY = shrinkFactor / 2;
+      // Offset base para centrar la capa
+      const baseOffsetX = shrinkFactor / 2;
+      const baseOffsetY = shrinkFactor / 2;
 
-      // Generar posiciones con offsets aleatorios
+      // Generar posiciones con patrón ordenado (offset 0 o 0.5)
       const possiblePositions: TilePosition[] = [];
+      
+      // Alternar patrón por capa para variedad
+      // Capa impar: offset 0.5, Capa par: offset 0
+      const layerOffset = z % 2 === 1 ? 0.5 : 0;
 
       for (let row = 0; row < layerRows; row++) {
         for (let col = 0; col < layerCols; col++) {
-          // Offset aleatorio entre 0.2 y 0.8 para que cada ficha solape varias de abajo
-          const randomOffsetX = 0.2 + Math.random() * 0.6;
-          const randomOffsetY = 0.2 + Math.random() * 0.6;
-
           possiblePositions.push({
-            x: startOffsetX + col + randomOffsetX,
-            y: startOffsetY + row + randomOffsetY,
+            x: baseOffsetX + col + layerOffset,
+            y: baseOffsetY + row + layerOffset,
             z: z,
           });
         }
       }
 
-      // Mezclar posiciones aleatoriamente
+      // Mezclar para selección aleatoria de cuáles usar
       this.shuffleArray(possiblePositions);
 
-      // Seleccionar fichas por capa (75% - 5% por nivel de capa)
+      // Seleccionar fichas por capa (70% - 5% por nivel de capa)
       const maxTiles = Math.max(
         4,
-        Math.floor(possiblePositions.length * (0.75 - z * 0.05))
+        Math.floor(possiblePositions.length * (0.70 - z * 0.05))
       );
       const selectedPositions: TilePosition[] = [];
 
@@ -112,7 +111,7 @@ export class BoardGenerator {
         const tooClose = selectedPositions.some((existing) => {
           const dx = Math.abs(existing.x - pos.x);
           const dy = Math.abs(existing.y - pos.y);
-          return dx < 0.85 && dy < 0.85; // Distancia mínima
+          return dx < 0.9 && dy < 0.9; // Distancia mínima (casi 1 ficha)
         });
 
         if (!tooClose) {
