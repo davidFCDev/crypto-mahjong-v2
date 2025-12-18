@@ -47,12 +47,19 @@ export class GameUI extends Phaser.GameObjects.Container {
    * Crea el badge de nivel - A la izquierda del score
    */
   private createLevelBadge(): void {
-    const { canvas, ui } = GameSettings;
+    const { canvas, ui, hand } = GameSettings;
 
-    // Posición a la izquierda del score (más cerca)
-    this.levelBadge = this.scene.add.container(canvas.width / 2 - 150, 55);
-
+    // Calcular posición basada en el ancho del acumulador
+    const totalSlotWidth =
+      hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
+    const handWidth = totalSlotWidth + 30;
+    const handStartX = (canvas.width - handWidth) / 2;
+    
     const badgeWidth = 90;
+    // Posicionar al inicio del acumulador (centrado del badge)
+    const badgeX = handStartX + badgeWidth / 2;
+    
+    this.levelBadge = this.scene.add.container(badgeX, 55);
     const badgeHeight = 75; // Misma altura que score
     const badgeDepth = 16;
     const borderRadius = 12;
@@ -198,12 +205,19 @@ export class GameUI extends Phaser.GameObjects.Container {
    * Crea el badge de tiempo - A la derecha del score
    */
   private createTimeBadge(): void {
-    const { canvas, ui } = GameSettings;
+    const { canvas, ui, hand } = GameSettings;
 
-    // Posición a la derecha del score (más cerca)
-    this.timeBadge = this.scene.add.container(canvas.width / 2 + 150, 55);
-
+    // Calcular posición basada en el ancho del acumulador
+    const totalSlotWidth =
+      hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
+    const handWidth = totalSlotWidth + 30;
+    const handEndX = (canvas.width - handWidth) / 2 + handWidth;
+    
     const badgeWidth = 90;
+    // Posicionar al final del acumulador (centrado del badge)
+    const badgeX = handEndX - badgeWidth / 2;
+    
+    this.timeBadge = this.scene.add.container(badgeX, 55);
     const badgeHeight = 75; // Misma altura que score
     const badgeDepth = 16;
     const borderRadius = 12;
