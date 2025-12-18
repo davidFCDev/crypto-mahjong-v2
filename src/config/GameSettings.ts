@@ -67,21 +67,22 @@ export const GameSettings = {
   },
 
   // Level progression - generates config based on level
-  // El ancho (cols) se mantiene constante, aumentan filas y capas
+  // Máximo 6 filas y 6 columnas, luego aumentan capas y tipos
   getLevelConfig: (level: number): LevelConfig => {
-    const BASE_COLS = 6; // Ancho fijo del tablero
+    const MAX_ROWS = 6;
+    const MAX_COLS = 6;
 
     const configs = [
-      { rows: 5, cols: BASE_COLS, layers: 3, tileTypes: 5 }, // Nivel 1: Base con 3 capas
-      { rows: 5, cols: BASE_COLS, layers: 4, tileTypes: 5 }, // Nivel 2: Cuarta capa
-      { rows: 6, cols: BASE_COLS, layers: 4, tileTypes: 6 }, // Nivel 3: Más filas
-      { rows: 6, cols: BASE_COLS, layers: 5, tileTypes: 6 }, // Nivel 4: Quinta capa
-      { rows: 7, cols: BASE_COLS, layers: 5, tileTypes: 7 }, // Nivel 5: Más filas
-      { rows: 7, cols: BASE_COLS, layers: 6, tileTypes: 7 }, // Nivel 6: Sexta capa
-      { rows: 8, cols: BASE_COLS, layers: 6, tileTypes: 8 }, // Nivel 7: Más filas
-      { rows: 8, cols: BASE_COLS, layers: 7, tileTypes: 8 }, // Nivel 8: Séptima capa
-      { rows: 9, cols: BASE_COLS, layers: 7, tileTypes: 8 }, // Nivel 9: Más filas
-      { rows: 9, cols: BASE_COLS, layers: 8, tileTypes: 8 }, // Nivel 10+: Máxima dificultad
+      { rows: 4, cols: 5, layers: 2, tileTypes: 4 },  // Nivel 1: Fácil
+      { rows: 5, cols: 5, layers: 2, tileTypes: 5 },  // Nivel 2
+      { rows: 5, cols: 6, layers: 3, tileTypes: 5 },  // Nivel 3
+      { rows: 6, cols: 6, layers: 3, tileTypes: 6 },  // Nivel 4: Tablero completo
+      { rows: 6, cols: 6, layers: 4, tileTypes: 6 },  // Nivel 5: Más capas
+      { rows: 6, cols: 6, layers: 4, tileTypes: 7 },  // Nivel 6: Más variedad
+      { rows: 6, cols: 6, layers: 5, tileTypes: 7 },  // Nivel 7: Quinta capa
+      { rows: 6, cols: 6, layers: 5, tileTypes: 8 },  // Nivel 8: Máxima variedad
+      { rows: 6, cols: 6, layers: 6, tileTypes: 8 },  // Nivel 9: Sexta capa
+      { rows: 6, cols: 6, layers: 7, tileTypes: 8 },  // Nivel 10+: Máxima dificultad
     ];
 
     const configIndex = Math.min(level - 1, configs.length - 1);
@@ -113,8 +114,8 @@ export const GameSettings = {
       accent: 0xffd700, // Dorado
       text: 0xfff8dc, // Crema
       textSecondary: 0xaaaaaa,
-      badge: 0xc94a4a, // Rojo para el badge
-      badgeBorder: 0x8a2a2a, // Borde del badge
+      badge: 0x6b5b95, // Morado suave
+      badgeBorder: 0x4a3d6b, // Borde morado oscuro
     },
   },
 };

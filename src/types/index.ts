@@ -19,79 +19,80 @@ export enum TileType {
 }
 
 // Configuración de colores y símbolos para cada tipo de ficha (temática crypto)
+// Colores muy distintivos y contrastantes
 export const TILE_COLORS: Record<
   TileType,
   { main: number; accent: number; symbol: string; letter: string }
 > = {
   [TileType.BITCOIN]: {
-    main: 0xf7931a,
+    main: 0xf7931a, // Naranja Bitcoin
     accent: 0x4d2f00,
     symbol: "₿",
     letter: "B",
   },
   [TileType.ETHEREUM]: {
-    main: 0x627eea,
-    accent: 0x1a1a4d,
+    main: 0x3c3cff, // Azul eléctrico
+    accent: 0x0a0a4d,
     symbol: "Ξ",
     letter: "E",
   },
   [TileType.DOGE]: {
-    main: 0xc3a634,
+    main: 0xdfc850, // Amarillo dorado
     accent: 0x4d4000,
     symbol: "Ð",
     letter: "D",
   },
   [TileType.PEPE]: {
-    main: 0x3cb043,
-    accent: 0x0d3010,
+    main: 0x00c853, // Verde brillante
+    accent: 0x003d1a,
     symbol: "🐸",
     letter: "P",
   },
   [TileType.SHIBA]: {
-    main: 0xffa000,
-    accent: 0x4d3000,
+    main: 0xff6b00, // Naranja fuerte
+    accent: 0x4d2000,
     symbol: "🐕",
     letter: "S",
   },
   [TileType.SOLANA]: {
-    main: 0x9945ff,
+    main: 0xaa00ff, // Morado brillante
     accent: 0x2a0050,
     symbol: "◎",
     letter: "O",
   },
   [TileType.CARDANO]: {
-    main: 0x0033ad,
-    accent: 0x000d33,
+    main: 0x0066ff, // Azul puro
+    accent: 0x001a4d,
     symbol: "₳",
     letter: "A",
   },
   [TileType.POLKADOT]: {
-    main: 0xe6007a,
-    accent: 0x400022,
+    main: 0xff0080, // Rosa fuerte/Magenta
+    accent: 0x4d0026,
     symbol: "●",
     letter: "K",
   },
   [TileType.AVALANCHE]: {
-    main: 0xe84142,
-    accent: 0x400d0d,
+    main: 0xe60000, // Rojo puro
+    accent: 0x4d0000,
     symbol: "▲",
     letter: "X",
   },
   [TileType.CHAINLINK]: {
-    main: 0x2a5ada,
-    accent: 0x0a1a40,
+    main: 0x00bcd4, // Cyan/Turquesa
+    accent: 0x003d42,
     symbol: "⬡",
     letter: "L",
   },
   [TileType.POLYGON]: {
-    main: 0x8247e5,
-    accent: 0x200d40,
+    main: 0x7b1fa2, // Púrpura oscuro
+    accent: 0x2a0a38,
     symbol: "⬢",
     letter: "M",
   },
   [TileType.LITECOIN]: {
-    main: 0x345d9d,
-    accent: 0x0d1a33,
+    main: 0x607d8b, // Gris azulado
+    accent: 0x1a2327,
     symbol: "Ł",
     letter: "C",
   },

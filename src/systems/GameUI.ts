@@ -32,7 +32,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea el badge de score estilo dibujo/cartoon
+   * Crea el badge de score - Diseño limpio sin brillos
    */
   private createScoreBadge(): void {
     const { canvas, ui } = GameSettings;
@@ -40,25 +40,38 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.scoreBadge = this.scene.add.container(canvas.width / 2, 50);
 
     const badgeWidth = 260;
-    const badgeHeight = 65;
-    const badgeDepth = 10;
-    const borderRadius = 5;
+    const badgeHeight = 60;
+    const badgeDepth = 18; // Más profundidad 3D
+    const borderRadius = 12;
 
     const bg = this.scene.add.graphics();
 
     // Sombra suave
-    bg.fillStyle(0x000000, 0.3);
+    bg.fillStyle(0x000000, 0.25);
     bg.fillRoundedRect(
-      -badgeWidth / 2 + 5,
-      badgeDepth + 5,
+      -badgeWidth / 2 + 4,
+      badgeDepth + 4,
       badgeWidth,
       badgeHeight,
       borderRadius
     );
 
-    // Cara inferior (volumen 3D) - mismo tamaño que la cara principal
-    bg.fillStyle(0x7a2a2a, 1);
+    // Cara inferior (volumen 3D) - mismo color con borde
+    const badgeColor = (ui.colors as any).badge || 0x6b5b95;
+    const borderColor = (ui.colors as any).badgeBorder || 0x4a3d6b;
+    
+    bg.fillStyle(badgeColor, 1);
     bg.fillRoundedRect(
+      -badgeWidth / 2,
+      badgeDepth,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+    
+    // Borde de la cara 3D
+    bg.lineStyle(3, borderColor, 1);
+    bg.strokeRoundedRect(
       -badgeWidth / 2,
       badgeDepth,
       badgeWidth,
@@ -67,7 +80,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Fondo del badge (cara principal)
-    bg.fillStyle((ui.colors as any).badge || 0xc94a4a, 1);
+    bg.fillStyle(badgeColor, 1);
     bg.fillRoundedRect(
       -badgeWidth / 2,
       0,
@@ -76,8 +89,8 @@ export class GameUI extends Phaser.GameObjects.Container {
       borderRadius
     );
 
-    // Borde grueso estilo cartoon
-    bg.lineStyle(4, (ui.colors as any).badgeBorder || 0x5a1a1a, 1);
+    // Borde de la cara principal
+    bg.lineStyle(3, borderColor, 1);
     bg.strokeRoundedRect(
       -badgeWidth / 2,
       0,
@@ -86,24 +99,15 @@ export class GameUI extends Phaser.GameObjects.Container {
       borderRadius
     );
 
-    // Brillo superior estilo dibujo
-    bg.fillStyle(0xffffff, 0.25);
-    bg.fillRoundedRect(-badgeWidth / 2 + 8, 6, badgeWidth - 16, 12, {
-      tl: 3,
-      tr: 3,
-      bl: 0,
-      br: 0,
-    });
-
     this.scoreBadge.add(bg);
 
-    // Texto del score
+    // Texto del score con fuente cartoon
     this.scoreText = this.scene.add.text(0, badgeHeight / 2, "Score: 0", {
-      fontSize: "32px",
-      fontFamily: "Arial Black, Impact, sans-serif",
+      fontSize: "30px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 4,
+      stroke: "#2a1f4a",
+      strokeThickness: 5,
     });
     this.scoreText.setOrigin(0.5);
     this.scoreBadge.add(this.scoreText);
@@ -324,14 +328,14 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     container.add(g);
 
-    // Letra con estilo - ajustada para fichas verticales
+    // Letra con estilo cartoon - ajustada para fichas verticales
     const fontSize = Math.floor(w * 0.55);
     const symbol = this.scene.add.text(0, -d / 2, colors.letter, {
       fontSize: `${fontSize}px`,
-      fontFamily: "'Bangers', 'Impact', 'Arial Black', sans-serif",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
       stroke: this.colorToHex(colors.accent),
-      strokeThickness: 2,
+      strokeThickness: 3,
     });
     symbol.setOrigin(0.5);
     container.add(symbol);

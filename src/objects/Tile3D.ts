@@ -59,7 +59,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const iconOffsetX = faceCenterX - textureCenterX;
     const iconOffsetY = faceCenterY - textureCenterY;
 
-    // Letra grande con estilo
+    // Letra grande con estilo cartoon
     const fontSize = Math.floor(this.tileWidth * 0.55);
     this.symbolText = scene.add.text(
       iconOffsetX,
@@ -67,15 +67,15 @@ export class Tile3D extends Phaser.GameObjects.Container {
       tileColors.letter,
       {
         fontSize: `${fontSize}px`,
-        fontFamily: "'Bangers', 'Impact', 'Arial Black', sans-serif",
+        fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
         color: "#ffffff",
         stroke: this.colorToHex(tileColors.accent),
-        strokeThickness: 3,
+        strokeThickness: 4,
         shadow: {
           offsetX: 1,
-          offsetY: 1,
+          offsetY: 2,
           color: "#000000",
-          blur: 2,
+          blur: 0,
           fill: true,
         },
       }
