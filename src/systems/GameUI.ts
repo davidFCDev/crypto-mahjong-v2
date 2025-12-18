@@ -59,7 +59,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Cara inferior (volumen 3D) - mismo color con borde
     const badgeColor = (ui.colors as any).badge || 0x6b5b95;
     const borderColor = (ui.colors as any).badgeBorder || 0x4a3d6b;
-    
+
     bg.fillStyle(badgeColor, 1);
     bg.fillRoundedRect(
       -badgeWidth / 2,
@@ -68,7 +68,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       badgeHeight,
       borderRadius
     );
-    
+
     // Borde de la cara 3D
     bg.lineStyle(3, borderColor, 1);
     bg.strokeRoundedRect(

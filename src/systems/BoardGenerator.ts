@@ -88,7 +88,12 @@ export class BoardGenerator {
           if (posX > maxCol || posY > maxRow) continue;
 
           // Calcular cobertura de soporte (% del área soportada)
-          const coverage = this.calculateSupportCoverage(posX, posY, z, allPositions);
+          const coverage = this.calculateSupportCoverage(
+            posX,
+            posY,
+            z,
+            allPositions
+          );
 
           // Solo añadir si tiene más del 50% de cobertura
           if (coverage > 0.5) {

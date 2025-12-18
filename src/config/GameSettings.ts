@@ -73,16 +73,16 @@ export const GameSettings = {
     const MAX_COLS = 6;
 
     const configs = [
-      { rows: 4, cols: 5, layers: 2, tileTypes: 4 },  // Nivel 1: Fácil
-      { rows: 5, cols: 5, layers: 2, tileTypes: 5 },  // Nivel 2
-      { rows: 5, cols: 6, layers: 3, tileTypes: 5 },  // Nivel 3
-      { rows: 6, cols: 6, layers: 3, tileTypes: 6 },  // Nivel 4: Tablero completo
-      { rows: 6, cols: 6, layers: 4, tileTypes: 6 },  // Nivel 5: Más capas
-      { rows: 6, cols: 6, layers: 4, tileTypes: 7 },  // Nivel 6: Más variedad
-      { rows: 6, cols: 6, layers: 5, tileTypes: 7 },  // Nivel 7: Quinta capa
-      { rows: 6, cols: 6, layers: 5, tileTypes: 8 },  // Nivel 8: Máxima variedad
-      { rows: 6, cols: 6, layers: 6, tileTypes: 8 },  // Nivel 9: Sexta capa
-      { rows: 6, cols: 6, layers: 7, tileTypes: 8 },  // Nivel 10+: Máxima dificultad
+      { rows: 4, cols: 5, layers: 2, tileTypes: 4 }, // Nivel 1: Fácil
+      { rows: 5, cols: 5, layers: 2, tileTypes: 5 }, // Nivel 2
+      { rows: 5, cols: 6, layers: 3, tileTypes: 5 }, // Nivel 3
+      { rows: 6, cols: 6, layers: 3, tileTypes: 6 }, // Nivel 4: Tablero completo
+      { rows: 6, cols: 6, layers: 4, tileTypes: 6 }, // Nivel 5: Más capas
+      { rows: 6, cols: 6, layers: 4, tileTypes: 7 }, // Nivel 6: Más variedad
+      { rows: 6, cols: 6, layers: 5, tileTypes: 7 }, // Nivel 7: Quinta capa
+      { rows: 6, cols: 6, layers: 5, tileTypes: 8 }, // Nivel 8: Máxima variedad
+      { rows: 6, cols: 6, layers: 6, tileTypes: 8 }, // Nivel 9: Sexta capa
+      { rows: 6, cols: 6, layers: 7, tileTypes: 8 }, // Nivel 10+: Máxima dificultad
     ];
 
     const configIndex = Math.min(level - 1, configs.length - 1);
