@@ -42,7 +42,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     
     // Calcular el centro visual real de la cara de la ficha
     // La textura tiene: offsetX=4, offsetY=4 para la cara, y depth añade espacio abajo
-    const textureWidth = this.tileWidth + this.tileDepth + 8;
+    const textureWidth = this.tileWidth + 8;
     const textureHeight = this.tileHeight + this.tileDepth + 8;
     const faceOffsetX = 4;
     const faceOffsetY = 4;
@@ -60,7 +60,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const iconOffsetY = faceCenterY - textureCenterY;
     
     // Letra grande con estilo
-    const fontSize = Math.floor(this.tileWidth * 0.5);
+    const fontSize = Math.floor(this.tileWidth * 0.55);
     this.symbolText = scene.add.text(
       iconOffsetX,
       iconOffsetY,
@@ -70,7 +70,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
         fontFamily: "'Bangers', 'Impact', 'Arial Black', sans-serif",
         color: "#ffffff",
         stroke: this.colorToHex(tileColors.accent),
-        strokeThickness: 4,
+        strokeThickness: 3,
         shadow: {
           offsetX: 1,
           offsetY: 1,
@@ -132,38 +132,50 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const colors = TILE_COLORS[type];
     const tileColors = GameSettings.tile.colors;
 
-    const textureWidth = w + d + 8;
+    const textureWidth = w + 8;
     const textureHeight = h + d + 8;
 
     const g = this.scene.add.graphics();
     const offsetX = 4;
     const offsetY = 4;
 
-    // === SOMBRA SUAVE ===
-    g.fillStyle(0x000000, 0.15);
-    g.fillRoundedRect(offsetX + 2, offsetY + d + 2, w, h, r);
+    // === SOMBRA DIFUSA ===
+    g.fillStyle(0x000000, 0.2);
+    g.fillRoundedRect(offsetX + 3, offsetY + d + 3, w, h, r);
 
-    // === BORDE 3D SUTIL (solo inferior y derecho) ===
-    // Borde inferior
+    // === CARA LATERAL DERECHA (efecto 3D) ===
+    g.fillStyle(tileColors.side, 1);
+    g.beginPath();
+    g.moveTo(offsetX + w - r, offsetY + h);
+    g.lineTo(offsetX + w, offsetY + h);
+    g.lineTo(offsetX + w, offsetY + h + d);
+    g.lineTo(offsetX + w - r, offsetY + h + d);
+    g.closePath();
+    g.fillPath();
+
+    // === CARA INFERIOR (volumen 3D hacia abajo) ===
     g.fillStyle(tileColors.bottom, 1);
     g.fillRoundedRect(offsetX, offsetY + d, w, h, r);
 
-    // === CARA PRINCIPAL ===
-    // Fondo de la ficha
+    // Borde oscuro en la cara inferior para profundidad
+    g.lineStyle(1, this.darkenColor(tileColors.bottom, 0.3), 1);
+    g.strokeRoundedRect(offsetX, offsetY + d, w, h, r);
+
+    // === CARA PRINCIPAL (superficie de la ficha) ===
     g.fillStyle(tileColors.face, 1);
     g.fillRoundedRect(offsetX, offsetY, w, h, r);
 
-    // Borde exterior grueso del mismo color que la base 3D
-    g.lineStyle(6, tileColors.bottom, 1);
+    // Borde principal de la ficha
+    g.lineStyle(2, tileColors.border, 1);
     g.strokeRoundedRect(offsetX, offsetY, w, h, r);
 
-    // === ÁREA DE COLOR (interior) ===
-    const margin = 4;
+    // === ÁREA DE COLOR (zona interior donde va el símbolo) ===
+    const margin = 5;
     const innerW = w - margin * 2;
     const innerH = h - margin * 2;
-    const innerR = r - 2;
+    const innerR = r - 1;
 
-    // Fondo del color principal del tipo de ficha
+    // Fondo con gradiente del color del tipo
     g.fillStyle(colors.main, 1);
     g.fillRoundedRect(
       offsetX + margin,
@@ -173,8 +185,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
       innerR
     );
 
-    // Borde interior sutil
-    g.lineStyle(2, this.darkenColor(colors.main, 0.3), 1);
+    // Borde interior más oscuro
+    g.lineStyle(2, this.darkenColor(colors.main, 0.35), 1);
     g.strokeRoundedRect(
       offsetX + margin,
       offsetY + margin,
@@ -183,24 +195,27 @@ export class Tile3D extends Phaser.GameObjects.Container {
       innerR
     );
 
-    // === EFECTOS DE LUZ ===
-    // Brillo superior (reflejo de luz)
-    g.fillStyle(0xffffff, 0.2);
+    // === EFECTOS DE LUZ Y BRILLO ===
+    // Brillo superior grande (efecto cristal)
+    g.fillStyle(0xffffff, 0.25);
     g.fillRoundedRect(
-      offsetX + margin + 4,
-      offsetY + margin + 4,
-      innerW - 8,
-      innerH * 0.25,
-      { tl: innerR - 2, tr: innerR - 2, bl: 0, br: 0 }
+      offsetX + margin + 3,
+      offsetY + margin + 3,
+      innerW - 6,
+      innerH * 0.3,
+      { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
     );
 
-    // Línea de brillo en el borde superior de la ficha
-    g.lineStyle(1, 0xffffff, 0.3);
+    // Línea de brillo en el borde superior de toda la ficha
+    g.lineStyle(1.5, 0xffffff, 0.4);
     g.beginPath();
-    g.arc(offsetX + r, offsetY + r, r - 1, Math.PI, Math.PI * 1.5);
+    g.moveTo(offsetX + r, offsetY + 1);
     g.lineTo(offsetX + w - r, offsetY + 1);
-    g.arc(offsetX + w - r, offsetY + r, r - 1, Math.PI * 1.5, Math.PI * 2);
     g.strokePath();
+
+    // Pequeño brillo en esquina superior izquierda
+    g.fillStyle(0xffffff, 0.15);
+    g.fillCircle(offsetX + margin + 8, offsetY + margin + 8, 4);
 
     g.generateTexture(key, textureWidth, textureHeight);
     g.destroy();
@@ -215,14 +230,14 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const g = this.scene.add.graphics();
     
     // Overlay oscuro muy visible para fichas bloqueadas
-    g.fillStyle(0x1a1a1a, 0.7);
+    g.fillStyle(0x1a1a1a, 0.65);
     g.fillRoundedRect(4, 4, w, h, r);
     
     // Borde oscuro adicional para destacar
-    g.lineStyle(2, 0x000000, 0.5);
+    g.lineStyle(1, 0x000000, 0.4);
     g.strokeRoundedRect(4, 4, w, h, r);
 
-    g.generateTexture("tile-blocked-overlay", w + d + 8, h + d + 8);
+    g.generateTexture("tile-blocked-overlay", w + 8, h + d + 8);
     g.destroy();
   }
 

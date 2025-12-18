@@ -259,7 +259,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea una versión mini de una ficha para la mano - Estilo Cartoon
+   * Crea una versión mini de una ficha para la mano - Estilo Mahjong vertical
    */
   private createMiniTile(tile: TileState): Phaser.GameObjects.Container {
     const container = this.scene.add.container(0, 0);
@@ -267,21 +267,20 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { hand } = GameSettings;
     const tileColors = GameSettings.tile.colors;
 
-    // Dimensiones basadas en el slot, mismo estilo que Tile3D (cuadrado)
-    const size = hand.slotWidth - 6;
-    const w = size;
-    const h = size;
-    const d = 4; // Profundidad 3D
-    const r = 6; // Radio de esquinas
-    const margin = 2;
+    // Dimensiones verticales como las fichas principales
+    const w = hand.slotWidth - 6;
+    const h = hand.slotHeight - 6;
+    const d = 6; // Profundidad 3D
+    const r = 5; // Radio de esquinas
+    const margin = 3;
 
     const g = this.scene.add.graphics();
 
-    // === SOMBRA SUAVE ===
-    g.fillStyle(0x000000, 0.15);
+    // === SOMBRA DIFUSA ===
+    g.fillStyle(0x000000, 0.2);
     g.fillRoundedRect(-w / 2 + 2, -h / 2 + d + 2, w, h, r);
 
-    // === BORDE 3D SUTIL (solo inferior) ===
+    // === CARA INFERIOR (volumen 3D hacia abajo) ===
     g.fillStyle(tileColors.bottom, 1);
     g.fillRoundedRect(-w / 2, -h / 2 + d, w, h, r);
 
@@ -289,8 +288,8 @@ export class GameUI extends Phaser.GameObjects.Container {
     g.fillStyle(tileColors.face, 1);
     g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
 
-    // Borde exterior grueso del mismo color que la base 3D
-    g.lineStyle(2, tileColors.bottom, 1);
+    // Borde principal
+    g.lineStyle(1.5, tileColors.border, 1);
     g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
 
     // === ÁREA DE COLOR (interior) ===
@@ -303,7 +302,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
 
     // Borde interior sutil
-    g.lineStyle(1.5, this.darkenColor(colors.main, 0.3), 1);
+    g.lineStyle(1.5, this.darkenColor(colors.main, 0.35), 1);
     g.strokeRoundedRect(
       -w / 2 + margin,
       -h / 2 + margin,
@@ -316,23 +315,23 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Brillo superior
     g.fillStyle(0xffffff, 0.2);
     g.fillRoundedRect(
-      -w / 2 + margin + 3,
-      -h / 2 + margin + 3,
-      innerW - 6,
+      -w / 2 + margin + 2,
+      -h / 2 + margin + 2,
+      innerW - 4,
       innerH * 0.25,
       { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
     );
 
     container.add(g);
 
-    // Letra con estilo - ajustada para fichas pequeñas
-    const fontSize = Math.floor(size * 0.5);
+    // Letra con estilo - ajustada para fichas verticales
+    const fontSize = Math.floor(w * 0.55);
     const symbol = this.scene.add.text(0, -d / 2, colors.letter, {
       fontSize: `${fontSize}px`,
       fontFamily: "'Bangers', 'Impact', 'Arial Black', sans-serif",
       color: "#ffffff",
       stroke: this.colorToHex(colors.accent),
-      strokeThickness: 3,
+      strokeThickness: 2,
     });
     symbol.setOrigin(0.5);
     container.add(symbol);
