@@ -14,12 +14,12 @@ export const GameSettings = {
 
   // Tile dimensions and styling - Forma vertical estilo Mahjong clásico
   tile: {
-    width: 70,
-    height: 94,
-    depth: 14, // Profundidad 3D más pronunciada
+    width: 85,
+    height: 115,
+    depth: 16, // Profundidad 3D más pronunciada
     padding: 2,
-    cornerRadius: 7,
-    shadowOffset: 10,
+    cornerRadius: 8,
+    shadowOffset: 12,
     // Colores base de la ficha estilo Mahjong
     colors: {
       face: 0xfefcf8, // Blanco marfil
@@ -49,10 +49,10 @@ export const GameSettings = {
   // Hand configuration - Acumulador estilo minimalista
   hand: {
     maxSlots: 5,
-    slotWidth: 76,
-    slotHeight: 100,
-    slotPadding: 6,
-    bottomMargin: 110,
+    slotWidth: 92,
+    slotHeight: 122,
+    slotPadding: 8,
+    bottomMargin: 120,
     backgroundColor: 0x2d5a3d, // Verde oscuro
     slotColor: 0x3d7a4d, // Verde slot
     slotBorderColor: 0x5a9a6a, // Borde verde claro
