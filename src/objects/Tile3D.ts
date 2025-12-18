@@ -338,10 +338,10 @@ export class Tile3D extends Phaser.GameObjects.Container {
   public setLayerDepth(layer: number): void {
     // Fórmula de profundidad: capas superiores siempre encima
     // Dentro de la misma capa, fichas con mayor Y (más abajo) se dibujan encima
-    // Multiplicamos Y por un factor alto para garantizar ordenamiento correcto
-    const zDepth = layer * 1000;
-    const yDepth = Math.floor(this.tileState.position.y * 100);
-    const xDepth = Math.floor(this.tileState.position.x);
+    // Usamos valores sin truncar para mantener precisión con offsets decimales
+    const zDepth = layer * 10000;
+    const yDepth = this.tileState.position.y * 1000;
+    const xDepth = this.tileState.position.x * 10;
     this.setDepth(zDepth + yDepth + xDepth);
   }
 }
