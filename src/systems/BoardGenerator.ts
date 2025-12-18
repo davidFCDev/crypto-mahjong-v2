@@ -70,28 +70,28 @@ export class BoardGenerator {
     for (let z = 1; z < config.layers; z++) {
       // Alternar patrón por capa: impar=0.5, par=0
       const layerOffset = z % 2 === 1 ? 0.5 : 0;
-      
+
       // Generar todas las posiciones posibles para esta capa
       const possiblePositions: TilePosition[] = [];
-      
+
       // Recorrer el grid con el offset correspondiente
       // Las posiciones van desde 0+offset hasta (rows/cols - 1)+offset
       const maxRow = config.rows - 1;
       const maxCol = config.cols - 1;
-      
+
       for (let row = 0; row <= maxRow; row++) {
         for (let col = 0; col <= maxCol; col++) {
           const posX = col + layerOffset;
           const posY = row + layerOffset;
-          
+
           // Verificar que la posición no se salga del tablero base
           if (posX > maxCol || posY > maxRow) continue;
-          
-          // Contar apoyos: fichas en la capa inferior que soportan esta posición
-          const supports = this.countSupports(posX, posY, z, allPositions);
-          
-          // Solo añadir si tiene al menos 2 apoyos
-          if (supports >= 2) {
+
+          // Calcular cobertura de soporte (% del área soportada)
+          const coverage = this.calculateSupportCoverage(posX, posY, z, allPositions);
+
+          // Solo añadir si tiene más del 50% de cobertura
+          if (coverage > 0.5) {
             possiblePositions.push({
               x: posX,
               y: posY,
@@ -140,30 +140,38 @@ export class BoardGenerator {
 
   /**
    * Cuenta cuántas fichas de la capa inferior soportan una posición
-   * Una ficha soporta si está a menos de 1 unidad de distancia en X e Y
+   * y calcula el solapamiento total.
+   * Retorna el porcentaje de área soportada (0-1)
    */
-  private static countSupports(
+  private static calculateSupportCoverage(
     x: number,
     y: number,
     z: number,
     allPositions: TilePosition[]
   ): number {
-    let count = 0;
-    
+    let totalCoverage = 0;
+
     for (const pos of allPositions) {
       // Solo considerar fichas en la capa inmediatamente inferior
       if (pos.z !== z - 1) continue;
-      
+
       const dx = Math.abs(pos.x - x);
       const dy = Math.abs(pos.y - y);
-      
+
       // Una ficha soporta si está solapada (distancia < 1 en ambos ejes)
       if (dx < 1 && dy < 1) {
-        count++;
+        // Calcular el área de solapamiento
+        // Si dx=0, dy=0: solapamiento completo = 1.0
+        // Si dx=0.5, dy=0.5: solapamiento = 0.25 (25% del área)
+        const overlapX = 1 - dx;
+        const overlapY = 1 - dy;
+        const coverage = overlapX * overlapY;
+        totalCoverage += coverage;
       }
     }
-    
-    return count;
+
+    // Limitar a 1.0 máximo (100% de cobertura)
+    return Math.min(totalCoverage, 1.0);
   }
 
   /**
