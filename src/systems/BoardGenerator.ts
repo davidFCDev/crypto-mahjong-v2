@@ -50,15 +50,15 @@ export class BoardGenerator {
 
   /**
    * Genera posiciones para las fichas en múltiples capas
-   * Capas superiores usan posiciones en patrón: alineadas (0) o desplazadas (0.5)
+   * Capas superiores requieren mínimo 2 apoyos en la capa inferior
    */
   private static generatePositions(config: LevelConfig): TilePosition[] {
-    const positions: TilePosition[] = [];
+    const allPositions: TilePosition[] = [];
 
     // Capa base (z=0): grid completo - esta define el área máxima
     for (let row = 0; row < config.rows; row++) {
       for (let col = 0; col < config.cols; col++) {
-        positions.push({
+        allPositions.push({
           x: col,
           y: row,
           z: 0,
@@ -66,41 +66,48 @@ export class BoardGenerator {
       }
     }
 
-    // Capas superiores: patrón ordenado con offsets de 0 o 0.5
+    // Capas superiores: solo donde hay mínimo 2 apoyos
     for (let z = 1; z < config.layers; z++) {
-      // Cada capa se reduce para quedar dentro de la base
-      const shrinkFactor = z * 0.5;
-      const layerRows = Math.max(2, config.rows - Math.ceil(shrinkFactor));
-      const layerCols = Math.max(2, config.cols - Math.ceil(shrinkFactor));
-
-      // Offset base para centrar la capa
-      const baseOffsetX = shrinkFactor / 2;
-      const baseOffsetY = shrinkFactor / 2;
-
-      // Generar posiciones con patrón ordenado (offset 0 o 0.5)
+      // Alternar patrón por capa: impar=0.5, par=0
+      const layerOffset = z % 2 === 1 ? 0.5 : 0;
+      
+      // Generar todas las posiciones posibles para esta capa
       const possiblePositions: TilePosition[] = [];
       
-      // Alternar patrón por capa para variedad
-      // Capa impar: offset 0.5, Capa par: offset 0
-      const layerOffset = z % 2 === 1 ? 0.5 : 0;
-
-      for (let row = 0; row < layerRows; row++) {
-        for (let col = 0; col < layerCols; col++) {
-          possiblePositions.push({
-            x: baseOffsetX + col + layerOffset,
-            y: baseOffsetY + row + layerOffset,
-            z: z,
-          });
+      // Recorrer el grid con el offset correspondiente
+      // Las posiciones van desde 0+offset hasta (rows/cols - 1)+offset
+      const maxRow = config.rows - 1;
+      const maxCol = config.cols - 1;
+      
+      for (let row = 0; row <= maxRow; row++) {
+        for (let col = 0; col <= maxCol; col++) {
+          const posX = col + layerOffset;
+          const posY = row + layerOffset;
+          
+          // Verificar que la posición no se salga del tablero base
+          if (posX > maxCol || posY > maxRow) continue;
+          
+          // Contar apoyos: fichas en la capa inferior que soportan esta posición
+          const supports = this.countSupports(posX, posY, z, allPositions);
+          
+          // Solo añadir si tiene al menos 2 apoyos
+          if (supports >= 2) {
+            possiblePositions.push({
+              x: posX,
+              y: posY,
+              z: z,
+            });
+          }
         }
       }
 
       // Mezclar para selección aleatoria de cuáles usar
       this.shuffleArray(possiblePositions);
 
-      // Seleccionar fichas por capa (70% - 5% por nivel de capa)
+      // Seleccionar fichas por capa (65% - 5% por nivel de capa)
       const maxTiles = Math.max(
-        4,
-        Math.floor(possiblePositions.length * (0.70 - z * 0.05))
+        3,
+        Math.floor(possiblePositions.length * (0.65 - z * 0.05))
       );
       const selectedPositions: TilePosition[] = [];
 
@@ -119,15 +126,44 @@ export class BoardGenerator {
         }
       }
 
-      positions.push(...selectedPositions);
+      // Añadir las posiciones seleccionadas al total
+      allPositions.push(...selectedPositions);
     }
 
     // Asegurar que el número de posiciones sea múltiplo de 3
-    while (positions.length % 3 !== 0) {
-      positions.pop();
+    while (allPositions.length % 3 !== 0) {
+      allPositions.pop();
     }
 
-    return positions;
+    return allPositions;
+  }
+
+  /**
+   * Cuenta cuántas fichas de la capa inferior soportan una posición
+   * Una ficha soporta si está a menos de 1 unidad de distancia en X e Y
+   */
+  private static countSupports(
+    x: number,
+    y: number,
+    z: number,
+    allPositions: TilePosition[]
+  ): number {
+    let count = 0;
+    
+    for (const pos of allPositions) {
+      // Solo considerar fichas en la capa inmediatamente inferior
+      if (pos.z !== z - 1) continue;
+      
+      const dx = Math.abs(pos.x - x);
+      const dy = Math.abs(pos.y - y);
+      
+      // Una ficha soporta si está solapada (distancia < 1 en ambos ejes)
+      if (dx < 1 && dy < 1) {
+        count++;
+      }
+    }
+    
+    return count;
   }
 
   /**
