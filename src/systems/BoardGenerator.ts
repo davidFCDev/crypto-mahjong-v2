@@ -73,20 +73,20 @@ export class BoardGenerator {
       const shrinkFactor = z * 0.5;
       const layerRows = Math.max(2, config.rows - Math.ceil(shrinkFactor));
       const layerCols = Math.max(2, config.cols - Math.ceil(shrinkFactor));
-      
+
       // Offset para centrar la capa dentro de la base
       const startOffsetX = shrinkFactor / 2;
       const startOffsetY = shrinkFactor / 2;
-      
+
       // Generar posiciones con offsets aleatorios
       const possiblePositions: TilePosition[] = [];
-      
+
       for (let row = 0; row < layerRows; row++) {
         for (let col = 0; col < layerCols; col++) {
           // Offset aleatorio entre 0.2 y 0.8 para que cada ficha solape varias de abajo
           const randomOffsetX = 0.2 + Math.random() * 0.6;
           const randomOffsetY = 0.2 + Math.random() * 0.6;
-          
+
           possiblePositions.push({
             x: startOffsetX + col + randomOffsetX,
             y: startOffsetY + row + randomOffsetY,
@@ -94,29 +94,32 @@ export class BoardGenerator {
           });
         }
       }
-      
+
       // Mezclar posiciones aleatoriamente
       this.shuffleArray(possiblePositions);
-      
+
       // Seleccionar fichas por capa (75% - 5% por nivel de capa)
-      const maxTiles = Math.max(4, Math.floor(possiblePositions.length * (0.75 - z * 0.05)));
+      const maxTiles = Math.max(
+        4,
+        Math.floor(possiblePositions.length * (0.75 - z * 0.05))
+      );
       const selectedPositions: TilePosition[] = [];
-      
+
       for (const pos of possiblePositions) {
         if (selectedPositions.length >= maxTiles) break;
-        
+
         // Verificar que no esté demasiado cerca de otra ficha seleccionada en la misma capa
-        const tooClose = selectedPositions.some(existing => {
+        const tooClose = selectedPositions.some((existing) => {
           const dx = Math.abs(existing.x - pos.x);
           const dy = Math.abs(existing.y - pos.y);
           return dx < 0.85 && dy < 0.85; // Distancia mínima
         });
-        
+
         if (!tooClose) {
           selectedPositions.push(pos);
         }
       }
-      
+
       positions.push(...selectedPositions);
     }
 

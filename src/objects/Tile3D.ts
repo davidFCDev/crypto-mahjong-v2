@@ -39,26 +39,26 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     // Crear letra con estilo para identificar el tipo
     const tileColors = TILE_COLORS[state.type];
-    
+
     // Calcular el centro visual real de la cara de la ficha
     // La textura tiene: offsetX=4, offsetY=4 para la cara, y depth añade espacio abajo
     const textureWidth = this.tileWidth + 8;
     const textureHeight = this.tileHeight + this.tileDepth + 8;
     const faceOffsetX = 4;
     const faceOffsetY = 4;
-    
+
     // Centro de la cara dentro de la textura
     const faceCenterX = faceOffsetX + this.tileWidth / 2;
     const faceCenterY = faceOffsetY + this.tileHeight / 2;
-    
+
     // Centro de la textura (donde Phaser posiciona el origen)
     const textureCenterX = textureWidth / 2;
     const textureCenterY = textureHeight / 2;
-    
+
     // Offset que necesitamos aplicar para centrar en la cara
     const iconOffsetX = faceCenterX - textureCenterX;
     const iconOffsetY = faceCenterY - textureCenterY;
-    
+
     // Letra grande con estilo
     const fontSize = Math.floor(this.tileWidth * 0.55);
     this.symbolText = scene.add.text(
@@ -76,15 +76,19 @@ export class Tile3D extends Phaser.GameObjects.Container {
           offsetY: 1,
           color: "#000000",
           blur: 2,
-          fill: true
-        }
+          fill: true,
+        },
       }
     );
     this.symbolText.setOrigin(0.5);
     this.add(this.symbolText);
 
     // Crear overlay de bloqueo AL FINAL para que esté por encima de todo
-    this.blockedOverlay = scene.add.image(iconOffsetX, iconOffsetY, "tile-blocked-overlay");
+    this.blockedOverlay = scene.add.image(
+      iconOffsetX,
+      iconOffsetY,
+      "tile-blocked-overlay"
+    );
     this.blockedOverlay.setVisible(!state.isAccessible);
     this.add(this.blockedOverlay);
 
@@ -228,11 +232,11 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const r = GameSettings.tile.cornerRadius;
 
     const g = this.scene.add.graphics();
-    
+
     // Overlay oscuro muy visible para fichas bloqueadas
     g.fillStyle(0x1a1a1a, 0.65);
     g.fillRoundedRect(4, 4, w, h, r);
-    
+
     // Borde oscuro adicional para destacar
     g.lineStyle(1, 0x000000, 0.4);
     g.strokeRoundedRect(4, 4, w, h, r);

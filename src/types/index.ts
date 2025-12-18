@@ -23,18 +23,78 @@ export const TILE_COLORS: Record<
   TileType,
   { main: number; accent: number; symbol: string; letter: string }
 > = {
-  [TileType.BITCOIN]: { main: 0xf7931a, accent: 0x4d2f00, symbol: "₿", letter: "B" },
-  [TileType.ETHEREUM]: { main: 0x627eea, accent: 0x1a1a4d, symbol: "Ξ", letter: "E" },
-  [TileType.DOGE]: { main: 0xc3a634, accent: 0x4d4000, symbol: "Ð", letter: "D" },
-  [TileType.PEPE]: { main: 0x3cb043, accent: 0x0d3010, symbol: "🐸", letter: "P" },
-  [TileType.SHIBA]: { main: 0xffa000, accent: 0x4d3000, symbol: "🐕", letter: "S" },
-  [TileType.SOLANA]: { main: 0x9945ff, accent: 0x2a0050, symbol: "◎", letter: "O" },
-  [TileType.CARDANO]: { main: 0x0033ad, accent: 0x000d33, symbol: "₳", letter: "A" },
-  [TileType.POLKADOT]: { main: 0xe6007a, accent: 0x400022, symbol: "●", letter: "K" },
-  [TileType.AVALANCHE]: { main: 0xe84142, accent: 0x400d0d, symbol: "▲", letter: "X" },
-  [TileType.CHAINLINK]: { main: 0x2a5ada, accent: 0x0a1a40, symbol: "⬡", letter: "L" },
-  [TileType.POLYGON]: { main: 0x8247e5, accent: 0x200d40, symbol: "⬢", letter: "M" },
-  [TileType.LITECOIN]: { main: 0x345d9d, accent: 0x0d1a33, symbol: "Ł", letter: "C" },
+  [TileType.BITCOIN]: {
+    main: 0xf7931a,
+    accent: 0x4d2f00,
+    symbol: "₿",
+    letter: "B",
+  },
+  [TileType.ETHEREUM]: {
+    main: 0x627eea,
+    accent: 0x1a1a4d,
+    symbol: "Ξ",
+    letter: "E",
+  },
+  [TileType.DOGE]: {
+    main: 0xc3a634,
+    accent: 0x4d4000,
+    symbol: "Ð",
+    letter: "D",
+  },
+  [TileType.PEPE]: {
+    main: 0x3cb043,
+    accent: 0x0d3010,
+    symbol: "🐸",
+    letter: "P",
+  },
+  [TileType.SHIBA]: {
+    main: 0xffa000,
+    accent: 0x4d3000,
+    symbol: "🐕",
+    letter: "S",
+  },
+  [TileType.SOLANA]: {
+    main: 0x9945ff,
+    accent: 0x2a0050,
+    symbol: "◎",
+    letter: "O",
+  },
+  [TileType.CARDANO]: {
+    main: 0x0033ad,
+    accent: 0x000d33,
+    symbol: "₳",
+    letter: "A",
+  },
+  [TileType.POLKADOT]: {
+    main: 0xe6007a,
+    accent: 0x400022,
+    symbol: "●",
+    letter: "K",
+  },
+  [TileType.AVALANCHE]: {
+    main: 0xe84142,
+    accent: 0x400d0d,
+    symbol: "▲",
+    letter: "X",
+  },
+  [TileType.CHAINLINK]: {
+    main: 0x2a5ada,
+    accent: 0x0a1a40,
+    symbol: "⬡",
+    letter: "L",
+  },
+  [TileType.POLYGON]: {
+    main: 0x8247e5,
+    accent: 0x200d40,
+    symbol: "⬢",
+    letter: "M",
+  },
+  [TileType.LITECOIN]: {
+    main: 0x345d9d,
+    accent: 0x0d1a33,
+    symbol: "Ł",
+    letter: "C",
+  },
 };
 
 // Posición de una ficha en el tablero
