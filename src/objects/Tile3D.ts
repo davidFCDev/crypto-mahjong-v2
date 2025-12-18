@@ -15,16 +15,24 @@ export class Tile3D extends Phaser.GameObjects.Container {
   private blockedOverlay!: Phaser.GameObjects.Image;
   private symbolText!: Phaser.GameObjects.Text;
   private isHovered: boolean = false;
+  private showBottom3D: boolean = true; // Si debe mostrar el volumen 3D inferior
 
   // Dimensiones
   private tileWidth: number;
   private tileHeight: number;
   private tileDepth: number;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, state: TileState) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    state: TileState,
+    showBottom3D: boolean = true
+  ) {
     super(scene, x, y);
 
     this.tileState = state;
+    this.showBottom3D = showBottom3D;
     this.tileWidth = GameSettings.tile.width;
     this.tileHeight = GameSettings.tile.height;
     this.tileDepth = GameSettings.tile.depth;
@@ -33,7 +41,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     this.ensureTextures();
 
     // Crear imagen de la ficha desde textura cacheada
-    const textureName = this.getTextureName(state.type);
+    const textureName = this.getCurrentTextureName();
     this.tileImage = scene.add.image(0, 0, textureName);
     this.add(this.tileImage);
 
@@ -110,11 +118,18 @@ export class Tile3D extends Phaser.GameObjects.Container {
   private ensureTextures(): void {
     const type = this.tileState.type;
 
-    // Textura normal (siempre con color de fondo)
+    // Textura normal CON volumen 3D
     const normalKey = this.getTextureName(type);
     if (!textureCache.has(normalKey)) {
-      this.generateTileTexture(normalKey, type);
+      this.generateTileTexture(normalKey, type, true);
       textureCache.set(normalKey, true);
+    }
+
+    // Textura SIN volumen 3D (para fichas con adyacente abajo)
+    const flatKey = this.getTextureName(type) + "-flat";
+    if (!textureCache.has(flatKey)) {
+      this.generateTileTexture(flatKey, type, false);
+      textureCache.set(flatKey, true);
     }
 
     // Overlay de bloqueo
@@ -128,7 +143,16 @@ export class Tile3D extends Phaser.GameObjects.Container {
     return `tile-${type}`;
   }
 
-  private generateTileTexture(key: string, type: TileType): void {
+  private getCurrentTextureName(): string {
+    const base = this.getTextureName(this.tileState.type);
+    return this.showBottom3D ? base : base + "-flat";
+  }
+
+  private generateTileTexture(
+    key: string,
+    type: TileType,
+    showBottom: boolean
+  ): void {
     const w = this.tileWidth;
     const h = this.tileHeight;
     const d = this.tileDepth;
@@ -143,27 +167,30 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const offsetX = 4;
     const offsetY = 4;
 
-    // === SOMBRA DIFUSA ===
-    g.fillStyle(0x000000, 0.2);
-    g.fillRoundedRect(offsetX + 3, offsetY + d + 3, w, h, r);
+    // Solo dibujar 3D si showBottom es true
+    if (showBottom) {
+      // === SOMBRA DIFUSA ===
+      g.fillStyle(0x000000, 0.2);
+      g.fillRoundedRect(offsetX + 3, offsetY + d + 3, w, h, r);
 
-    // === CARA LATERAL DERECHA (efecto 3D) ===
-    g.fillStyle(tileColors.side, 1);
-    g.beginPath();
-    g.moveTo(offsetX + w - r, offsetY + h);
-    g.lineTo(offsetX + w, offsetY + h);
-    g.lineTo(offsetX + w, offsetY + h + d);
-    g.lineTo(offsetX + w - r, offsetY + h + d);
-    g.closePath();
-    g.fillPath();
+      // === CARA LATERAL DERECHA (efecto 3D) ===
+      g.fillStyle(tileColors.side, 1);
+      g.beginPath();
+      g.moveTo(offsetX + w - r, offsetY + h);
+      g.lineTo(offsetX + w, offsetY + h);
+      g.lineTo(offsetX + w, offsetY + h + d);
+      g.lineTo(offsetX + w - r, offsetY + h + d);
+      g.closePath();
+      g.fillPath();
 
-    // === CARA INFERIOR (volumen 3D hacia abajo) ===
-    g.fillStyle(tileColors.bottom, 1);
-    g.fillRoundedRect(offsetX, offsetY + d, w, h, r);
+      // === CARA INFERIOR (volumen 3D hacia abajo) ===
+      g.fillStyle(tileColors.bottom, 1);
+      g.fillRoundedRect(offsetX, offsetY + d, w, h, r);
 
-    // Borde oscuro en la cara inferior para profundidad
-    g.lineStyle(1, this.darkenColor(tileColors.bottom, 0.3), 1);
-    g.strokeRoundedRect(offsetX, offsetY + d, w, h, r);
+      // Borde oscuro en la cara inferior para profundidad
+      g.lineStyle(1, this.darkenColor(tileColors.bottom, 0.3), 1);
+      g.strokeRoundedRect(offsetX, offsetY + d, w, h, r);
+    }
 
     // === CARA PRINCIPAL (superficie de la ficha) ===
     g.fillStyle(tileColors.face, 1);
@@ -299,6 +326,18 @@ export class Tile3D extends Phaser.GameObjects.Container {
     this.blockedOverlay.setVisible(!this.tileState.isAccessible);
   }
 
+  /**
+   * Actualiza la visibilidad del efecto 3D inferior
+   * Llamar cuando cambia el estado del tablero
+   */
+  public updateBottom3D(showBottom: boolean): void {
+    if (this.showBottom3D === showBottom) return; // Sin cambios
+
+    this.showBottom3D = showBottom;
+    const newTexture = this.getCurrentTextureName();
+    this.tileImage.setTexture(newTexture);
+  }
+
   public getState(): TileState {
     return this.tileState;
   }
@@ -336,21 +375,12 @@ export class Tile3D extends Phaser.GameObjects.Container {
   }
 
   public setLayerDepth(layer: number): void {
-    // El depth debe asegurar que fichas visualmente más abajo se dibujen encima
-    // Combinamos Y + Z para el ordenamiento vertical visual correcto
-    // Las fichas de capas superiores están ligeramente más arriba en pantalla,
-    // pero su borde 3D baja, así que necesitan dibujarse encima de fichas 
-    // que están debajo visualmente
-    const pos = this.tileState.position;
-    
-    // Posición visual vertical: Y es la fila, Z afecta ligeramente (las capas superiores suben)
-    // Pero para el depth, queremos que las fichas con borde inferior más bajo se dibujen encima
-    // El borde inferior está en: Y + altura_ficha - Z * layerOffset (aprox)
-    // Simplificamos: usamos Y * 1000 + Z * 100 para que capas superiores ganen en empate
-    const visualY = pos.y * 1000 + pos.z * 500;
-    const xOffset = pos.x;
-    
-    this.setDepth(visualY + xOffset);
+    // Capas superiores (Z mayor) siempre se dibujan encima
+    // Dentro de la misma capa, fichas con mayor Y se dibujan encima
+    const zDepth = layer * 1000;
+    const yDepth = Math.floor(this.tileState.position.y * 100);
+    const xDepth = Math.floor(this.tileState.position.x);
+    this.setDepth(zDepth + yDepth + xDepth);
   }
 }
 

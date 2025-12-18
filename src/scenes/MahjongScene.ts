@@ -38,17 +38,20 @@ export class MahjongScene extends Phaser.Scene {
   private boardContainer!: Phaser.GameObjects.Container;
   private currentLevelConfig!: LevelConfig;
 
-  // Bounds del tablero - Usar TODO el ancho disponible
+  // Bounds del tablero - Centrado verticalmente entre score y mano
+  // Score badge: Y=55, altura=95 → termina en Y=150
+  // Mano: empieza en Y = 1280 - 130 - 77 = 1073
+  // Área disponible: desde 150 hasta 1073
   private boardBounds = {
     x: 5,
-    y: GameSettings.ui.headerHeight + 10,
+    y: 160, // Después del score badge (55 + 95 + margen)
     width: GameSettings.canvas.width - 10,
     height:
       GameSettings.canvas.height -
-      GameSettings.ui.headerHeight -
+      160 - // Espacio superior (score)
       GameSettings.hand.bottomMargin -
-      GameSettings.hand.slotHeight -
-      40,
+      GameSettings.hand.slotHeight / 2 -
+      30, // Margen inferior
   };
 
   // Estado de animación
@@ -156,7 +159,16 @@ export class MahjongScene extends Phaser.Scene {
         this.boardBounds
       );
 
-      const tile3D = new Tile3D(this, screenPos.x, screenPos.y, tileState);
+      // Determinar si debe mostrar el volumen 3D inferior
+      const showBottom3D = !this.hasAdjacentTileBelow(tileState);
+
+      const tile3D = new Tile3D(
+        this,
+        screenPos.x,
+        screenPos.y,
+        tileState,
+        showBottom3D
+      );
       tile3D.setLayerDepth(tileState.position.z);
 
       // Escuchar click
@@ -166,6 +178,49 @@ export class MahjongScene extends Phaser.Scene {
 
       this.tileSprites.set(tileState.id, tile3D);
       this.boardContainer.add(tile3D);
+    }
+  }
+
+  /**
+   * Verifica si hay una ficha adyacente abajo en la misma capa
+   * que taparía el efecto 3D de esta ficha
+   */
+  private hasAdjacentTileBelow(tile: TileState): boolean {
+    const pos = tile.position;
+
+    // Buscar ficha en la misma capa (Z), misma columna (X), y fila +1 (Y)
+    return this.gameState.tiles.some((other) => {
+      if (other.id === tile.id) return false;
+      if (other.isInHand || other.isMatched) return false;
+
+      // Misma capa
+      if (other.position.z !== pos.z) return false;
+
+      // La ficha de abajo debe estar en Y + 1 (aproximadamente)
+      // Con el sistema de offset 0.5, verificamos si está en el rango [Y+0.5, Y+1.5]
+      const yDiff = other.position.y - pos.y;
+      if (yDiff < 0.4 || yDiff > 1.1) return false;
+
+      // Debe estar en la misma columna (con tolerancia para offset)
+      const xDiff = Math.abs(other.position.x - pos.x);
+      if (xDiff > 0.6) return false;
+
+      return true;
+    });
+  }
+
+  /**
+   * Actualiza el efecto 3D de las fichas cuando cambia el tablero
+   */
+  private updateTiles3DEffect(): void {
+    for (const tile of this.gameState.tiles) {
+      if (tile.isInHand || tile.isMatched) continue;
+
+      const sprite = this.tileSprites.get(tile.id);
+      if (sprite) {
+        const showBottom3D = !this.hasAdjacentTileBelow(tile);
+        sprite.updateBottom3D(showBottom3D);
+      }
     }
   }
 
@@ -249,6 +304,9 @@ export class MahjongScene extends Phaser.Scene {
 
     // Actualizar accesibilidad inmediatamente para que otras fichas se desbloqueen
     this.updateBoardAccessibility();
+
+    // Actualizar efecto 3D (fichas que ahora pueden mostrar su volumen)
+    this.updateTiles3DEffect();
 
     // Animar la ficha hacia la mano
     tileSprite.animateToHand(slotPos.x, slotPos.y, () => {

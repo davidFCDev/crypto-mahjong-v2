@@ -11,6 +11,16 @@ export class GameUI extends Phaser.GameObjects.Container {
   private scoreBadge!: Phaser.GameObjects.Container;
   private scoreText!: Phaser.GameObjects.Text;
 
+  // Badge de nivel
+  private levelBadge!: Phaser.GameObjects.Container;
+  private levelText!: Phaser.GameObjects.Text;
+
+  // Badge de tiempo
+  private timeBadge!: Phaser.GameObjects.Container;
+  private timeText!: Phaser.GameObjects.Text;
+  private timeRemaining: number = 60;
+  private timerEvent?: Phaser.Time.TimerEvent;
+
   // Hand elements
   private handBg!: Phaser.GameObjects.Graphics;
   private handSlots: Phaser.GameObjects.Container[] = [];
@@ -24,7 +34,9 @@ export class GameUI extends Phaser.GameObjects.Container {
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0);
 
+    this.createLevelBadge();
     this.createScoreBadge();
+    this.createTimeBadge();
     this.createHand();
 
     scene.add.existing(this);
@@ -32,35 +44,27 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea el badge de score - Diseño limpio sin brillos
+   * Crea el badge de nivel - A la izquierda del score
    */
-  private createScoreBadge(): void {
-    const { canvas, ui } = GameSettings;
+  private createLevelBadge(): void {
+    const { canvas } = GameSettings;
 
-    this.scoreBadge = this.scene.add.container(canvas.width / 2, 55);
+    // Posición a la izquierda del score
+    this.levelBadge = this.scene.add.container(95, 55);
 
-    const badgeWidth = 200;
-    const badgeHeight = 75;
-    const badgeDepth = 20; // Más profundidad 3D
-    const borderRadius = 6; // Esquinas menos redondeadas
+    const badgeWidth = 90;
+    const badgeHeight = 55;
+    const badgeDepth = 12;
+    const borderRadius = 10;
 
     const bg = this.scene.add.graphics();
 
-    // Sombra suave
-    bg.fillStyle(0x000000, 0.25);
-    bg.fillRoundedRect(
-      -badgeWidth / 2 + 4,
-      badgeDepth + 4,
-      badgeWidth,
-      badgeHeight,
-      borderRadius
-    );
+    // Color naranja/ámbar para el nivel
+    const badgeColor = 0xe67e22;
+    const borderColor = 0xc0660a;
 
-    // Cara inferior (volumen 3D) - mismo color con borde
-    const badgeColor = (ui.colors as any).badge || 0x6b5b95;
-    const borderColor = (ui.colors as any).badgeBorder || 0x4a3d6b;
-
-    bg.fillStyle(badgeColor, 1);
+    // Cara inferior (volumen 3D)
+    bg.fillStyle(borderColor, 1);
     bg.fillRoundedRect(
       -badgeWidth / 2,
       badgeDepth,
@@ -70,7 +74,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara 3D
-    bg.lineStyle(3, borderColor, 1);
+    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
     bg.strokeRoundedRect(
       -badgeWidth / 2,
       badgeDepth,
@@ -90,7 +94,82 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara principal
-    bg.lineStyle(3, borderColor, 1);
+    bg.lineStyle(2, borderColor, 1);
+    bg.strokeRoundedRect(
+      -badgeWidth / 2,
+      0,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    this.levelBadge.add(bg);
+
+    // Texto del nivel
+    this.levelText = this.scene.add.text(0, badgeHeight / 2, "Lv.1", {
+      fontSize: "28px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+      color: "#ffffff",
+      stroke: "#8b4513",
+      strokeThickness: 3,
+    });
+    this.levelText.setOrigin(0.5);
+    this.levelBadge.add(this.levelText);
+
+    this.add(this.levelBadge);
+  }
+
+  /**
+   * Crea el badge de score - Diseño limpio con efecto 3D
+   */
+  private createScoreBadge(): void {
+    const { canvas, ui } = GameSettings;
+
+    this.scoreBadge = this.scene.add.container(canvas.width / 2, 55);
+
+    const badgeWidth = 200;
+    const badgeHeight = 75;
+    const badgeDepth = 16; // Profundidad 3D
+    const borderRadius = 12; // Esquinas redondeadas
+
+    const bg = this.scene.add.graphics();
+
+    // Colores del badge (verde esmeralda)
+    const badgeColor = (ui.colors as any).badge || 0x2e8b57;
+    const borderColor = (ui.colors as any).badgeBorder || 0x1e6b47;
+
+    // Cara inferior (volumen 3D)
+    bg.fillStyle(borderColor, 1);
+    bg.fillRoundedRect(
+      -badgeWidth / 2,
+      badgeDepth,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    // Borde de la cara 3D
+    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+    bg.strokeRoundedRect(
+      -badgeWidth / 2,
+      badgeDepth,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    // Fondo del badge (cara principal)
+    bg.fillStyle(badgeColor, 1);
+    bg.fillRoundedRect(
+      -badgeWidth / 2,
+      0,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    // Borde de la cara principal
+    bg.lineStyle(2, borderColor, 1);
     bg.strokeRoundedRect(
       -badgeWidth / 2,
       0,
@@ -101,13 +180,13 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     this.scoreBadge.add(bg);
 
-    // Solo el número del score, sin texto "Score:"
+    // Solo el número del score
     this.scoreText = this.scene.add.text(0, badgeHeight / 2, "0", {
       fontSize: "42px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#2a1f4a",
-      strokeThickness: 5,
+      stroke: "#1e5a3a",
+      strokeThickness: 4,
     });
     this.scoreText.setOrigin(0.5);
     this.scoreBadge.add(this.scoreText);
@@ -116,10 +195,86 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea el área del acumulador - Diseño limpio y moderno
+   * Crea el badge de tiempo - A la derecha del score
+   */
+  private createTimeBadge(): void {
+    const { canvas } = GameSettings;
+
+    // Posición a la derecha del score
+    this.timeBadge = this.scene.add.container(canvas.width - 95, 55);
+
+    const badgeWidth = 90;
+    const badgeHeight = 55;
+    const badgeDepth = 12;
+    const borderRadius = 10;
+
+    const bg = this.scene.add.graphics();
+
+    // Color azul para el tiempo
+    const badgeColor = 0x3498db;
+    const borderColor = 0x2171a8;
+
+    // Cara inferior (volumen 3D)
+    bg.fillStyle(borderColor, 1);
+    bg.fillRoundedRect(
+      -badgeWidth / 2,
+      badgeDepth,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    // Borde de la cara 3D
+    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+    bg.strokeRoundedRect(
+      -badgeWidth / 2,
+      badgeDepth,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    // Fondo del badge (cara principal)
+    bg.fillStyle(badgeColor, 1);
+    bg.fillRoundedRect(
+      -badgeWidth / 2,
+      0,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    // Borde de la cara principal
+    bg.lineStyle(2, borderColor, 1);
+    bg.strokeRoundedRect(
+      -badgeWidth / 2,
+      0,
+      badgeWidth,
+      badgeHeight,
+      borderRadius
+    );
+
+    this.timeBadge.add(bg);
+
+    // Texto del tiempo
+    this.timeText = this.scene.add.text(0, badgeHeight / 2, "60", {
+      fontSize: "28px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+      color: "#ffffff",
+      stroke: "#1a5276",
+      strokeThickness: 3,
+    });
+    this.timeText.setOrigin(0.5);
+    this.timeBadge.add(this.timeText);
+
+    this.add(this.timeBadge);
+  }
+
+  /**
+   * Crea el área del acumulador - Estilo 3D igual al badge
    */
   private createHand(): void {
-    const { canvas, hand } = GameSettings;
+    const { canvas, hand, ui } = GameSettings;
 
     const handY = canvas.height - hand.bottomMargin;
     const totalSlotWidth =
@@ -127,37 +282,53 @@ export class GameUI extends Phaser.GameObjects.Container {
     const handWidth = totalSlotWidth + 30;
     const handX = (canvas.width - handWidth) / 2;
     const handHeight = hand.slotHeight + 20;
+    const handDepth = 16; // Profundidad 3D igual al badge
+    const borderRadius = 12;
+
+    // Colores (mismo verde que el badge)
+    const badgeColor = (ui.colors as any).badge || 0x2e8b57;
+    const borderColor = (ui.colors as any).badgeBorder || 0x1e6b47;
 
     this.handBg = this.scene.add.graphics();
 
-    // Sombra suave
-    this.handBg.fillStyle(0x000000, 0.25);
+    // Cara inferior (volumen 3D)
+    this.handBg.fillStyle(borderColor, 1);
     this.handBg.fillRoundedRect(
-      handX + 4,
-      handY - handHeight / 2 + 4,
+      handX,
+      handY - handHeight / 2 + handDepth,
       handWidth,
       handHeight,
-      15
+      borderRadius
     );
 
-    // Fondo del acumulador
-    this.handBg.fillStyle(hand.backgroundColor, 0.95);
+    // Borde de la cara 3D
+    this.handBg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+    this.handBg.strokeRoundedRect(
+      handX,
+      handY - handHeight / 2 + handDepth,
+      handWidth,
+      handHeight,
+      borderRadius
+    );
+
+    // Fondo del acumulador (cara principal)
+    this.handBg.fillStyle(badgeColor, 1);
     this.handBg.fillRoundedRect(
       handX,
       handY - handHeight / 2,
       handWidth,
       handHeight,
-      15
+      borderRadius
     );
 
     // Borde exterior
-    this.handBg.lineStyle(3, hand.slotBorderColor, 1);
+    this.handBg.lineStyle(2, borderColor, 1);
     this.handBg.strokeRoundedRect(
       handX,
       handY - handHeight / 2,
       handWidth,
       handHeight,
-      15
+      borderRadius
     );
 
     this.add(this.handBg);
@@ -171,18 +342,19 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea un slot individual - Diseño simple
+   * Crea un slot individual - Diseño simple con borde verde
    */
   private createSlot(index: number): Phaser.GameObjects.Container {
-    const { hand } = GameSettings;
+    const { hand, ui } = GameSettings;
     const pos = this.getSlotPosition(index);
 
     const container = this.scene.add.container(pos.x, pos.y);
 
     const slotBg = this.scene.add.graphics();
+    const borderColor = (ui.colors as any).badgeBorder || 0x1e6b47;
 
     // Borde del slot sutil
-    slotBg.lineStyle(2, hand.slotBorderColor, 0.5);
+    slotBg.lineStyle(2, borderColor, 0.6);
     slotBg.strokeRoundedRect(
       -hand.slotWidth / 2,
       -hand.slotHeight / 2,
@@ -192,7 +364,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Fondo semi-transparente
-    slotBg.fillStyle(0x000000, 0.15);
+    slotBg.fillStyle(0x000000, 0.12);
     slotBg.fillRoundedRect(
       -hand.slotWidth / 2,
       -hand.slotHeight / 2,
@@ -405,11 +577,65 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Actualiza el nivel mostrado (ahora solo guarda el estado)
+   * Actualiza el nivel mostrado
    */
   public updateLevel(level: number): void {
     this.currentLevel = level;
-    // Ya no hay texto de nivel visible, el badge solo muestra score
+    this.levelText.setText(`Lv.${level}`);
+    
+    // Reiniciar timer al cambiar de nivel
+    this.resetTimer();
+  }
+
+  /**
+   * Reinicia el timer
+   */
+  public resetTimer(): void {
+    this.timeRemaining = 60;
+    this.timeText.setText("60");
+    
+    // Cancelar timer anterior si existe
+    if (this.timerEvent) {
+      this.timerEvent.destroy();
+    }
+    
+    // Crear nuevo timer
+    this.timerEvent = this.scene.time.addEvent({
+      delay: 1000,
+      callback: this.updateTimer,
+      callbackScope: this,
+      loop: true
+    });
+  }
+
+  /**
+   * Actualiza el timer cada segundo
+   */
+  private updateTimer(): void {
+    this.timeRemaining--;
+    this.timeText.setText(this.timeRemaining.toString());
+    
+    // Cambiar color cuando queda poco tiempo
+    if (this.timeRemaining <= 10) {
+      this.timeText.setStyle({ color: "#ff6b6b" });
+    }
+    
+    // Emitir evento cuando se acaba el tiempo
+    if (this.timeRemaining <= 0) {
+      if (this.timerEvent) {
+        this.timerEvent.destroy();
+      }
+      this.emit("time-up");
+    }
+  }
+
+  /**
+   * Detiene el timer
+   */
+  public stopTimer(): void {
+    if (this.timerEvent) {
+      this.timerEvent.destroy();
+    }
   }
 
   /**

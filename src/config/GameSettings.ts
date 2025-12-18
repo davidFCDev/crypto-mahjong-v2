@@ -114,8 +114,8 @@ export const GameSettings = {
       accent: 0xffd700, // Dorado
       text: 0xfff8dc, // Crema
       textSecondary: 0xaaaaaa,
-      badge: 0x6b5b95, // Morado suave
-      badgeBorder: 0x4a3d6b, // Borde morado oscuro
+      badge: 0x2e8b57, // Verde esmeralda (Sea Green)
+      badgeBorder: 0x1e6b47, // Borde verde oscuro
     },
   },
 };
