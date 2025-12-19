@@ -85,7 +85,7 @@ export class MahjongScene extends Phaser.Scene {
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
-    
+
     const bg = this.add.graphics();
 
     // Color base amarillo claro (pergamino)

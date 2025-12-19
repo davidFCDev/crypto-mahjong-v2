@@ -42,8 +42,8 @@ export const GameSettings = {
     offsetY: 80, // Offset desde arriba para dejar espacio al UI
     maxWidth: 620, // No usar todo el ancho
     maxHeight: 850, // Alto disponible
-    layerOffsetX: 4, // Pequeño offset X por capa (efecto 3D)
-    layerOffsetY: 8, // Desplazamiento Y por capa (efecto 3D hacia arriba)
+    layerOffsetX: 6, // Pequeño offset X por capa (efecto 3D)
+    layerOffsetY: 14, // Desplazamiento Y por capa (efecto 3D hacia arriba)
   },
 
   // Hand configuration - Acumulador estilo minimalista

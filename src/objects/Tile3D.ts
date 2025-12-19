@@ -93,11 +93,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     // Crear overlay de bloqueo AL FINAL para que esté por encima de todo
     // Posición (0,0) porque la textura del overlay ya está alineada con la textura de la ficha
-    this.blockedOverlay = scene.add.image(
-      0,
-      0,
-      "tile-blocked-overlay"
-    );
+    this.blockedOverlay = scene.add.image(0, 0, "tile-blocked-overlay");
     this.blockedOverlay.setVisible(!state.isAccessible);
     this.add(this.blockedOverlay);
 
