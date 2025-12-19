@@ -108,11 +108,11 @@ export class MahjongScene extends Phaser.Scene {
     }
 
     // Símbolos crypto sutiles como marca de agua
-    const cryptoSymbols = ['₿', 'Ξ', '◈', '⬡', '◇'];
+    const cryptoSymbols = ["₿", "Ξ", "◈", "⬡", "◇"];
     const symbolStyle = {
-      fontSize: '60px',
-      fontFamily: 'Arial',
-      color: '#e0c890',
+      fontSize: "60px",
+      fontFamily: "Arial",
+      color: "#e0c890",
     };
 
     // Distribuir símbolos de forma dispersa
@@ -121,7 +121,7 @@ export class MahjongScene extends Phaser.Scene {
         const symbol = cryptoSymbols[(row + col) % cryptoSymbols.length];
         const x = 80 + col * 250 + (row % 2) * 120;
         const y = 150 + row * 280;
-        
+
         if (x < canvas.width - 50 && y < canvas.height - 50) {
           const text = this.add.text(x, y, symbol, symbolStyle);
           text.setAlpha(0.08);
@@ -133,10 +133,10 @@ export class MahjongScene extends Phaser.Scene {
     // Borde decorativo verde (mismo color que el acumulador)
     const borderColor = 0x2e8b57; // Verde esmeralda
     const borderColorDark = 0x1e6b47; // Verde oscuro
-    
+
     bg.lineStyle(4, borderColor, 1);
     bg.strokeRoundedRect(12, 12, canvas.width - 24, canvas.height - 24, 20);
-    
+
     bg.lineStyle(2, borderColorDark, 0.6);
     bg.strokeRoundedRect(18, 18, canvas.width - 36, canvas.height - 36, 16);
 
