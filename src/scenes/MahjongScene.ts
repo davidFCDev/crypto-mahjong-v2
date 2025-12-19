@@ -62,7 +62,8 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // No se necesitan cargar assets externos
+    // Cargar imagen de fondo
+    this.load.image('background', 'https://remix.gg/blob/zS0QCi0PfUjO/bg-UCQsxcnb7z2W2UoJsOuv95juxaF7wt.webp?461u');
   }
 
   create(): void {
@@ -81,24 +82,22 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Estilo Bambú Cartoon
+   * Crea el fondo del juego - Imagen de fondo
    */
   private createBackground(): void {
-    const { canvas, ui } = GameSettings;
+    const { canvas } = GameSettings;
 
-    // Fondo sólido (más eficiente que patrones complejos)
-    const bg = this.add.graphics();
-
-    // Color base verde bambú
-    bg.fillStyle(ui.colors.background, 1);
-    bg.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Marco decorativo simple (sin bucles costosos)
-    bg.lineStyle(8, 0x0d3d1a, 0.5);
-    bg.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-
-    bg.lineStyle(3, 0x4a7c59, 0.4);
-    bg.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+    // Usar imagen de fondo
+    const bg = this.add.image(canvas.width / 2, canvas.height / 2, 'background');
+    
+    // Escalar para cubrir todo el canvas manteniendo aspecto
+    const scaleX = canvas.width / bg.width;
+    const scaleY = canvas.height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale);
+    
+    // Enviar al fondo
+    bg.setDepth(-1);
   }
 
   /**

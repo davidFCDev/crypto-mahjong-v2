@@ -77,7 +77,7 @@ export class BoardGenerator {
 
       // Generar posiciones con ambos offsets (0 y 0.5)
       const offsets = [0, 0.5];
-      
+
       for (const offset of offsets) {
         for (let row = 0; row <= maxRow; row++) {
           for (let col = 0; col <= maxCol; col++) {
