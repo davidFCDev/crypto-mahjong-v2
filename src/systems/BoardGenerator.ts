@@ -109,10 +109,13 @@ export class BoardGenerator {
       // Mezclar para selección aleatoria de cuáles usar
       this.shuffleArray(possiblePositions);
 
-      // Seleccionar más fichas por capa (85% - 3% por nivel de capa) para capas más pobladas
+      // Usar coverageRate del nivel para determinar densidad de capas
+      // A mayor nivel, más fichas en capas superiores
+      const layerReduction = z * 0.02; // Reducción pequeña por altura
+      const effectiveRate = Math.max(0.5, config.coverageRate - layerReduction);
       const maxTiles = Math.max(
         4,
-        Math.floor(possiblePositions.length * (0.85 - z * 0.03))
+        Math.floor(possiblePositions.length * effectiveRate)
       );
       const selectedPositions: TilePosition[] = [];
 

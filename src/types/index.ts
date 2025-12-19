@@ -131,6 +131,7 @@ export interface LevelConfig {
   layers: number;
   tileTypes: number; // Cantidad de tipos diferentes de fichas
   tilesPerType: number; // Siempre debe ser múltiplo de 3
+  coverageRate: number; // Porcentaje de cobertura de capas superiores (0.5 - 0.95)
 }
 
 // Estado del juego
