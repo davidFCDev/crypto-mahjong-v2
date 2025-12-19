@@ -81,66 +81,47 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Estilo papel/pergamino con textura crypto
+   * Crea el fondo del juego - Estilo papel/pergamino optimizado
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
-    const bg = this.add.graphics();
+    
+    // Crear textura de fondo una sola vez (optimizado)
+    if (!this.textures.exists('bg-texture')) {
+      const bg = this.add.graphics();
 
-    // Color base amarillo claro (pergamino)
-    bg.fillStyle(0xf5e6c8, 1);
-    bg.fillRect(0, 0, canvas.width, canvas.height);
+      // Color base amarillo claro (pergamino)
+      bg.fillStyle(0xf5e6c8, 1);
+      bg.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Patrón de textura sutil - puntos pequeños para efecto papel
-    bg.fillStyle(0xe8d4a8, 0.3);
-    for (let y = 0; y < canvas.height; y += 8) {
-      for (let x = 0; x < canvas.width; x += 8) {
-        if ((x + y) % 16 === 0) {
-          bg.fillCircle(x, y, 1);
+      // Patrón de textura sutil - puntos pequeños para efecto papel
+      bg.fillStyle(0xe8d4a8, 0.4);
+      for (let y = 0; y < canvas.height; y += 20) {
+        for (let x = 0; x < canvas.width; x += 20) {
+          if ((x + y) % 40 === 0) {
+            bg.fillCircle(x, y, 1.5);
+          }
         }
       }
+
+      // Borde decorativo verde (mismo color que el acumulador)
+      const borderColor = 0x2e8b57;
+      const borderColorDark = 0x1e6b47;
+
+      bg.lineStyle(4, borderColor, 1);
+      bg.strokeRoundedRect(12, 12, canvas.width - 24, canvas.height - 24, 20);
+
+      bg.lineStyle(2, borderColorDark, 0.6);
+      bg.strokeRoundedRect(18, 18, canvas.width - 36, canvas.height - 36, 16);
+
+      // Generar textura y destruir graphics
+      bg.generateTexture('bg-texture', canvas.width, canvas.height);
+      bg.destroy();
     }
 
-    // Líneas diagonales muy sutiles (estilo marca de agua)
-    bg.lineStyle(1, 0xdec9a0, 0.15);
-    for (let i = -canvas.height; i < canvas.width + canvas.height; i += 40) {
-      bg.lineBetween(i, 0, i + canvas.height, canvas.height);
-    }
-
-    // Símbolos crypto sutiles como marca de agua
-    const cryptoSymbols = ["₿", "Ξ", "◈", "⬡", "◇"];
-    const symbolStyle = {
-      fontSize: "60px",
-      fontFamily: "Arial",
-      color: "#e0c890",
-    };
-
-    // Distribuir símbolos de forma dispersa
-    for (let row = 0; row < 5; row++) {
-      for (let col = 0; col < 3; col++) {
-        const symbol = cryptoSymbols[(row + col) % cryptoSymbols.length];
-        const x = 80 + col * 250 + (row % 2) * 120;
-        const y = 150 + row * 280;
-
-        if (x < canvas.width - 50 && y < canvas.height - 50) {
-          const text = this.add.text(x, y, symbol, symbolStyle);
-          text.setAlpha(0.08);
-          text.setDepth(-1);
-        }
-      }
-    }
-
-    // Borde decorativo verde (mismo color que el acumulador)
-    const borderColor = 0x2e8b57; // Verde esmeralda
-    const borderColorDark = 0x1e6b47; // Verde oscuro
-
-    bg.lineStyle(4, borderColor, 1);
-    bg.strokeRoundedRect(12, 12, canvas.width - 24, canvas.height - 24, 20);
-
-    bg.lineStyle(2, borderColorDark, 0.6);
-    bg.strokeRoundedRect(18, 18, canvas.width - 36, canvas.height - 36, 16);
-
-    bg.setDepth(-2);
+    // Usar la textura cacheada
+    const bgImage = this.add.image(canvas.width / 2, canvas.height / 2, 'bg-texture');
+    bgImage.setDepth(-2);
   }
 
   /**
