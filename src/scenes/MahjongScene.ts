@@ -62,8 +62,7 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // Cargar imagen de fondo
-    this.load.image('background', 'https://remix.gg/blob/zS0QCi0PfUjO/bg-UCQsxcnb7z2W2UoJsOuv95juxaF7wt.webp?461u');
+    // No se necesitan cargar assets externos
   }
 
   create(): void {
@@ -82,31 +81,63 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Imagen de fondo
+   * Crea el fondo del juego - Estilo papel/pergamino con textura crypto
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
+    const bg = this.add.graphics();
 
-    // Capa de color base neutro
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x3d3d4a, 1); // Gris azulado neutro
-    overlay.fillRect(0, 0, canvas.width, canvas.height);
-    overlay.setDepth(-2);
+    // Color base amarillo claro (pergamino)
+    bg.fillStyle(0xf5e6c8, 1);
+    bg.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Usar imagen de fondo
-    const bg = this.add.image(canvas.width / 2, canvas.height / 2, 'background');
+    // Patrón de textura sutil - puntos pequeños para efecto papel
+    bg.fillStyle(0xe8d4a8, 0.3);
+    for (let y = 0; y < canvas.height; y += 8) {
+      for (let x = 0; x < canvas.width; x += 8) {
+        if ((x + y) % 16 === 0) {
+          bg.fillCircle(x, y, 1);
+        }
+      }
+    }
+
+    // Líneas diagonales muy sutiles (estilo marca de agua)
+    bg.lineStyle(1, 0xdec9a0, 0.15);
+    for (let i = -canvas.height; i < canvas.width + canvas.height; i += 40) {
+      bg.lineBetween(i, 0, i + canvas.height, canvas.height);
+    }
+
+    // Símbolos crypto sutiles como marca de agua
+    const cryptoSymbols = ['₿', 'Ξ', '◈', '⬡', '◇'];
+    const symbolStyle = {
+      fontSize: '60px',
+      fontFamily: 'Arial',
+      color: '#e0c890',
+    };
+
+    // Distribuir símbolos de forma dispersa
+    for (let row = 0; row < 5; row++) {
+      for (let col = 0; col < 3; col++) {
+        const symbol = cryptoSymbols[(row + col) % cryptoSymbols.length];
+        const x = 80 + col * 250 + (row % 2) * 120;
+        const y = 150 + row * 280;
+        
+        if (x < canvas.width - 50 && y < canvas.height - 50) {
+          const text = this.add.text(x, y, symbol, symbolStyle);
+          text.setAlpha(0.08);
+          text.setDepth(-1);
+        }
+      }
+    }
+
+    // Borde decorativo dorado sutil
+    bg.lineStyle(3, 0xc4a060, 0.4);
+    bg.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
     
-    // Escalar para cubrir todo el canvas manteniendo aspecto
-    const scaleX = canvas.width / bg.width;
-    const scaleY = canvas.height / bg.height;
-    const scale = Math.max(scaleX, scaleY);
-    bg.setScale(scale);
-    
-    // Opacidad baja para que sea sutil pero visible
-    bg.setAlpha(0.2);
-    
-    // Enviar al fondo
-    bg.setDepth(-1);
+    bg.lineStyle(1, 0xd4b070, 0.3);
+    bg.strokeRect(22, 22, canvas.width - 44, canvas.height - 44);
+
+    bg.setDepth(-2);
   }
 
   /**
