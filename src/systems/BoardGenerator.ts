@@ -68,40 +68,41 @@ export class BoardGenerator {
 
     // Capas superiores: solo donde hay mínimo 2 apoyos
     for (let z = 1; z < config.layers; z++) {
-      // Alternar patrón por capa: impar=0.5, par=0
-      const layerOffset = z % 2 === 1 ? 0.5 : 0;
-
       // Generar todas las posiciones posibles para esta capa
+      // Incluye tanto posiciones directas (offset 0) como desplazadas (offset 0.5)
       const possiblePositions: TilePosition[] = [];
 
-      // Recorrer el grid con el offset correspondiente
-      // Las posiciones van desde 0+offset hasta (rows/cols - 1)+offset
       const maxRow = config.rows - 1;
       const maxCol = config.cols - 1;
 
-      for (let row = 0; row <= maxRow; row++) {
-        for (let col = 0; col <= maxCol; col++) {
-          const posX = col + layerOffset;
-          const posY = row + layerOffset;
+      // Generar posiciones con ambos offsets (0 y 0.5)
+      const offsets = [0, 0.5];
+      
+      for (const offset of offsets) {
+        for (let row = 0; row <= maxRow; row++) {
+          for (let col = 0; col <= maxCol; col++) {
+            const posX = col + offset;
+            const posY = row + offset;
 
-          // Verificar que la posición no se salga del tablero base
-          if (posX > maxCol || posY > maxRow) continue;
+            // Verificar que la posición no se salga del tablero base
+            if (posX > maxCol || posY > maxRow) continue;
 
-          // Calcular cobertura de soporte (% del área soportada)
-          const coverage = this.calculateSupportCoverage(
-            posX,
-            posY,
-            z,
-            allPositions
-          );
+            // Calcular cobertura de soporte (% del área soportada)
+            const coverage = this.calculateSupportCoverage(
+              posX,
+              posY,
+              z,
+              allPositions
+            );
 
-          // Solo añadir si tiene más del 50% de cobertura
-          if (coverage > 0.5) {
-            possiblePositions.push({
-              x: posX,
-              y: posY,
-              z: z,
-            });
+            // Solo añadir si tiene más del 50% de cobertura
+            if (coverage > 0.5) {
+              possiblePositions.push({
+                x: posX,
+                y: posY,
+                z: z,
+              });
+            }
           }
         }
       }

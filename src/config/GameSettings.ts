@@ -73,13 +73,13 @@ export const GameSettings = {
     const MAX_COLS = 5;
 
     const configs = [
-      { rows: 4, cols: 4, layers: 3, tileTypes: 4, coverageRate: 0.60 }, // Nivel 1: Fácil
+      { rows: 4, cols: 4, layers: 3, tileTypes: 4, coverageRate: 0.6 }, // Nivel 1: Fácil
       { rows: 4, cols: 5, layers: 3, tileTypes: 5, coverageRate: 0.65 }, // Nivel 2
-      { rows: 5, cols: 5, layers: 3, tileTypes: 5, coverageRate: 0.70 }, // Nivel 3: Tablero completo
+      { rows: 5, cols: 5, layers: 3, tileTypes: 5, coverageRate: 0.7 }, // Nivel 3: Tablero completo
       { rows: 5, cols: 5, layers: 4, tileTypes: 6, coverageRate: 0.72 }, // Nivel 4: Cuarta capa
       { rows: 5, cols: 5, layers: 4, tileTypes: 7, coverageRate: 0.75 }, // Nivel 5: Más variedad
       { rows: 5, cols: 5, layers: 5, tileTypes: 7, coverageRate: 0.78 }, // Nivel 6: Quinta capa
-      { rows: 5, cols: 5, layers: 5, tileTypes: 8, coverageRate: 0.80 }, // Nivel 7: Más variedad
+      { rows: 5, cols: 5, layers: 5, tileTypes: 8, coverageRate: 0.8 }, // Nivel 7: Más variedad
       { rows: 5, cols: 5, layers: 6, tileTypes: 9, coverageRate: 0.82 }, // Nivel 8: Sexta capa
       { rows: 5, cols: 5, layers: 6, tileTypes: 10, coverageRate: 0.85 }, // Nivel 9: Máxima variedad
       { rows: 5, cols: 5, layers: 7, tileTypes: 11, coverageRate: 0.88 }, // Nivel 10+: Máxima dificultad
