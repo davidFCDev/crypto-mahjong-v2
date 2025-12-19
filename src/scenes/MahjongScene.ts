@@ -130,12 +130,15 @@ export class MahjongScene extends Phaser.Scene {
       }
     }
 
-    // Borde decorativo dorado sutil
-    bg.lineStyle(3, 0xc4a060, 0.4);
-    bg.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
+    // Borde decorativo verde (mismo color que el acumulador)
+    const borderColor = 0x2e8b57; // Verde esmeralda
+    const borderColorDark = 0x1e6b47; // Verde oscuro
     
-    bg.lineStyle(1, 0xd4b070, 0.3);
-    bg.strokeRect(22, 22, canvas.width - 44, canvas.height - 44);
+    bg.lineStyle(4, borderColor, 1);
+    bg.strokeRoundedRect(12, 12, canvas.width - 24, canvas.height - 24, 20);
+    
+    bg.lineStyle(2, borderColorDark, 0.6);
+    bg.strokeRoundedRect(18, 18, canvas.width - 36, canvas.height - 36, 16);
 
     bg.setDepth(-2);
   }
