@@ -87,9 +87,9 @@ export class MahjongScene extends Phaser.Scene {
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    // Capa de color base para oscurecer
+    // Capa de color base suave
     const overlay = this.add.graphics();
-    overlay.fillStyle(0x1a2a1a, 1); // Verde muy oscuro
+    overlay.fillStyle(0x2d4a3d, 1); // Verde medio suave
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setDepth(-2);
 
@@ -102,8 +102,8 @@ export class MahjongScene extends Phaser.Scene {
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale);
     
-    // Reducir opacidad para que no destaque tanto
-    bg.setAlpha(0.3);
+    // Opacidad baja para que sea sutil pero visible
+    bg.setAlpha(0.15);
     
     // Enviar al fondo
     bg.setDepth(-1);
