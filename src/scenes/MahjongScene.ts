@@ -81,47 +81,25 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Estilo papel/pergamino optimizado
+   * Crea el fondo del juego - Minimalista para máximo rendimiento
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
     
-    // Crear textura de fondo una sola vez (optimizado)
-    if (!this.textures.exists('bg-texture')) {
-      const bg = this.add.graphics();
+    const bg = this.add.graphics();
 
-      // Color base amarillo claro (pergamino)
-      bg.fillStyle(0xf5e6c8, 1);
-      bg.fillRect(0, 0, canvas.width, canvas.height);
+    // Color base amarillo claro (pergamino)
+    bg.fillStyle(0xf5e6c8, 1);
+    bg.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Patrón de textura sutil - puntos pequeños para efecto papel
-      bg.fillStyle(0xe8d4a8, 0.4);
-      for (let y = 0; y < canvas.height; y += 20) {
-        for (let x = 0; x < canvas.width; x += 20) {
-          if ((x + y) % 40 === 0) {
-            bg.fillCircle(x, y, 1.5);
-          }
-        }
-      }
+    // Borde decorativo verde (mismo color que el acumulador)
+    bg.lineStyle(4, 0x2e8b57, 1);
+    bg.strokeRoundedRect(12, 12, canvas.width - 24, canvas.height - 24, 20);
 
-      // Borde decorativo verde (mismo color que el acumulador)
-      const borderColor = 0x2e8b57;
-      const borderColorDark = 0x1e6b47;
+    bg.lineStyle(2, 0x1e6b47, 0.6);
+    bg.strokeRoundedRect(18, 18, canvas.width - 36, canvas.height - 36, 16);
 
-      bg.lineStyle(4, borderColor, 1);
-      bg.strokeRoundedRect(12, 12, canvas.width - 24, canvas.height - 24, 20);
-
-      bg.lineStyle(2, borderColorDark, 0.6);
-      bg.strokeRoundedRect(18, 18, canvas.width - 36, canvas.height - 36, 16);
-
-      // Generar textura y destruir graphics
-      bg.generateTexture('bg-texture', canvas.width, canvas.height);
-      bg.destroy();
-    }
-
-    // Usar la textura cacheada
-    const bgImage = this.add.image(canvas.width / 2, canvas.height / 2, 'bg-texture');
-    bgImage.setDepth(-2);
+    bg.setDepth(-2);
   }
 
   /**
