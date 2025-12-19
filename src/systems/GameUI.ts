@@ -54,11 +54,11 @@ export class GameUI extends Phaser.GameObjects.Container {
       hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
     const handWidth = totalSlotWidth + 30;
     const handStartX = (canvas.width - handWidth) / 2;
-    
+
     const badgeWidth = 90;
     // Posicionar al inicio del acumulador (centrado del badge)
     const badgeX = handStartX + badgeWidth / 2;
-    
+
     this.levelBadge = this.scene.add.container(badgeX, 55);
     const badgeHeight = 75; // Misma altura que score
     const badgeDepth = 16;
@@ -212,11 +212,11 @@ export class GameUI extends Phaser.GameObjects.Container {
       hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
     const handWidth = totalSlotWidth + 30;
     const handEndX = (canvas.width - handWidth) / 2 + handWidth;
-    
+
     const badgeWidth = 90;
     // Posicionar al final del acumulador (centrado del badge)
     const badgeX = handEndX - badgeWidth / 2;
-    
+
     this.timeBadge = this.scene.add.container(badgeX, 55);
     const badgeHeight = 75; // Misma altura que score
     const badgeDepth = 16;
@@ -596,7 +596,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   public updateLevel(level: number): void {
     this.currentLevel = level;
     this.levelText.setText(`Lv.${level}`);
-    
+
     // Reiniciar timer al cambiar de nivel
     this.resetTimer();
   }
@@ -607,18 +607,18 @@ export class GameUI extends Phaser.GameObjects.Container {
   public resetTimer(): void {
     this.timeRemaining = 60;
     this.timeText.setText("60");
-    
+
     // Cancelar timer anterior si existe
     if (this.timerEvent) {
       this.timerEvent.destroy();
     }
-    
+
     // Crear nuevo timer
     this.timerEvent = this.scene.time.addEvent({
       delay: 1000,
       callback: this.updateTimer,
       callbackScope: this,
-      loop: true
+      loop: true,
     });
   }
 
@@ -628,12 +628,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   private updateTimer(): void {
     this.timeRemaining--;
     this.timeText.setText(this.timeRemaining.toString());
-    
-    // Cambiar color cuando queda poco tiempo
-    if (this.timeRemaining <= 10) {
-      this.timeText.setStyle({ color: "#ff6b6b" });
-    }
-    
+
     // Emitir evento cuando se acaba el tiempo
     if (this.timeRemaining <= 0) {
       if (this.timerEvent) {
