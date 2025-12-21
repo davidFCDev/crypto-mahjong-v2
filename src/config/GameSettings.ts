@@ -73,16 +73,16 @@ export const GameSettings = {
     const MAX_COLS = 5;
 
     const configs = [
-      { rows: 4, cols: 4, layers: 3, tileTypes: 6, coverageRate: 0.6 }, // Nivel 1: 6 tipos
-      { rows: 4, cols: 5, layers: 3, tileTypes: 8, coverageRate: 0.65 }, // Nivel 2: 8 tipos
-      { rows: 5, cols: 5, layers: 3, tileTypes: 10, coverageRate: 0.7 }, // Nivel 3: 10 tipos
-      { rows: 5, cols: 5, layers: 4, tileTypes: 12, coverageRate: 0.72 }, // Nivel 4: 12 tipos
-      { rows: 5, cols: 5, layers: 4, tileTypes: 14, coverageRate: 0.75 }, // Nivel 5: 14 tipos
-      { rows: 5, cols: 5, layers: 5, tileTypes: 16, coverageRate: 0.78 }, // Nivel 6: 16 tipos
-      { rows: 5, cols: 5, layers: 5, tileTypes: 18, coverageRate: 0.8 }, // Nivel 7: 18 tipos
-      { rows: 5, cols: 5, layers: 6, tileTypes: 20, coverageRate: 0.82 }, // Nivel 8: 20 tipos
-      { rows: 5, cols: 5, layers: 6, tileTypes: 22, coverageRate: 0.85 }, // Nivel 9: 22 tipos
-      { rows: 5, cols: 5, layers: 7, tileTypes: 24, coverageRate: 0.88 }, // Nivel 10+: 24 tipos
+      { rows: 4, cols: 4, layers: 3, tileTypes: 4, coverageRate: 0.6 }, // Nivel 1: Fácil
+      { rows: 4, cols: 5, layers: 3, tileTypes: 5, coverageRate: 0.65 }, // Nivel 2
+      { rows: 5, cols: 5, layers: 3, tileTypes: 6, coverageRate: 0.7 }, // Nivel 3
+      { rows: 5, cols: 5, layers: 4, tileTypes: 7, coverageRate: 0.72 }, // Nivel 4
+      { rows: 5, cols: 5, layers: 4, tileTypes: 8, coverageRate: 0.75 }, // Nivel 5
+      { rows: 5, cols: 5, layers: 5, tileTypes: 9, coverageRate: 0.78 }, // Nivel 6
+      { rows: 5, cols: 5, layers: 5, tileTypes: 10, coverageRate: 0.8 }, // Nivel 7
+      { rows: 5, cols: 5, layers: 6, tileTypes: 11, coverageRate: 0.82 }, // Nivel 8
+      { rows: 5, cols: 5, layers: 6, tileTypes: 12, coverageRate: 0.85 }, // Nivel 9
+      { rows: 5, cols: 5, layers: 7, tileTypes: 12, coverageRate: 0.88 }, // Nivel 10+: Máxima dificultad
     ];
 
     const configIndex = Math.min(level - 1, configs.length - 1);
