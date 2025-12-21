@@ -14,12 +14,12 @@ export const GameSettings = {
 
   // Tile dimensions and styling - Forma vertical estilo Mahjong clásico
   tile: {
-    width: 95,
-    height: 128,
-    depth: 18, // Profundidad 3D más pronunciada
+    width: 110,
+    height: 148,
+    depth: 20, // Profundidad 3D más pronunciada
     padding: 2,
-    cornerRadius: 8,
-    shadowOffset: 12,
+    cornerRadius: 10,
+    shadowOffset: 14,
     // Colores base de la ficha estilo Mahjong
     colors: {
       face: 0xfefcf8, // Blanco marfil
