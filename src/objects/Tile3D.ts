@@ -74,11 +74,17 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     if (hasImage) {
       // Usar imagen como fondo completo de la ficha
-      this.symbolImage = scene.add.image(iconOffsetX, iconOffsetY, iconTextureKey);
-      // Escalar para ocupar todo el área interior de la ficha (85x118)
-      const innerWidth = this.tileWidth - 10; // 85px
-      const innerHeight = this.tileHeight - 10; // 118px
-      this.symbolImage.setDisplaySize(innerWidth, innerHeight);
+      const innerWidth = this.tileWidth - 10;
+      const innerHeight = this.tileHeight - 10;
+      const cornerRadius = GameSettings.tile.cornerRadius - 2;
+      
+      // Crear textura con máscara redondeada aplicada
+      const maskedTextureKey = `tile-icon-masked-${state.type}`;
+      if (!scene.textures.exists(maskedTextureKey)) {
+        this.createMaskedTexture(scene, iconTextureKey, maskedTextureKey, innerWidth, innerHeight, cornerRadius);
+      }
+      
+      this.symbolImage = scene.add.image(iconOffsetX, iconOffsetY, maskedTextureKey);
       this.add(this.symbolImage);
       
       // Crear texto vacío (necesario para compatibilidad)
@@ -287,6 +293,44 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     g.generateTexture("tile-blocked-overlay", w + 8, h + d + 8);
     g.destroy();
+  }
+
+  /**
+   * Crea una textura con la imagen escalada y bordes redondeados
+   */
+  private createMaskedTexture(
+    scene: Phaser.Scene,
+    sourceKey: string,
+    targetKey: string,
+    width: number,
+    height: number,
+    cornerRadius: number
+  ): void {
+    // Crear un RenderTexture para dibujar la imagen con máscara
+    const rt = scene.add.renderTexture(0, 0, width, height);
+    
+    // Crear la forma redondeada para la máscara
+    const maskShape = scene.make.graphics({ x: 0, y: 0 });
+    maskShape.fillStyle(0xffffff, 1);
+    maskShape.fillRoundedRect(0, 0, width, height, cornerRadius);
+    
+    // Dibujar la máscara en el render texture
+    rt.draw(maskShape, 0, 0);
+    
+    // Ahora dibujar la imagen con blend mode multiply para aplicar la máscara
+    const tempImage = scene.add.image(width / 2, height / 2, sourceKey);
+    tempImage.setDisplaySize(width, height);
+    tempImage.setBlendMode(Phaser.BlendModes.MULTIPLY);
+    
+    rt.draw(tempImage, width / 2, height / 2);
+    
+    // Guardar como textura
+    rt.saveTexture(targetKey);
+    
+    // Limpiar
+    maskShape.destroy();
+    tempImage.destroy();
+    rt.destroy();
   }
 
   private darkenColor(color: number, factor: number): number {
