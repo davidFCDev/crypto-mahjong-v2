@@ -50,14 +50,12 @@ export const TILE_COLORS: Record<
     accent: 0x003d1a,
     symbol: "🐸",
     letter: "P",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/4-UbuRi1kb8LRdSHmunGlvVD0kDRATpZ.webp?5X21",
   },
   [TileType.SHIBA]: {
     main: 0xff6b00, // Naranja fuerte
     accent: 0x4d2000,
     symbol: "🐕",
     letter: "S",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/5-cfY63v88FfUwq3GkkTfydyBAXDFk2C.webp?U4yM",
   },
   [TileType.SOLANA]: {
     main: 0xaa00ff, // Morado brillante
