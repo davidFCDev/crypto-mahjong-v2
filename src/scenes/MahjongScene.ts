@@ -9,6 +9,7 @@ import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
 import { HandManager } from "../systems/HandManager";
+import { soundManager } from "../systems/SoundManager";
 import { type GameState, type LevelConfig, type TileState } from "../types";
 
 declare global {
@@ -271,11 +272,13 @@ export class MahjongScene extends Phaser.Scene {
   private onTileClicked(tileState: TileState): void {
     if (this.isAnimating || !this.gameState.isPlaying) return;
 
-    // Verificar si la mano está llena
+    // Verificar si la mano está llena - simplemente ignorar el click
     if (this.handManager.isFull()) {
-      this.showHandFullWarning();
       return;
     }
+
+    // Reproducir sonido de selección
+    soundManager.playTileClick();
 
     this.isAnimating = true;
 
@@ -450,32 +453,6 @@ export class MahjongScene extends Phaser.Scene {
     this.gameState.score = 0;
     this.gameUI.updateScore(0);
     this.startLevel(1);
-  }
-
-  /**
-   * Muestra advertencia de mano llena
-   */
-  private showHandFullWarning(): void {
-    // Flash rojo en la mano
-    const flash = this.add.graphics();
-    flash.fillStyle(0xff0000, 0.3);
-    flash.fillRect(
-      0,
-      GameSettings.canvas.height -
-        GameSettings.hand.bottomMargin -
-        GameSettings.hand.slotHeight -
-        40,
-      GameSettings.canvas.width,
-      GameSettings.hand.slotHeight + 60
-    );
-    flash.setDepth(999);
-
-    this.tweens.add({
-      targets: flash,
-      alpha: 0,
-      duration: 300,
-      onComplete: () => flash.destroy(),
-    });
   }
 
   update(): void {
