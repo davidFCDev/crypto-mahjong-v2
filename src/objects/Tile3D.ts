@@ -81,6 +81,31 @@ export class Tile3D extends Phaser.GameObjects.Container {
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
       this.add(this.symbolImage);
       
+      // Añadir efecto de brillo suave encima de la imagen
+      const shineOverlay = scene.add.graphics();
+      const shineX = iconOffsetX - innerWidth / 2;
+      const shineY = iconOffsetY - innerHeight / 2;
+      const cornerRadius = GameSettings.tile.cornerRadius - 3;
+      
+      // Brillo superior (gradiente suave)
+      shineOverlay.fillStyle(0xffffff, 0.2);
+      shineOverlay.fillRoundedRect(
+        shineX + 2,
+        shineY + 2,
+        innerWidth - 4,
+        innerHeight * 0.35,
+        { tl: cornerRadius, tr: cornerRadius, bl: 0, br: 0 }
+      );
+      
+      // Línea de brillo en el borde superior
+      shineOverlay.lineStyle(1.5, 0xffffff, 0.35);
+      shineOverlay.beginPath();
+      shineOverlay.moveTo(shineX + cornerRadius, shineY + 1);
+      shineOverlay.lineTo(shineX + innerWidth - cornerRadius, shineY + 1);
+      shineOverlay.strokePath();
+      
+      this.add(shineOverlay);
+      
       // Crear texto vacío (necesario para compatibilidad)
       this.symbolText = scene.add.text(0, 0, "", { fontSize: "1px" });
       this.symbolText.setVisible(false);
