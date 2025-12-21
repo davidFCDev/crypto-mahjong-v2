@@ -14,6 +14,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
   private tileImage!: Phaser.GameObjects.Image;
   private blockedOverlay!: Phaser.GameObjects.Image;
   private symbolText!: Phaser.GameObjects.Text;
+  private symbolImage?: Phaser.GameObjects.Image;
   private isHovered: boolean = false;
   private showBottom3D: boolean = true; // Si debe mostrar el volumen 3D inferior
 
@@ -45,7 +46,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     this.tileImage = scene.add.image(0, 0, textureName);
     this.add(this.tileImage);
 
-    // Crear letra con estilo para identificar el tipo
+    // Obtener configuración del tipo de ficha
     const tileColors = TILE_COLORS[state.type];
 
     // Calcular el centro visual real de la cara de la ficha
@@ -67,29 +68,48 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const iconOffsetX = faceCenterX - textureCenterX;
     const iconOffsetY = faceCenterY - textureCenterY;
 
-    // Letra grande con estilo cartoon
-    const fontSize = Math.floor(this.tileWidth * 0.55);
-    this.symbolText = scene.add.text(
-      iconOffsetX,
-      iconOffsetY,
-      tileColors.letter,
-      {
-        fontSize: `${fontSize}px`,
-        fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
-        color: "#ffffff",
-        stroke: this.colorToHex(tileColors.accent),
-        strokeThickness: 4,
-        shadow: {
-          offsetX: 1,
-          offsetY: 2,
-          color: "#000000",
-          blur: 0,
-          fill: true,
-        },
-      }
-    );
-    this.symbolText.setOrigin(0.5);
-    this.add(this.symbolText);
+    // Verificar si hay imagen disponible para este tipo
+    const iconTextureKey = `tile-icon-${state.type}`;
+    const hasImage = scene.textures.exists(iconTextureKey);
+
+    if (hasImage) {
+      // Usar imagen como fondo completo de la ficha
+      this.symbolImage = scene.add.image(iconOffsetX, iconOffsetY, iconTextureKey);
+      // Escalar para ocupar todo el área interior de la ficha (85x118)
+      const innerWidth = this.tileWidth - 10; // 85px
+      const innerHeight = this.tileHeight - 10; // 118px
+      this.symbolImage.setDisplaySize(innerWidth, innerHeight);
+      this.add(this.symbolImage);
+      
+      // Crear texto vacío (necesario para compatibilidad)
+      this.symbolText = scene.add.text(0, 0, "", { fontSize: "1px" });
+      this.symbolText.setVisible(false);
+      this.add(this.symbolText);
+    } else {
+      // Letra grande con estilo cartoon (fallback)
+      const fontSize = Math.floor(this.tileWidth * 0.55);
+      this.symbolText = scene.add.text(
+        iconOffsetX,
+        iconOffsetY,
+        tileColors.letter,
+        {
+          fontSize: `${fontSize}px`,
+          fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+          color: "#ffffff",
+          stroke: this.colorToHex(tileColors.accent),
+          strokeThickness: 4,
+          shadow: {
+            offsetX: 1,
+            offsetY: 2,
+            color: "#000000",
+            blur: 0,
+            fill: true,
+          },
+        }
+      );
+      this.symbolText.setOrigin(0.5);
+      this.add(this.symbolText);
+    }
 
     // Crear overlay de bloqueo AL FINAL para que esté por encima de todo
     // Posición (0,0) porque la textura del overlay ya está alineada con la textura de la ficha

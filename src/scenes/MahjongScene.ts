@@ -9,8 +9,7 @@ import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
 import { HandManager } from "../systems/HandManager";
-import { soundManager } from "../systems/SoundManager";
-import { type GameState, type LevelConfig, type TileState } from "../types";
+import { TILE_COLORS, TileType, type GameState, type LevelConfig, type TileState } from "../types";
 
 declare global {
   interface Window {
@@ -63,7 +62,15 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // No se necesitan cargar assets externos
+    // Cargar imágenes de los tiles que tienen imageUrl
+    Object.values(TileType).forEach((type) => {
+      if (typeof type === "number") {
+        const tileConfig = TILE_COLORS[type as TileType];
+        if (tileConfig.imageUrl) {
+          this.load.image(`tile-icon-${type}`, tileConfig.imageUrl);
+        }
+      }
+    });
   }
 
   create(): void {
@@ -276,9 +283,6 @@ export class MahjongScene extends Phaser.Scene {
     if (this.handManager.isFull()) {
       return;
     }
-
-    // Reproducir sonido de selección
-    soundManager.playTileClick();
 
     this.isAnimating = true;
 

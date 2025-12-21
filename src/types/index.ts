@@ -22,37 +22,42 @@ export enum TileType {
 // Colores muy distintivos y contrastantes
 export const TILE_COLORS: Record<
   TileType,
-  { main: number; accent: number; symbol: string; letter: string }
+  { main: number; accent: number; symbol: string; letter: string; imageUrl?: string }
 > = {
   [TileType.BITCOIN]: {
     main: 0xf7931a, // Naranja Bitcoin
     accent: 0x4d2f00,
     symbol: "₿",
     letter: "B",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/1-mPgx58r8nMr9HO5xSvgB16x3w6FEyg.webp?k0ys",
   },
   [TileType.ETHEREUM]: {
     main: 0x3c3cff, // Azul eléctrico
     accent: 0x0a0a4d,
     symbol: "Ξ",
     letter: "E",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/2-iqyqLMgvzDccClaJhuiY8aKzVhLQUE.webp?5qQr",
   },
   [TileType.DOGE]: {
     main: 0xdfc850, // Amarillo dorado
     accent: 0x4d4000,
     symbol: "Ð",
     letter: "D",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/3-vxkwmiPzhnx4Tdd1H7jhOCnf6tD6uf.webp?khL0",
   },
   [TileType.PEPE]: {
     main: 0x00c853, // Verde brillante
     accent: 0x003d1a,
     symbol: "🐸",
     letter: "P",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/4-UbuRi1kb8LRdSHmunGlvVD0kDRATpZ.webp?5X21",
   },
   [TileType.SHIBA]: {
     main: 0xff6b00, // Naranja fuerte
     accent: 0x4d2000,
     symbol: "🐕",
     letter: "S",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/5-cfY63v88FfUwq3GkkTfydyBAXDFk2C.webp?U4yM",
   },
   [TileType.SOLANA]: {
     main: 0xaa00ff, // Morado brillante
