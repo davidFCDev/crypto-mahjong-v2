@@ -487,44 +487,73 @@ export class GameUI extends Phaser.GameObjects.Container {
     const innerH = h - margin * 2;
     const innerR = r - 1;
 
-    // Fondo del color principal
-    g.fillStyle(colors.main, 1);
-    g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
+    // Verificar si hay imagen disponible para este tipo
+    const iconTextureKey = `tile-icon-${tile.type}`;
+    const hasImage = this.scene.textures.exists(iconTextureKey);
 
-    // Borde interior sutil
-    g.lineStyle(1.5, this.darkenColor(colors.main, 0.35), 1);
-    g.strokeRoundedRect(
-      -w / 2 + margin,
-      -h / 2 + margin,
-      innerW,
-      innerH,
-      innerR
-    );
+    if (hasImage) {
+      // Fondo neutro para la imagen
+      g.fillStyle(tileColors.face, 1);
+      g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
+      
+      container.add(g);
+      
+      // Añadir imagen
+      const tileImage = this.scene.add.image(0, -d / 2, iconTextureKey);
+      tileImage.setDisplaySize(innerW - 4, innerH - 4);
+      container.add(tileImage);
+      
+      // Efecto de brillo encima de la imagen
+      const shineOverlay = this.scene.add.graphics();
+      shineOverlay.fillStyle(0xffffff, 0.2);
+      shineOverlay.fillRoundedRect(
+        -w / 2 + margin + 2,
+        -h / 2 + margin + 2,
+        innerW - 4,
+        innerH * 0.3,
+        { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
+      );
+      container.add(shineOverlay);
+    } else {
+      // Fondo del color principal
+      g.fillStyle(colors.main, 1);
+      g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
 
-    // === EFECTOS DE LUZ ===
-    // Brillo superior
-    g.fillStyle(0xffffff, 0.2);
-    g.fillRoundedRect(
-      -w / 2 + margin + 2,
-      -h / 2 + margin + 2,
-      innerW - 4,
-      innerH * 0.25,
-      { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
-    );
+      // Borde interior sutil
+      g.lineStyle(1.5, this.darkenColor(colors.main, 0.35), 1);
+      g.strokeRoundedRect(
+        -w / 2 + margin,
+        -h / 2 + margin,
+        innerW,
+        innerH,
+        innerR
+      );
 
-    container.add(g);
+      // === EFECTOS DE LUZ ===
+      // Brillo superior
+      g.fillStyle(0xffffff, 0.2);
+      g.fillRoundedRect(
+        -w / 2 + margin + 2,
+        -h / 2 + margin + 2,
+        innerW - 4,
+        innerH * 0.25,
+        { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
+      );
 
-    // Letra con estilo cartoon - ajustada para fichas verticales
-    const fontSize = Math.floor(w * 0.55);
-    const symbol = this.scene.add.text(0, -d / 2, colors.letter, {
-      fontSize: `${fontSize}px`,
-      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
-      color: "#ffffff",
-      stroke: this.colorToHex(colors.accent),
-      strokeThickness: 3,
-    });
-    symbol.setOrigin(0.5);
-    container.add(symbol);
+      container.add(g);
+
+      // Letra con estilo cartoon - ajustada para fichas verticales
+      const fontSize = Math.floor(w * 0.55);
+      const symbol = this.scene.add.text(0, -d / 2, colors.letter, {
+        fontSize: `${fontSize}px`,
+        fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+        color: "#ffffff",
+        stroke: this.colorToHex(colors.accent),
+        strokeThickness: 3,
+      });
+      symbol.setOrigin(0.5);
+      container.add(symbol);
+    }
 
     return container;
   }
