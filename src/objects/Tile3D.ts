@@ -74,9 +74,10 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const hasImage = scene.textures.exists(iconTextureKey);
 
     if (hasImage) {
-      // Usar imagen como fondo de la ficha - ocupa casi todo hasta el borde
-      const innerWidth = this.tileWidth - 6;
-      const innerHeight = this.tileHeight - 6;
+      // Usar imagen como fondo de la ficha
+      const innerWidth = this.tileWidth - 16;
+      const innerHeight = this.tileHeight - 16;
+      const cornerRadius = GameSettings.tile.cornerRadius - 3;
 
       this.symbolImage = scene.add.image(
         iconOffsetX,
@@ -84,6 +85,24 @@ export class Tile3D extends Phaser.GameObjects.Container {
         iconTextureKey
       );
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
+
+      // Crear máscara redondeada para la imagen
+      const maskShape = scene.make.graphics({ x: 0, y: 0, add: false });
+      maskShape.fillStyle(0xffffff);
+      maskShape.fillRoundedRect(
+        -innerWidth / 2,
+        -innerHeight / 2,
+        innerWidth,
+        innerHeight,
+        cornerRadius
+      );
+      const mask = maskShape.createGeometryMask();
+      this.symbolImage.setMask(mask);
+
+      // Guardar referencia para actualizar posición de máscara
+      (this.symbolImage as any)._maskShape = maskShape;
+      maskShape.setPosition(this.x + iconOffsetX, this.y + iconOffsetY);
+
       this.add(this.symbolImage);
 
       // Crear texto vacío (necesario para compatibilidad)
@@ -208,8 +227,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
     g.fillStyle(tileColors.face, 1);
     g.fillRoundedRect(offsetX, offsetY, w, h, r);
 
-    // Borde principal de la ficha (más grueso)
-    g.lineStyle(3, tileColors.border, 1);
+    // Borde principal de la ficha
+    g.lineStyle(2, tileColors.border, 1);
     g.strokeRoundedRect(offsetX, offsetY, w, h, r);
 
     // === ÁREA DE COLOR (zona interior donde va el símbolo) ===
