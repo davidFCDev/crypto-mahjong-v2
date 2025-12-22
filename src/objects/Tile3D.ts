@@ -310,15 +310,16 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     const g = this.scene.add.graphics();
 
-    // Overlay oscuro para la cara principal
+    // Overlay oscuro que cubre toda la ficha (cara principal + 3D)
+    // Primero el área 3D inferior
+    g.fillStyle(0x1a1a1a, 0.5);
+    g.fillRoundedRect(4, 4, w, h + d, r);
+
+    // Luego la cara principal (un poco más oscura)
     g.fillStyle(0x1a1a1a, 0.55);
     g.fillRoundedRect(4, 4, w, h, r);
 
-    // Overlay oscuro para el 3D inferior
-    g.fillStyle(0x1a1a1a, 0.5);
-    g.fillRoundedRect(4, 4 + d, w, h, r);
-
-    // Borde oscuro adicional
+    // Borde oscuro
     g.lineStyle(1, 0x000000, 0.3);
     g.strokeRoundedRect(4, 4, w, h, r);
 

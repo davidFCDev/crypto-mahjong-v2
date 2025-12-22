@@ -746,7 +746,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas } = GameSettings;
 
     const overlay = this.scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.7);
+    overlay.fillStyle(0x000000, 0.5);
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     this.add(overlay);
 
@@ -755,38 +755,93 @@ export class GameUI extends Phaser.GameObjects.Container {
       canvas.height / 2
     );
 
+    const modalWidth = 320;
+    const modalHeight = 200;
+    const borderRadius = 16;
+    const depth3D = 8;
+
+    // Colores estilo juego
+    const bgColor = 0xfefcf8; // Blanco marfil (como las fichas)
+    const borderColor = 0x27ae60; // Verde del UI
+    const accentColor = 0x1e8449; // Verde oscuro
+
     const bg = this.scene.add.graphics();
-    bg.fillStyle(0x1a1a2e, 1);
-    bg.fillRoundedRect(-150, -100, 300, 200, 20);
-    bg.lineStyle(3, 0xe94560, 1);
-    bg.strokeRoundedRect(-150, -100, 300, 200, 20);
+    
+    // Sombra suave
+    bg.fillStyle(0x000000, 0.15);
+    bg.fillRoundedRect(-modalWidth / 2 + 4, depth3D + 4, modalWidth, modalHeight, borderRadius);
+    
+    // Cara 3D inferior
+    bg.fillStyle(accentColor, 1);
+    bg.fillRoundedRect(-modalWidth / 2, depth3D, modalWidth, modalHeight, borderRadius);
+    
+    // Cara principal
+    bg.fillStyle(bgColor, 1);
+    bg.fillRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
+    
+    // Borde
+    bg.lineStyle(3, borderColor, 1);
+    bg.strokeRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
     winContainer.add(bg);
 
-    const winText = this.scene.add.text(0, -50, "🎉 ¡NIVEL COMPLETADO!", {
-      fontSize: "24px",
+    const winText = this.scene.add.text(0, 35, "🎉 ¡NIVEL COMPLETADO!", {
+      fontSize: "26px",
       fontFamily: "Arial Black, sans-serif",
-      color: "#ffcc00",
+      color: "#27ae60",
       align: "center",
     });
     winText.setOrigin(0.5);
     winContainer.add(winText);
 
-    const continueBtn = this.scene.add.container(0, 30);
+    // Botón con estilo 3D
+    const continueBtn = this.scene.add.container(0, 120);
+    const btnWidth = 180;
+    const btnHeight = 44;
+    const btnDepth = 4;
+    
     const btnBg = this.scene.add.graphics();
-    btnBg.fillStyle(0x00ff88, 1);
-    btnBg.fillRoundedRect(-80, -20, 160, 40, 10);
+    // Sombra del botón
+    btnBg.fillStyle(this.darkenColor(0x27ae60, 0.3), 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, btnDepth, btnWidth, btnHeight, 10);
+    // Cara del botón
+    btnBg.fillStyle(0x27ae60, 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 10);
+    // Brillo superior
+    btnBg.fillStyle(0xffffff, 0.2);
+    btnBg.fillRoundedRect(-btnWidth / 2 + 4, 4, btnWidth - 8, btnHeight * 0.35, { tl: 8, tr: 8, bl: 0, br: 0 });
     continueBtn.add(btnBg);
 
-    const btnText = this.scene.add.text(0, 0, "SIGUIENTE NIVEL", {
+    const btnText = this.scene.add.text(0, btnHeight / 2, "SIGUIENTE NIVEL", {
       fontSize: "16px",
-      fontFamily: "Arial, sans-serif",
-      color: "#000000",
+      fontFamily: "Arial Black, sans-serif",
+      color: "#ffffff",
     });
     btnText.setOrigin(0.5);
     continueBtn.add(btnText);
 
-    continueBtn.setSize(160, 40);
+    continueBtn.setSize(btnWidth, btnHeight + btnDepth);
     continueBtn.setInteractive({ useHandCursor: true });
+    
+    continueBtn.on("pointerover", () => {
+      this.scene.tweens.add({
+        targets: continueBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+    
+    continueBtn.on("pointerout", () => {
+      this.scene.tweens.add({
+        targets: continueBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+    
     continueBtn.on("pointerdown", () => {
       winContainer.destroy();
       overlay.destroy();
@@ -814,7 +869,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas } = GameSettings;
 
     const overlay = this.scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.7);
+    overlay.fillStyle(0x000000, 0.5);
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     this.add(overlay);
 
@@ -823,47 +878,102 @@ export class GameUI extends Phaser.GameObjects.Container {
       canvas.height / 2
     );
 
+    const modalWidth = 320;
+    const modalHeight = 220;
+    const borderRadius = 16;
+    const depth3D = 8;
+
+    // Colores estilo juego (rojo para game over)
+    const bgColor = 0xfefcf8; // Blanco marfil
+    const borderColor = 0xc0392b; // Rojo
+    const accentColor = 0x922b21; // Rojo oscuro
+
     const bg = this.scene.add.graphics();
-    bg.fillStyle(0x1a1a2e, 1);
-    bg.fillRoundedRect(-150, -100, 300, 200, 20);
-    bg.lineStyle(3, 0xe94560, 1);
-    bg.strokeRoundedRect(-150, -100, 300, 200, 20);
+    
+    // Sombra suave
+    bg.fillStyle(0x000000, 0.15);
+    bg.fillRoundedRect(-modalWidth / 2 + 4, depth3D + 4, modalWidth, modalHeight, borderRadius);
+    
+    // Cara 3D inferior
+    bg.fillStyle(accentColor, 1);
+    bg.fillRoundedRect(-modalWidth / 2, depth3D, modalWidth, modalHeight, borderRadius);
+    
+    // Cara principal
+    bg.fillStyle(bgColor, 1);
+    bg.fillRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
+    
+    // Borde
+    bg.lineStyle(3, borderColor, 1);
+    bg.strokeRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
     gameOverContainer.add(bg);
 
-    const gameOverText = this.scene.add.text(0, -50, "💀 GAME OVER", {
+    const gameOverText = this.scene.add.text(0, 35, "💀 GAME OVER", {
       fontSize: "28px",
       fontFamily: "Arial Black, sans-serif",
-      color: "#ff4444",
+      color: "#c0392b",
       align: "center",
     });
     gameOverText.setOrigin(0.5);
     gameOverContainer.add(gameOverText);
 
-    const subText = this.scene.add.text(0, -10, "Mano llena sin movimientos", {
+    const subText = this.scene.add.text(0, 75, "Mano llena sin movimientos", {
       fontSize: "14px",
       fontFamily: "Arial, sans-serif",
-      color: "#aaaaaa",
+      color: "#7f8c8d",
       align: "center",
     });
     subText.setOrigin(0.5);
     gameOverContainer.add(subText);
 
-    const retryBtn = this.scene.add.container(0, 50);
+    // Botón con estilo 3D
+    const retryBtn = this.scene.add.container(0, 140);
+    const btnWidth = 160;
+    const btnHeight = 44;
+    const btnDepth = 4;
+    
     const btnBg = this.scene.add.graphics();
-    btnBg.fillStyle(0xe94560, 1);
-    btnBg.fillRoundedRect(-60, -20, 120, 40, 10);
+    // Sombra del botón
+    btnBg.fillStyle(this.darkenColor(0xc0392b, 0.3), 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, btnDepth, btnWidth, btnHeight, 10);
+    // Cara del botón
+    btnBg.fillStyle(0xc0392b, 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 10);
+    // Brillo superior
+    btnBg.fillStyle(0xffffff, 0.2);
+    btnBg.fillRoundedRect(-btnWidth / 2 + 4, 4, btnWidth - 8, btnHeight * 0.35, { tl: 8, tr: 8, bl: 0, br: 0 });
     retryBtn.add(btnBg);
 
-    const btnText = this.scene.add.text(0, 0, "REINTENTAR", {
+    const btnText = this.scene.add.text(0, btnHeight / 2, "REINTENTAR", {
       fontSize: "16px",
-      fontFamily: "Arial, sans-serif",
+      fontFamily: "Arial Black, sans-serif",
       color: "#ffffff",
     });
     btnText.setOrigin(0.5);
     retryBtn.add(btnText);
 
-    retryBtn.setSize(120, 40);
+    retryBtn.setSize(btnWidth, btnHeight + btnDepth);
     retryBtn.setInteractive({ useHandCursor: true });
+    
+    retryBtn.on("pointerover", () => {
+      this.scene.tweens.add({
+        targets: retryBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+    
+    retryBtn.on("pointerout", () => {
+      this.scene.tweens.add({
+        targets: retryBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+    
     retryBtn.on("pointerdown", () => {
       gameOverContainer.destroy();
       overlay.destroy();
