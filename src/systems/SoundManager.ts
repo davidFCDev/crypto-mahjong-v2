@@ -17,7 +17,7 @@ class SoundManagerClass {
     this.tileClickAudio = new Audio(
       "https://remix.gg/blob/zS0QCi0PfUjO/tile-rEDK06oDjxbftVNzf9yiLZlUqCn6GN.mp3?0EiX"
     );
-    this.tileClickAudio.volume = 0.3;
+    this.tileClickAudio.volume = 0.08;
 
     this.isInitialized = true;
   }
@@ -26,7 +26,7 @@ class SoundManagerClass {
     if (this.tileClickAudio) {
       // Clonar para permitir múltiples reproducciones simultáneas
       const sound = this.tileClickAudio.cloneNode() as HTMLAudioElement;
-      sound.volume = 0.2;
+      sound.volume = 0.08;
       sound.play().catch(() => {
         // Ignorar errores de autoplay
       });
