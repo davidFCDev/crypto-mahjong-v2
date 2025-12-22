@@ -756,72 +756,97 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     const modalWidth = 320;
-    const modalHeight = 200;
+    const modalHeight = 180;
     const borderRadius = 16;
-    const depth3D = 8;
+    const depth3D = 16;
 
-    // Colores estilo juego
-    const bgColor = 0xfefcf8; // Blanco marfil (como las fichas)
-    const borderColor = 0x27ae60; // Verde del UI
-    const accentColor = 0x1e8449; // Verde oscuro
+    // Colores estilo badges (verde)
+    const badgeColor = 0x27ae60;
+    const borderColor = 0x1e8449;
 
     const bg = this.scene.add.graphics();
-    
-    // Sombra suave
-    bg.fillStyle(0x000000, 0.15);
-    bg.fillRoundedRect(-modalWidth / 2 + 4, depth3D + 4, modalWidth, modalHeight, borderRadius);
-    
-    // Cara 3D inferior
-    bg.fillStyle(accentColor, 1);
-    bg.fillRoundedRect(-modalWidth / 2, depth3D, modalWidth, modalHeight, borderRadius);
-    
-    // Cara principal
-    bg.fillStyle(bgColor, 1);
-    bg.fillRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
-    
-    // Borde
-    bg.lineStyle(3, borderColor, 1);
-    bg.strokeRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
+
+    // Cara 3D inferior (como los badges)
+    bg.fillStyle(borderColor, 1);
+    bg.fillRoundedRect(
+      -modalWidth / 2,
+      depth3D,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
+    // Borde de la cara 3D
+    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+    bg.strokeRoundedRect(
+      -modalWidth / 2,
+      depth3D,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
+    // Cara principal (como los badges)
+    bg.fillStyle(badgeColor, 1);
+    bg.fillRoundedRect(
+      -modalWidth / 2,
+      0,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
+    // Borde de la cara principal
+    bg.lineStyle(2, borderColor, 1);
+    bg.strokeRoundedRect(
+      -modalWidth / 2,
+      0,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
     winContainer.add(bg);
 
-    const winText = this.scene.add.text(0, 35, "🎉 ¡NIVEL COMPLETADO!", {
+    const winText = this.scene.add.text(0, 50, "🎉 ¡NIVEL COMPLETADO!", {
       fontSize: "26px",
-      fontFamily: "Arial Black, sans-serif",
-      color: "#27ae60",
+      fontFamily: "'Fredoka One', Arial Black, sans-serif",
+      color: "#ffffff",
+      stroke: "#145a32",
+      strokeThickness: 3,
       align: "center",
     });
     winText.setOrigin(0.5);
     winContainer.add(winText);
 
-    // Botón con estilo 3D
+    // Botón con estilo 3D (blanco como contraste)
     const continueBtn = this.scene.add.container(0, 120);
-    const btnWidth = 180;
-    const btnHeight = 44;
-    const btnDepth = 4;
-    
+    const btnWidth = 200;
+    const btnHeight = 48;
+    const btnDepth = 6;
+
     const btnBg = this.scene.add.graphics();
     // Sombra del botón
-    btnBg.fillStyle(this.darkenColor(0x27ae60, 0.3), 1);
-    btnBg.fillRoundedRect(-btnWidth / 2, btnDepth, btnWidth, btnHeight, 10);
-    // Cara del botón
-    btnBg.fillStyle(0x27ae60, 1);
-    btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 10);
-    // Brillo superior
-    btnBg.fillStyle(0xffffff, 0.2);
-    btnBg.fillRoundedRect(-btnWidth / 2 + 4, 4, btnWidth - 8, btnHeight * 0.35, { tl: 8, tr: 8, bl: 0, br: 0 });
+    btnBg.fillStyle(0xcccccc, 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, btnDepth, btnWidth, btnHeight, 12);
+    // Cara del botón (blanco)
+    btnBg.fillStyle(0xffffff, 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 12);
+    // Borde
+    btnBg.lineStyle(2, borderColor, 1);
+    btnBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 12);
     continueBtn.add(btnBg);
 
     const btnText = this.scene.add.text(0, btnHeight / 2, "SIGUIENTE NIVEL", {
-      fontSize: "16px",
-      fontFamily: "Arial Black, sans-serif",
-      color: "#ffffff",
+      fontSize: "18px",
+      fontFamily: "'Fredoka One', Arial Black, sans-serif",
+      color: "#1e8449",
     });
     btnText.setOrigin(0.5);
     continueBtn.add(btnText);
 
     continueBtn.setSize(btnWidth, btnHeight + btnDepth);
     continueBtn.setInteractive({ useHandCursor: true });
-    
+
     continueBtn.on("pointerover", () => {
       this.scene.tweens.add({
         targets: continueBtn,
@@ -831,7 +856,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         ease: "Power2",
       });
     });
-    
+
     continueBtn.on("pointerout", () => {
       this.scene.tweens.add({
         targets: continueBtn,
@@ -841,7 +866,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         ease: "Power2",
       });
     });
-    
+
     continueBtn.on("pointerdown", () => {
       winContainer.destroy();
       overlay.destroy();
@@ -889,22 +914,46 @@ export class GameUI extends Phaser.GameObjects.Container {
     const accentColor = 0x922b21; // Rojo oscuro
 
     const bg = this.scene.add.graphics();
-    
+
     // Sombra suave
     bg.fillStyle(0x000000, 0.15);
-    bg.fillRoundedRect(-modalWidth / 2 + 4, depth3D + 4, modalWidth, modalHeight, borderRadius);
-    
+    bg.fillRoundedRect(
+      -modalWidth / 2 + 4,
+      depth3D + 4,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
     // Cara 3D inferior
     bg.fillStyle(accentColor, 1);
-    bg.fillRoundedRect(-modalWidth / 2, depth3D, modalWidth, modalHeight, borderRadius);
-    
+    bg.fillRoundedRect(
+      -modalWidth / 2,
+      depth3D,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
     // Cara principal
     bg.fillStyle(bgColor, 1);
-    bg.fillRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
-    
+    bg.fillRoundedRect(
+      -modalWidth / 2,
+      0,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
     // Borde
     bg.lineStyle(3, borderColor, 1);
-    bg.strokeRoundedRect(-modalWidth / 2, 0, modalWidth, modalHeight, borderRadius);
+    bg.strokeRoundedRect(
+      -modalWidth / 2,
+      0,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
     gameOverContainer.add(bg);
 
     const gameOverText = this.scene.add.text(0, 35, "💀 GAME OVER", {
@@ -930,7 +979,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const btnWidth = 160;
     const btnHeight = 44;
     const btnDepth = 4;
-    
+
     const btnBg = this.scene.add.graphics();
     // Sombra del botón
     btnBg.fillStyle(this.darkenColor(0xc0392b, 0.3), 1);
@@ -940,7 +989,13 @@ export class GameUI extends Phaser.GameObjects.Container {
     btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 10);
     // Brillo superior
     btnBg.fillStyle(0xffffff, 0.2);
-    btnBg.fillRoundedRect(-btnWidth / 2 + 4, 4, btnWidth - 8, btnHeight * 0.35, { tl: 8, tr: 8, bl: 0, br: 0 });
+    btnBg.fillRoundedRect(
+      -btnWidth / 2 + 4,
+      4,
+      btnWidth - 8,
+      btnHeight * 0.35,
+      { tl: 8, tr: 8, bl: 0, br: 0 }
+    );
     retryBtn.add(btnBg);
 
     const btnText = this.scene.add.text(0, btnHeight / 2, "REINTENTAR", {
@@ -953,7 +1008,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     retryBtn.setSize(btnWidth, btnHeight + btnDepth);
     retryBtn.setInteractive({ useHandCursor: true });
-    
+
     retryBtn.on("pointerover", () => {
       this.scene.tweens.add({
         targets: retryBtn,
@@ -963,7 +1018,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         ease: "Power2",
       });
     });
-    
+
     retryBtn.on("pointerout", () => {
       this.scene.tweens.add({
         targets: retryBtn,
@@ -973,7 +1028,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         ease: "Power2",
       });
     });
-    
+
     retryBtn.on("pointerdown", () => {
       gameOverContainer.destroy();
       overlay.destroy();

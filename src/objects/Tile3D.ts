@@ -5,6 +5,7 @@
 
 import GameSettings from "../config/GameSettings";
 import { TILE_COLORS, TileType, type TileState } from "../types";
+import { SoundManager } from "../systems/SoundManager";
 
 // Cache global de texturas para evitar re-renderizar
 const textureCache: Map<string, boolean> = new Map();
@@ -76,6 +77,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
       // Usar imagen como fondo de la ficha
       const innerWidth = this.tileWidth - 12;
       const innerHeight = this.tileHeight - 12;
+      const cornerRadius = GameSettings.tile.cornerRadius - 2;
 
       this.symbolImage = scene.add.image(
         iconOffsetX,
@@ -85,11 +87,23 @@ export class Tile3D extends Phaser.GameObjects.Container {
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
       this.add(this.symbolImage);
 
+      // Crear máscara redondeada para la imagen
+      const maskShape = scene.make.graphics({ x: 0, y: 0 });
+      maskShape.fillStyle(0xffffff);
+      maskShape.fillRoundedRect(
+        this.x + iconOffsetX - innerWidth / 2,
+        this.y + iconOffsetY - innerHeight / 2,
+        innerWidth,
+        innerHeight,
+        cornerRadius
+      );
+      const mask = maskShape.createGeometryMask();
+      this.symbolImage.setMask(mask);
+
       // Añadir efecto de brillo suave encima de la imagen
       const shineOverlay = scene.add.graphics();
       const shineX = iconOffsetX - innerWidth / 2;
       const shineY = iconOffsetY - innerHeight / 2;
-      const cornerRadius = GameSettings.tile.cornerRadius - 3;
 
       // Brillo superior (gradiente muy suave y pequeño)
       shineOverlay.fillStyle(0xffffff, 0.12);
@@ -215,16 +229,6 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     // Solo dibujar 3D si showBottom es true
     if (showBottom) {
-      // === CARA LATERAL DERECHA (efecto 3D) - Color claro ===
-      g.fillStyle(tileColors.sideLight || tileColors.side, 1);
-      g.beginPath();
-      g.moveTo(offsetX + w - r, offsetY + h);
-      g.lineTo(offsetX + w, offsetY + h);
-      g.lineTo(offsetX + w, offsetY + h + d);
-      g.lineTo(offsetX + w - r, offsetY + h + d);
-      g.closePath();
-      g.fillPath();
-
       // === CARA INFERIOR (volumen 3D hacia abajo) - Color claro ===
       g.fillStyle(tileColors.bottomLight || tileColors.bottom, 1);
       g.fillRoundedRect(offsetX, offsetY + d, w, h, r);
@@ -373,6 +377,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
       });
       return;
     }
+    // Reproducir sonido de click
+    SoundManager.playTileClick();
     this.emit("tile-clicked", this.tileState);
   }
 

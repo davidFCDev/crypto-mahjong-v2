@@ -16,7 +16,7 @@ export const GameSettings = {
   tile: {
     width: 110,
     height: 148,
-    depth: 12, // Profundidad 3D sutil
+    depth: 14, // Profundidad 3D sutil
     padding: 2,
     cornerRadius: 10,
     shadowOffset: 14,
@@ -70,22 +70,22 @@ export const GameSettings = {
   },
 
   // Level progression - generates config based on level
-  // Máximo 5 filas y 5 columnas, aumentan capas, tipos y densidad para dificultad
+  // Máximo 4x4 grid, aumentan capas, tipos y densidad para dificultad
   getLevelConfig: (level: number): LevelConfig => {
-    const MAX_ROWS = 5;
-    const MAX_COLS = 5;
+    const MAX_ROWS = 4;
+    const MAX_COLS = 4;
 
     const configs = [
       { rows: 4, cols: 4, layers: 3, tileTypes: 4, coverageRate: 0.6 }, // Nivel 1: Fácil
-      { rows: 4, cols: 5, layers: 3, tileTypes: 5, coverageRate: 0.65 }, // Nivel 2
-      { rows: 5, cols: 5, layers: 3, tileTypes: 6, coverageRate: 0.7 }, // Nivel 3
-      { rows: 5, cols: 5, layers: 4, tileTypes: 7, coverageRate: 0.72 }, // Nivel 4
-      { rows: 5, cols: 5, layers: 4, tileTypes: 8, coverageRate: 0.75 }, // Nivel 5
-      { rows: 5, cols: 5, layers: 5, tileTypes: 9, coverageRate: 0.78 }, // Nivel 6
-      { rows: 5, cols: 5, layers: 5, tileTypes: 10, coverageRate: 0.8 }, // Nivel 7
-      { rows: 5, cols: 5, layers: 6, tileTypes: 11, coverageRate: 0.82 }, // Nivel 8
-      { rows: 5, cols: 5, layers: 6, tileTypes: 12, coverageRate: 0.85 }, // Nivel 9
-      { rows: 5, cols: 5, layers: 7, tileTypes: 12, coverageRate: 0.88 }, // Nivel 10+: Máxima dificultad
+      { rows: 4, cols: 4, layers: 3, tileTypes: 5, coverageRate: 0.65 }, // Nivel 2
+      { rows: 4, cols: 4, layers: 4, tileTypes: 6, coverageRate: 0.7 }, // Nivel 3
+      { rows: 4, cols: 4, layers: 4, tileTypes: 7, coverageRate: 0.72 }, // Nivel 4
+      { rows: 4, cols: 4, layers: 5, tileTypes: 8, coverageRate: 0.75 }, // Nivel 5
+      { rows: 4, cols: 4, layers: 5, tileTypes: 9, coverageRate: 0.78 }, // Nivel 6
+      { rows: 4, cols: 4, layers: 6, tileTypes: 10, coverageRate: 0.8 }, // Nivel 7
+      { rows: 4, cols: 4, layers: 6, tileTypes: 11, coverageRate: 0.82 }, // Nivel 8
+      { rows: 4, cols: 4, layers: 7, tileTypes: 12, coverageRate: 0.85 }, // Nivel 9
+      { rows: 4, cols: 4, layers: 8, tileTypes: 12, coverageRate: 0.88 }, // Nivel 10+: Máxima dificultad
     ];
 
     const configIndex = Math.min(level - 1, configs.length - 1);
