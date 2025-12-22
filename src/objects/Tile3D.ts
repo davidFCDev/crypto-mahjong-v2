@@ -4,8 +4,8 @@
  */
 
 import GameSettings from "../config/GameSettings";
-import { TILE_COLORS, TileType, type TileState } from "../types";
 import { SoundManager } from "../systems/SoundManager";
+import { TILE_COLORS, TileType, type TileState } from "../types";
 
 // Cache global de texturas para evitar re-renderizar
 const textureCache: Map<string, boolean> = new Map();
@@ -75,9 +75,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     if (hasImage) {
       // Usar imagen como fondo de la ficha
-      const innerWidth = this.tileWidth - 12;
-      const innerHeight = this.tileHeight - 12;
-      const cornerRadius = GameSettings.tile.cornerRadius - 2;
+      const innerWidth = this.tileWidth - 14;
+      const innerHeight = this.tileHeight - 14;
 
       this.symbolImage = scene.add.image(
         iconOffsetX,
@@ -86,43 +85,6 @@ export class Tile3D extends Phaser.GameObjects.Container {
       );
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
       this.add(this.symbolImage);
-
-      // Crear máscara redondeada para la imagen
-      const maskShape = scene.make.graphics({ x: 0, y: 0 });
-      maskShape.fillStyle(0xffffff);
-      maskShape.fillRoundedRect(
-        this.x + iconOffsetX - innerWidth / 2,
-        this.y + iconOffsetY - innerHeight / 2,
-        innerWidth,
-        innerHeight,
-        cornerRadius
-      );
-      const mask = maskShape.createGeometryMask();
-      this.symbolImage.setMask(mask);
-
-      // Añadir efecto de brillo suave encima de la imagen
-      const shineOverlay = scene.add.graphics();
-      const shineX = iconOffsetX - innerWidth / 2;
-      const shineY = iconOffsetY - innerHeight / 2;
-
-      // Brillo superior (gradiente muy suave y pequeño)
-      shineOverlay.fillStyle(0xffffff, 0.12);
-      shineOverlay.fillRoundedRect(
-        shineX + 4,
-        shineY + 4,
-        innerWidth - 8,
-        innerHeight * 0.18,
-        { tl: cornerRadius, tr: cornerRadius, bl: 0, br: 0 }
-      );
-
-      // Línea de brillo sutil en el borde superior
-      shineOverlay.lineStyle(1, 0xffffff, 0.25);
-      shineOverlay.beginPath();
-      shineOverlay.moveTo(shineX + cornerRadius, shineY + 2);
-      shineOverlay.lineTo(shineX + innerWidth - cornerRadius, shineY + 2);
-      shineOverlay.strokePath();
-
-      this.add(shineOverlay);
 
       // Crear texto vacío (necesario para compatibilidad)
       this.symbolText = scene.add.text(0, 0, "", { fontSize: "1px" });
@@ -345,11 +307,11 @@ export class Tile3D extends Phaser.GameObjects.Container {
   private onPointerOver(): void {
     if (!this.tileState.isAccessible) return;
     this.isHovered = true;
+    // Efecto glow suave - solo cambiar alpha/brillo
     this.scene.tweens.add({
-      targets: this,
-      scaleX: 1.1,
-      scaleY: 1.1,
-      duration: 80,
+      targets: this.tileImage,
+      alpha: 0.85,
+      duration: 100,
       ease: "Power2",
     });
   }
@@ -357,10 +319,9 @@ export class Tile3D extends Phaser.GameObjects.Container {
   private onPointerOut(): void {
     this.isHovered = false;
     this.scene.tweens.add({
-      targets: this,
-      scaleX: 1,
-      scaleY: 1,
-      duration: 80,
+      targets: this.tileImage,
+      alpha: 1,
+      duration: 100,
       ease: "Power2",
     });
   }

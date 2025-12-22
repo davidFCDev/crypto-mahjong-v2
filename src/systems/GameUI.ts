@@ -750,19 +750,20 @@ export class GameUI extends Phaser.GameObjects.Container {
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     this.add(overlay);
 
-    const winContainer = this.scene.add.container(
-      canvas.width / 2,
-      canvas.height / 2
-    );
-
-    const modalWidth = 320;
-    const modalHeight = 180;
+    const modalWidth = 380;
+    const modalHeight = 220;
     const borderRadius = 16;
     const depth3D = 16;
 
     // Colores estilo badges (verde)
     const badgeColor = 0x27ae60;
     const borderColor = 0x1e8449;
+
+    // Contenedor centrado correctamente
+    const winContainer = this.scene.add.container(
+      canvas.width / 2,
+      canvas.height / 2 - modalHeight / 2
+    );
 
     const bg = this.scene.add.graphics();
 
@@ -807,21 +808,21 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
     winContainer.add(bg);
 
-    const winText = this.scene.add.text(0, 50, "🎉 ¡NIVEL COMPLETADO!", {
-      fontSize: "26px",
+    const winText = this.scene.add.text(0, 70, "LEVEL COMPLETE!", {
+      fontSize: "32px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
       stroke: "#145a32",
-      strokeThickness: 3,
+      strokeThickness: 4,
       align: "center",
     });
     winText.setOrigin(0.5);
     winContainer.add(winText);
 
     // Botón con estilo 3D (blanco como contraste)
-    const continueBtn = this.scene.add.container(0, 120);
-    const btnWidth = 200;
-    const btnHeight = 48;
+    const continueBtn = this.scene.add.container(0, 155);
+    const btnWidth = 220;
+    const btnHeight = 52;
     const btnDepth = 6;
 
     const btnBg = this.scene.add.graphics();
@@ -836,8 +837,8 @@ export class GameUI extends Phaser.GameObjects.Container {
     btnBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 12);
     continueBtn.add(btnBg);
 
-    const btnText = this.scene.add.text(0, btnHeight / 2, "SIGUIENTE NIVEL", {
-      fontSize: "18px",
+    const btnText = this.scene.add.text(0, btnHeight / 2, "NEXT LEVEL", {
+      fontSize: "20px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#1e8449",
     });
@@ -848,23 +849,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     continueBtn.setInteractive({ useHandCursor: true });
 
     continueBtn.on("pointerover", () => {
-      this.scene.tweens.add({
-        targets: continueBtn,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 100,
-        ease: "Power2",
-      });
+      btnBg.alpha = 0.9;
     });
 
     continueBtn.on("pointerout", () => {
-      this.scene.tweens.add({
-        targets: continueBtn,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
+      btnBg.alpha = 1;
     });
 
     continueBtn.on("pointerdown", () => {
