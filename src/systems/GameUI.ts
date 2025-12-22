@@ -808,7 +808,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
     winContainer.add(bg);
 
-    const winText = this.scene.add.text(0, 70, "LEVEL COMPLETE!", {
+    const winText = this.scene.add.text(0, 60, "LEVEL COMPLETE!", {
       fontSize: "32px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
@@ -820,7 +820,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     winContainer.add(winText);
 
     // Botón con estilo 3D (blanco como contraste)
-    const continueBtn = this.scene.add.container(0, 155);
+    const continueBtn = this.scene.add.container(0, 135);
     const btnWidth = 220;
     const btnHeight = 52;
     const btnDepth = 6;

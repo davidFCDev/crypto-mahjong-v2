@@ -9,6 +9,7 @@ import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
 import { HandManager } from "../systems/HandManager";
+import { SoundManager } from "../systems/SoundManager";
 import {
   TILE_COLORS,
   TileType,
@@ -355,6 +356,8 @@ export class MahjongScene extends Phaser.Scene {
     if (matchResult.matched) {
       // Delay breve para que se vea la tercera ficha antes del match
       this.time.delayedCall(100, () => {
+        // Reproducir sonido de trio
+        SoundManager.playTrio();
         // Animar match
         const matchedIds = matchResult.tiles.map((t) => t.id);
         this.gameUI.animateMatch(matchedIds, () => {

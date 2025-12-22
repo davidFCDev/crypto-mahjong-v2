@@ -338,8 +338,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
       });
       return;
     }
-    // Reproducir sonido de click
-    SoundManager.playTileClick();
+    // Reproducir sonido de enviar ficha al acumulador
+    SoundManager.playCardToHand();
     this.emit("tile-clicked", this.tileState);
   }
 
