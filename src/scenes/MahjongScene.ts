@@ -69,6 +69,12 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   preload(): void {
+    // Cargar imagen de fondo
+    this.load.image(
+      "background",
+      "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj"
+    );
+
     // Cargar imágenes de los tiles que tienen imageUrl
     Object.values(TileType).forEach((type) => {
       if (typeof type === "number") {
@@ -96,24 +102,20 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Minimalista para máximo rendimiento
+   * Crea el fondo del juego - Imagen de fondo
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    const bg = this.add.graphics();
-
-    // Color base amarillo claro (pergamino)
-    bg.fillStyle(0xf5e6c8, 1);
-    bg.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Borde decorativo verde (mismo color que el acumulador)
-    bg.lineStyle(4, 0x2e8b57, 1);
-    bg.strokeRoundedRect(12, 12, canvas.width - 24, canvas.height - 24, 20);
-
-    bg.lineStyle(2, 0x1e6b47, 0.6);
-    bg.strokeRoundedRect(18, 18, canvas.width - 36, canvas.height - 36, 16);
-
+    // Añadir imagen de fondo centrada y escalada para cubrir
+    const bg = this.add.image(canvas.width / 2, canvas.height / 2, "background");
+    
+    // Escalar para cubrir todo el canvas manteniendo proporción
+    const scaleX = canvas.width / bg.width;
+    const scaleY = canvas.height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale);
+    
     bg.setDepth(-2);
   }
 
