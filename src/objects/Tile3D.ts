@@ -87,7 +87,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
 
       // Crear máscara redondeada para la imagen
-      const maskShape = scene.make.graphics({ x: 0, y: 0, add: false });
+      const maskShape = scene.make.graphics({});
       maskShape.fillStyle(0xffffff);
       maskShape.fillRoundedRect(
         -innerWidth / 2,
