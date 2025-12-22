@@ -208,8 +208,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
     g.fillStyle(tileColors.face, 1);
     g.fillRoundedRect(offsetX, offsetY, w, h, r);
 
-    // Borde principal de la ficha
-    g.lineStyle(2, tileColors.border, 1);
+    // Borde principal de la ficha (más grueso)
+    g.lineStyle(3, tileColors.border, 1);
     g.strokeRoundedRect(offsetX, offsetY, w, h, r);
 
     // === ÁREA DE COLOR (zona interior donde va el símbolo) ===
@@ -252,13 +252,6 @@ export class Tile3D extends Phaser.GameObjects.Container {
         { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
       );
     }
-
-    // Línea de brillo en el borde superior de toda la ficha
-    g.lineStyle(1.5, 0xffffff, 0.4);
-    g.beginPath();
-    g.moveTo(offsetX + r, offsetY + 1);
-    g.lineTo(offsetX + w - r, offsetY + 1);
-    g.strokePath();
 
     // Pequeño brillo en esquina superior izquierda
     g.fillStyle(0xffffff, 0.15);

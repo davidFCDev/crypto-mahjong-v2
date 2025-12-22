@@ -108,14 +108,18 @@ export class MahjongScene extends Phaser.Scene {
     const { canvas } = GameSettings;
 
     // Añadir imagen de fondo centrada y escalada para cubrir
-    const bg = this.add.image(canvas.width / 2, canvas.height / 2, "background");
-    
+    const bg = this.add.image(
+      canvas.width / 2,
+      canvas.height / 2,
+      "background"
+    );
+
     // Escalar para cubrir todo el canvas manteniendo proporción
     const scaleX = canvas.width / bg.width;
     const scaleY = canvas.height / bg.height;
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale);
-    
+
     bg.setDepth(-2);
   }
 
