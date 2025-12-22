@@ -243,41 +243,45 @@ export class Tile3D extends Phaser.GameObjects.Container {
     g.strokeRoundedRect(offsetX, offsetY, w, h, r);
 
     // === ÁREA DE COLOR (zona interior donde va el símbolo) ===
+    // Solo dibujar si no hay imagen configurada para este tipo
+    const tileConfig = TILE_COLORS[type];
     const margin = 5;
     const innerW = w - margin * 2;
     const innerH = h - margin * 2;
     const innerR = r - 1;
+    
+    if (!tileConfig.imageUrl) {
+      // Fondo con gradiente del color del tipo
+      g.fillStyle(colors.main, 1);
+      g.fillRoundedRect(
+        offsetX + margin,
+        offsetY + margin,
+        innerW,
+        innerH,
+        innerR
+      );
 
-    // Fondo con gradiente del color del tipo
-    g.fillStyle(colors.main, 1);
-    g.fillRoundedRect(
-      offsetX + margin,
-      offsetY + margin,
-      innerW,
-      innerH,
-      innerR
-    );
+      // Borde interior más oscuro
+      g.lineStyle(2, this.darkenColor(colors.main, 0.35), 1);
+      g.strokeRoundedRect(
+        offsetX + margin,
+        offsetY + margin,
+        innerW,
+        innerH,
+        innerR
+      );
 
-    // Borde interior más oscuro
-    g.lineStyle(2, this.darkenColor(colors.main, 0.35), 1);
-    g.strokeRoundedRect(
-      offsetX + margin,
-      offsetY + margin,
-      innerW,
-      innerH,
-      innerR
-    );
-
-    // === EFECTOS DE LUZ Y BRILLO ===
-    // Brillo superior grande (efecto cristal)
-    g.fillStyle(0xffffff, 0.25);
-    g.fillRoundedRect(
-      offsetX + margin + 3,
-      offsetY + margin + 3,
-      innerW - 6,
-      innerH * 0.3,
-      { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
-    );
+      // === EFECTOS DE LUZ Y BRILLO ===
+      // Brillo superior grande (efecto cristal)
+      g.fillStyle(0xffffff, 0.25);
+      g.fillRoundedRect(
+        offsetX + margin + 3,
+        offsetY + margin + 3,
+        innerW - 6,
+        innerH * 0.3,
+        { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
+      );
+    }
 
     // Línea de brillo en el borde superior de toda la ficha
     g.lineStyle(1.5, 0xffffff, 0.4);

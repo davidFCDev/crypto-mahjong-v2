@@ -73,7 +73,7 @@ export const GameSettings = {
     const MAX_COLS = 5;
 
     const configs = [
-      { rows: 4, cols: 4, layers: 3, tileTypes: 4, coverageRate: 0.6 }, // Nivel 1: Fácil
+      { rows: 5, cols: 5, layers: 4, tileTypes: 12, coverageRate: 0.8 }, // Nivel 1: TEST - 12 tipos para probar imágenes
       { rows: 4, cols: 5, layers: 3, tileTypes: 5, coverageRate: 0.65 }, // Nivel 2
       { rows: 5, cols: 5, layers: 3, tileTypes: 6, coverageRate: 0.7 }, // Nivel 3
       { rows: 5, cols: 5, layers: 4, tileTypes: 7, coverageRate: 0.72 }, // Nivel 4

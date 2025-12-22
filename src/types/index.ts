@@ -29,75 +29,84 @@ export const TILE_COLORS: Record<
     accent: 0x4d2f00,
     symbol: "₿",
     letter: "B",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/1-mPgx58r8nMr9HO5xSvgB16x3w6FEyg.webp?k0ys",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/1-tfgDt6wKwhgkpKJW1twPmHg6rAOHLo.webp?jhm5",
   },
   [TileType.ETHEREUM]: {
     main: 0x3c3cff, // Azul eléctrico
     accent: 0x0a0a4d,
     symbol: "Ξ",
     letter: "E",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/2-iqyqLMgvzDccClaJhuiY8aKzVhLQUE.webp?5qQr",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/2-3i8JAyodt8kbxwwH0YjiAsUDirxmx7.webp?6AoF",
   },
   [TileType.DOGE]: {
     main: 0xdfc850, // Amarillo dorado
     accent: 0x4d4000,
     symbol: "Ð",
     letter: "D",
-    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/3-vxkwmiPzhnx4Tdd1H7jhOCnf6tD6uf.webp?khL0",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/3-dzjcu8w0P45R8rsxCMKdy3sZ3pdIwC.webp?6cRk",
   },
   [TileType.PEPE]: {
     main: 0x00c853, // Verde brillante
     accent: 0x003d1a,
     symbol: "🐸",
     letter: "P",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/4-jxrFEJIcMRsWZMDxBwGSRlQhWUpL9r.webp?i98M",
   },
   [TileType.SHIBA]: {
     main: 0xff6b00, // Naranja fuerte
     accent: 0x4d2000,
     symbol: "🐕",
     letter: "S",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/5-ZvozVqo8KVSerdcckwQC6YAKDNqMa5.webp?gFSm",
   },
   [TileType.SOLANA]: {
     main: 0xaa00ff, // Morado brillante
     accent: 0x2a0050,
     symbol: "◎",
     letter: "O",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/6-4jXawjGI2kOag70GKqI3TeZIgeNXot.webp?bDDy",
   },
   [TileType.CARDANO]: {
     main: 0x0066ff, // Azul puro
     accent: 0x001a4d,
     symbol: "₳",
     letter: "A",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/7-EkUvygoc8Rp8yYpGimerPyoh8xucgV.webp?0QTq",
   },
   [TileType.POLKADOT]: {
     main: 0xff0080, // Rosa fuerte/Magenta
     accent: 0x4d0026,
     symbol: "●",
     letter: "K",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/8-MRrjJ4cYqR4HTH8WYBK2Bt5Z8GSuMB.webp?ShaT",
   },
   [TileType.AVALANCHE]: {
     main: 0xe60000, // Rojo puro
     accent: 0x4d0000,
     symbol: "▲",
     letter: "X",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/9-qVK9NAXivgIxj4PKBqwK3NwOEj8MB2.webp?NUbJ",
   },
   [TileType.CHAINLINK]: {
     main: 0x00bcd4, // Cyan/Turquesa
     accent: 0x003d42,
     symbol: "⬡",
     letter: "L",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/10-xmmDHKIHikDvzXk3XqlMa8tb0nFY3B.webp?rA5I",
   },
   [TileType.POLYGON]: {
     main: 0x7b1fa2, // Púrpura oscuro
     accent: 0x2a0a38,
     symbol: "⬢",
     letter: "M",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/11-hRjJPOuUSYR5vwZP4D2O6YenlmvsIK.webp?YZr2",
   },
   [TileType.LITECOIN]: {
     main: 0x607d8b, // Gris azulado
     accent: 0x1a2327,
     symbol: "Ł",
     letter: "C",
+    imageUrl: "https://remix.gg/blob/zS0QCi0PfUjO/12-usqCjP7WU9a17mzQsqUj7PuMxgBnVQ.webp?Aafi",
   },
 };
 
