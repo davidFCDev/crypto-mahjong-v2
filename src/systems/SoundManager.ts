@@ -15,9 +15,9 @@ class SoundManagerClass {
 
     // Crear el elemento de audio para el click de ficha
     this.tileClickAudio = new Audio(
-      "https://remix.gg/blob/zS0QCi0PfUjO/1-LFKZbXeNH6j0EzLBjYlqZLDa3qB7p3.mp3?m8VL"
+      "https://remix.gg/blob/zS0QCi0PfUjO/tile-rEDK06oDjxbftVNzf9yiLZlUqCn6GN.mp3?0EiX"
     );
-    this.tileClickAudio.volume = 0.2;
+    this.tileClickAudio.volume = 0.3;
 
     this.isInitialized = true;
   }
