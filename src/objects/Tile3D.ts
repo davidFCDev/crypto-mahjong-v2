@@ -75,8 +75,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     if (hasImage) {
       // Usar imagen como fondo de la ficha
-      const innerWidth = this.tileWidth - 14;
-      const innerHeight = this.tileHeight - 14;
+      const innerWidth = this.tileWidth - 16;
+      const innerHeight = this.tileHeight - 16;
 
       this.symbolImage = scene.add.image(
         iconOffsetX,
