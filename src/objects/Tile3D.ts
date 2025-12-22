@@ -215,10 +215,6 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     // Solo dibujar 3D si showBottom es true
     if (showBottom) {
-      // === SOMBRA DIFUSA ===
-      g.fillStyle(0x000000, 0.15);
-      g.fillRoundedRect(offsetX + 3, offsetY + d + 3, w, h, r);
-
       // === CARA LATERAL DERECHA (efecto 3D) - Color claro ===
       g.fillStyle(tileColors.sideLight || tileColors.side, 1);
       g.beginPath();
@@ -234,7 +230,11 @@ export class Tile3D extends Phaser.GameObjects.Container {
       g.fillRoundedRect(offsetX, offsetY + d, w, h, r);
 
       // Borde sutil en la cara inferior
-      g.lineStyle(1, this.darkenColor(tileColors.bottomLight || tileColors.bottom, 0.15), 1);
+      g.lineStyle(
+        1,
+        this.darkenColor(tileColors.bottomLight || tileColors.bottom, 0.15),
+        1
+      );
       g.strokeRoundedRect(offsetX, offsetY + d, w, h, r);
     }
 

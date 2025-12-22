@@ -16,7 +16,7 @@ export const GameSettings = {
   tile: {
     width: 110,
     height: 148,
-    depth: 20, // Profundidad 3D más pronunciada
+    depth: 12, // Profundidad 3D sutil
     padding: 2,
     cornerRadius: 10,
     shadowOffset: 14,
@@ -46,7 +46,7 @@ export const GameSettings = {
     maxWidth: 620, // No usar todo el ancho
     maxHeight: 850, // Alto disponible
     layerOffsetX: 0, // Sin offset X (solo 3D vertical)
-    layerOffsetY: 14, // Desplazamiento Y por capa (efecto 3D hacia abajo)
+    layerOffsetY: 10, // Desplazamiento Y por capa (efecto 3D hacia abajo)
   },
 
   // Hand configuration - Acumulador estilo minimalista
