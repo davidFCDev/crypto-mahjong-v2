@@ -74,9 +74,9 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const hasImage = scene.textures.exists(iconTextureKey);
 
     if (hasImage) {
-      // Usar imagen como fondo de la ficha
-      const innerWidth = this.tileWidth - 16;
-      const innerHeight = this.tileHeight - 16;
+      // Usar imagen como fondo de la ficha - ocupa casi todo hasta el borde
+      const innerWidth = this.tileWidth - 6;
+      const innerHeight = this.tileHeight - 6;
 
       this.symbolImage = scene.add.image(
         iconOffsetX,
@@ -252,6 +252,13 @@ export class Tile3D extends Phaser.GameObjects.Container {
         { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
       );
     }
+
+    // Línea de brillo en el borde superior de toda la ficha
+    g.lineStyle(1.5, 0xffffff, 0.4);
+    g.beginPath();
+    g.moveTo(offsetX + r, offsetY + 1);
+    g.lineTo(offsetX + w - r, offsetY + 1);
+    g.strokePath();
 
     // Pequeño brillo en esquina superior izquierda
     g.fillStyle(0xffffff, 0.15);
