@@ -19,12 +19,18 @@ class SoundManagerClass {
       "https://remix.gg/blob/zS0QCi0PfUjO/card-2zyqL9eHK6xXdLVCMxjmWdIupnc2Qx.mp3?eoim"
     );
     this.cardAudio.volume = 0.08;
+    this.cardAudio.preload = "auto";
 
     // Sonido para cuando hacemos un trio
     this.trioAudio = new Audio(
       "https://remix.gg/blob/zS0QCi0PfUjO/trio-Pn8FGqCg8FO38l0lOpVQEp7tU9fztk.mp3?J22q"
     );
     this.trioAudio.volume = 0.08;
+    this.trioAudio.preload = "auto";
+
+    // Forzar precarga de los sonidos
+    this.cardAudio.load();
+    this.trioAudio.load();
 
     this.isInitialized = true;
   }
