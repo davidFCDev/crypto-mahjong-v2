@@ -76,36 +76,40 @@ export class Tile3D extends Phaser.GameObjects.Container {
       // Usar imagen como fondo de la ficha
       const innerWidth = this.tileWidth - 12;
       const innerHeight = this.tileHeight - 12;
-      
-      this.symbolImage = scene.add.image(iconOffsetX, iconOffsetY, iconTextureKey);
+
+      this.symbolImage = scene.add.image(
+        iconOffsetX,
+        iconOffsetY,
+        iconTextureKey
+      );
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
       this.add(this.symbolImage);
-      
+
       // Añadir efecto de brillo suave encima de la imagen
       const shineOverlay = scene.add.graphics();
       const shineX = iconOffsetX - innerWidth / 2;
       const shineY = iconOffsetY - innerHeight / 2;
       const cornerRadius = GameSettings.tile.cornerRadius - 3;
-      
-      // Brillo superior (gradiente suave)
-      shineOverlay.fillStyle(0xffffff, 0.2);
+
+      // Brillo superior (gradiente muy suave y pequeño)
+      shineOverlay.fillStyle(0xffffff, 0.12);
       shineOverlay.fillRoundedRect(
-        shineX + 2,
-        shineY + 2,
-        innerWidth - 4,
-        innerHeight * 0.35,
+        shineX + 4,
+        shineY + 4,
+        innerWidth - 8,
+        innerHeight * 0.18,
         { tl: cornerRadius, tr: cornerRadius, bl: 0, br: 0 }
       );
-      
-      // Línea de brillo en el borde superior
-      shineOverlay.lineStyle(1.5, 0xffffff, 0.35);
+
+      // Línea de brillo sutil en el borde superior
+      shineOverlay.lineStyle(1, 0xffffff, 0.25);
       shineOverlay.beginPath();
-      shineOverlay.moveTo(shineX + cornerRadius, shineY + 1);
-      shineOverlay.lineTo(shineX + innerWidth - cornerRadius, shineY + 1);
+      shineOverlay.moveTo(shineX + cornerRadius, shineY + 2);
+      shineOverlay.lineTo(shineX + innerWidth - cornerRadius, shineY + 2);
       shineOverlay.strokePath();
-      
+
       this.add(shineOverlay);
-      
+
       // Crear texto vacío (necesario para compatibilidad)
       this.symbolText = scene.add.text(0, 0, "", { fontSize: "1px" });
       this.symbolText.setVisible(false);
@@ -212,11 +216,11 @@ export class Tile3D extends Phaser.GameObjects.Container {
     // Solo dibujar 3D si showBottom es true
     if (showBottom) {
       // === SOMBRA DIFUSA ===
-      g.fillStyle(0x000000, 0.2);
+      g.fillStyle(0x000000, 0.15);
       g.fillRoundedRect(offsetX + 3, offsetY + d + 3, w, h, r);
 
-      // === CARA LATERAL DERECHA (efecto 3D) ===
-      g.fillStyle(tileColors.side, 1);
+      // === CARA LATERAL DERECHA (efecto 3D) - Color claro ===
+      g.fillStyle(tileColors.sideLight || tileColors.side, 1);
       g.beginPath();
       g.moveTo(offsetX + w - r, offsetY + h);
       g.lineTo(offsetX + w, offsetY + h);
@@ -225,12 +229,12 @@ export class Tile3D extends Phaser.GameObjects.Container {
       g.closePath();
       g.fillPath();
 
-      // === CARA INFERIOR (volumen 3D hacia abajo) ===
-      g.fillStyle(tileColors.bottom, 1);
+      // === CARA INFERIOR (volumen 3D hacia abajo) - Color claro ===
+      g.fillStyle(tileColors.bottomLight || tileColors.bottom, 1);
       g.fillRoundedRect(offsetX, offsetY + d, w, h, r);
 
-      // Borde oscuro en la cara inferior para profundidad
-      g.lineStyle(1, this.darkenColor(tileColors.bottom, 0.3), 1);
+      // Borde sutil en la cara inferior
+      g.lineStyle(1, this.darkenColor(tileColors.bottomLight || tileColors.bottom, 0.15), 1);
       g.strokeRoundedRect(offsetX, offsetY + d, w, h, r);
     }
 
@@ -249,7 +253,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const innerW = w - margin * 2;
     const innerH = h - margin * 2;
     const innerR = r - 1;
-    
+
     if (!tileConfig.imageUrl) {
       // Fondo con gradiente del color del tipo
       g.fillStyle(colors.main, 1);
@@ -306,12 +310,16 @@ export class Tile3D extends Phaser.GameObjects.Container {
 
     const g = this.scene.add.graphics();
 
-    // Overlay oscuro muy visible para fichas bloqueadas
-    g.fillStyle(0x1a1a1a, 0.65);
+    // Overlay oscuro para la cara principal
+    g.fillStyle(0x1a1a1a, 0.55);
     g.fillRoundedRect(4, 4, w, h, r);
 
-    // Borde oscuro adicional para destacar
-    g.lineStyle(1, 0x000000, 0.4);
+    // Overlay oscuro para el 3D inferior
+    g.fillStyle(0x1a1a1a, 0.5);
+    g.fillRoundedRect(4, 4 + d, w, h, r);
+
+    // Borde oscuro adicional
+    g.lineStyle(1, 0x000000, 0.3);
     g.strokeRoundedRect(4, 4, w, h, r);
 
     g.generateTexture("tile-blocked-overlay", w + 8, h + d + 8);

@@ -494,21 +494,33 @@ export class GameUI extends Phaser.GameObjects.Container {
     if (hasImage) {
       // Fondo neutro para la imagen
       g.fillStyle(tileColors.face, 1);
-      g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
-      
+      g.fillRoundedRect(
+        -w / 2 + margin,
+        -h / 2 + margin,
+        innerW,
+        innerH,
+        innerR
+      );
+
       // Borde interior
       g.lineStyle(1.5, tileColors.border, 0.5);
-      g.strokeRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
-      
+      g.strokeRoundedRect(
+        -w / 2 + margin,
+        -h / 2 + margin,
+        innerW,
+        innerH,
+        innerR
+      );
+
       container.add(g);
-      
+
       // Añadir imagen (un poco más pequeña para que se vea el borde)
       const imgW = innerW - 6;
       const imgH = innerH - 6;
       const tileImage = this.scene.add.image(0, -d / 2, iconTextureKey);
       tileImage.setDisplaySize(imgW, imgH);
       container.add(tileImage);
-      
+
       // Efecto de brillo encima de la imagen
       const shineOverlay = this.scene.add.graphics();
       shineOverlay.fillStyle(0xffffff, 0.2);
@@ -519,19 +531,25 @@ export class GameUI extends Phaser.GameObjects.Container {
         imgH * 0.3,
         { tl: innerR - 2, tr: innerR - 2, bl: 0, br: 0 }
       );
-      
+
       // Línea de brillo superior
       shineOverlay.lineStyle(1, 0xffffff, 0.3);
       shineOverlay.beginPath();
       shineOverlay.moveTo(-imgW / 2 + innerR, -imgH / 2 - d / 2 + 1);
       shineOverlay.lineTo(imgW / 2 - innerR, -imgH / 2 - d / 2 + 1);
       shineOverlay.strokePath();
-      
+
       container.add(shineOverlay);
     } else {
       // Fondo del color principal
       g.fillStyle(colors.main, 1);
-      g.fillRoundedRect(-w / 2 + margin, -h / 2 + margin, innerW, innerH, innerR);
+      g.fillRoundedRect(
+        -w / 2 + margin,
+        -h / 2 + margin,
+        innerW,
+        innerH,
+        innerR
+      );
 
       // Borde interior sutil
       g.lineStyle(1.5, this.darkenColor(colors.main, 0.35), 1);
