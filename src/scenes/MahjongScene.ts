@@ -144,6 +144,11 @@ export class MahjongScene extends Phaser.Scene {
       this.currentLevelConfig
     );
 
+    // Iniciar música si es el primer nivel
+    if (level === 1) {
+      SoundManager.startMusic();
+    }
+
     // Crear fichas visuales
     this.createTileSprites();
 
@@ -447,6 +452,9 @@ export class MahjongScene extends Phaser.Scene {
     this.gameState.isGameOver = true;
     this.gameState.isPlaying = false;
     this.isAnimating = false;
+
+    // Parar música
+    SoundManager.stopMusic();
 
     // Enviar puntuación a Farcade (usando any para evitar errores de tipo)
     try {
