@@ -141,7 +141,8 @@ export class MahjongScene extends Phaser.Scene {
           ctx.clip();
 
           // Obtener la imagen original
-          const sourceImage = originalTexture.getSourceImage() as HTMLImageElement;
+          const sourceImage =
+            originalTexture.getSourceImage() as HTMLImageElement;
           ctx.drawImage(sourceImage, 0, 0, innerWidth, innerHeight);
 
           // Crear textura desde el canvas

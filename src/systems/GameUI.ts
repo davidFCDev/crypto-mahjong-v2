@@ -487,12 +487,14 @@ export class GameUI extends Phaser.GameObjects.Container {
     const innerH = h - margin * 2;
     const innerR = r - 1;
 
-    // Verificar si hay imagen disponible para este tipo
-    const iconTextureKey = `tile-icon-${tile.type}`;
-    const hasImage = this.scene.textures.exists(iconTextureKey);
+    // Verificar si hay imagen disponible para este tipo (usar versión redondeada)
+    const roundedTextureKey = `tile-icon-rounded-${tile.type}`;
+    const originalTextureKey = `tile-icon-${tile.type}`;
+    const hasRoundedImage = this.scene.textures.exists(roundedTextureKey);
+    const hasImage = hasRoundedImage || this.scene.textures.exists(originalTextureKey);
 
     if (hasImage) {
-      // Fondo neutro para la imagen
+      // Fondo blanco igual que las fichas del tablero
       g.fillStyle(tileColors.face, 1);
       g.fillRoundedRect(
         -w / 2 + margin,
@@ -502,8 +504,8 @@ export class GameUI extends Phaser.GameObjects.Container {
         innerR
       );
 
-      // Borde interior
-      g.lineStyle(1.5, tileColors.border, 0.5);
+      // Borde interior verde como las fichas del tablero
+      g.lineStyle(1.5, tileColors.border, 1);
       g.strokeRoundedRect(
         -w / 2 + margin,
         -h / 2 + margin,
@@ -514,32 +516,16 @@ export class GameUI extends Phaser.GameObjects.Container {
 
       container.add(g);
 
-      // Añadir imagen (un poco más pequeña para que se vea el borde)
-      const imgW = innerW - 6;
-      const imgH = innerH - 6;
-      const tileImage = this.scene.add.image(0, -d / 2, iconTextureKey);
+      // Añadir imagen redondeada (un poco más pequeña para el padding)
+      const imgPadding = 5;
+      const imgW = innerW - imgPadding * 2;
+      const imgH = innerH - imgPadding * 2;
+      
+      // Usar textura redondeada si existe
+      const textureKey = hasRoundedImage ? roundedTextureKey : originalTextureKey;
+      const tileImage = this.scene.add.image(0, -d / 2, textureKey);
       tileImage.setDisplaySize(imgW, imgH);
       container.add(tileImage);
-
-      // Efecto de brillo encima de la imagen
-      const shineOverlay = this.scene.add.graphics();
-      shineOverlay.fillStyle(0xffffff, 0.2);
-      shineOverlay.fillRoundedRect(
-        -imgW / 2 + 2,
-        -imgH / 2 - d / 2 + 2,
-        imgW - 4,
-        imgH * 0.3,
-        { tl: innerR - 2, tr: innerR - 2, bl: 0, br: 0 }
-      );
-
-      // Línea de brillo superior
-      shineOverlay.lineStyle(1, 0xffffff, 0.3);
-      shineOverlay.beginPath();
-      shineOverlay.moveTo(-imgW / 2 + innerR, -imgH / 2 - d / 2 + 1);
-      shineOverlay.lineTo(imgW / 2 - innerR, -imgH / 2 - d / 2 + 1);
-      shineOverlay.strokePath();
-
-      container.add(shineOverlay);
     } else {
       // Fondo del color principal
       g.fillStyle(colors.main, 1);

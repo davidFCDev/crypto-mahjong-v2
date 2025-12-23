@@ -73,7 +73,8 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const roundedTextureKey = `tile-icon-rounded-${state.type}`;
     const originalTextureKey = `tile-icon-${state.type}`;
     const hasRoundedImage = scene.textures.exists(roundedTextureKey);
-    const hasImage = hasRoundedImage || scene.textures.exists(originalTextureKey);
+    const hasImage =
+      hasRoundedImage || scene.textures.exists(originalTextureKey);
 
     if (hasImage) {
       // Usar imagen como fondo de la ficha
@@ -83,13 +84,11 @@ export class Tile3D extends Phaser.GameObjects.Container {
       const innerHeight = this.tileHeight - padding * 2;
 
       // Usar la textura redondeada si existe, sino la original
-      const textureKey = hasRoundedImage ? roundedTextureKey : originalTextureKey;
+      const textureKey = hasRoundedImage
+        ? roundedTextureKey
+        : originalTextureKey;
 
-      this.symbolImage = scene.add.image(
-        iconOffsetX,
-        iconOffsetY,
-        textureKey
-      );
+      this.symbolImage = scene.add.image(iconOffsetX, iconOffsetY, textureKey);
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
       this.add(this.symbolImage);
 
