@@ -69,40 +69,28 @@ export class Tile3D extends Phaser.GameObjects.Container {
     const iconOffsetX = faceCenterX - textureCenterX;
     const iconOffsetY = faceCenterY - textureCenterY;
 
-    // Verificar si hay imagen disponible para este tipo
-    const iconTextureKey = `tile-icon-${state.type}`;
-    const hasImage = scene.textures.exists(iconTextureKey);
+    // Verificar si hay imagen disponible para este tipo (usar versión redondeada)
+    const roundedTextureKey = `tile-icon-rounded-${state.type}`;
+    const originalTextureKey = `tile-icon-${state.type}`;
+    const hasRoundedImage = scene.textures.exists(roundedTextureKey);
+    const hasImage = hasRoundedImage || scene.textures.exists(originalTextureKey);
 
     if (hasImage) {
       // Usar imagen como fondo de la ficha
-      const innerWidth = this.tileWidth - 16;
-      const innerHeight = this.tileHeight - 16;
-      const cornerRadius = GameSettings.tile.cornerRadius - 3;
+      // Padding: borde exterior (2) + espacio blanco (6) = 8 por lado
+      const padding = 8;
+      const innerWidth = this.tileWidth - padding * 2;
+      const innerHeight = this.tileHeight - padding * 2;
+
+      // Usar la textura redondeada si existe, sino la original
+      const textureKey = hasRoundedImage ? roundedTextureKey : originalTextureKey;
 
       this.symbolImage = scene.add.image(
         iconOffsetX,
         iconOffsetY,
-        iconTextureKey
+        textureKey
       );
       this.symbolImage.setDisplaySize(innerWidth, innerHeight);
-
-      // Crear máscara redondeada para la imagen
-      const maskShape = scene.make.graphics({});
-      maskShape.fillStyle(0xffffff);
-      maskShape.fillRoundedRect(
-        -innerWidth / 2,
-        -innerHeight / 2,
-        innerWidth,
-        innerHeight,
-        cornerRadius
-      );
-      const mask = maskShape.createGeometryMask();
-      this.symbolImage.setMask(mask);
-
-      // Guardar referencia para actualizar posición de máscara
-      (this.symbolImage as any)._maskShape = maskShape;
-      maskShape.setPosition(this.x + iconOffsetX, this.y + iconOffsetY);
-
       this.add(this.symbolImage);
 
       // Crear texto vacío (necesario para compatibilidad)
@@ -224,22 +212,34 @@ export class Tile3D extends Phaser.GameObjects.Container {
     }
 
     // === CARA PRINCIPAL (superficie de la ficha) ===
+    // Fondo blanco para todas las fichas
     g.fillStyle(tileColors.face, 1);
     g.fillRoundedRect(offsetX, offsetY, w, h, r);
 
-    // Borde principal de la ficha
+    // Borde principal de la ficha (fino)
     g.lineStyle(2, tileColors.border, 1);
     g.strokeRoundedRect(offsetX, offsetY, w, h, r);
 
     // === ÁREA DE COLOR (zona interior donde va el símbolo) ===
-    // Solo dibujar si no hay imagen configurada para este tipo
     const tileConfig = TILE_COLORS[type];
-    const margin = 5;
+    const margin = 8;
     const innerW = w - margin * 2;
     const innerH = h - margin * 2;
-    const innerR = r - 1;
+    const innerR = r - 2;
 
-    if (!tileConfig.imageUrl) {
+    // Para fichas con imagen, dibujar un rectángulo redondeado del color del borde
+    // que servirá como "marco" y ocultará las esquinas de la imagen
+    if (tileConfig.imageUrl) {
+      // Borde interior verde alrededor de donde irá la imagen
+      g.lineStyle(2, tileColors.border, 1);
+      g.strokeRoundedRect(
+        offsetX + margin,
+        offsetY + margin,
+        innerW,
+        innerH,
+        innerR
+      );
+    } else {
       // Fondo con gradiente del color del tipo
       g.fillStyle(colors.main, 1);
       g.fillRoundedRect(

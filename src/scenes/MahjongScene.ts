@@ -90,6 +90,9 @@ export class MahjongScene extends Phaser.Scene {
     // Crear fondo
     this.createBackground();
 
+    // Procesar imágenes de tiles para tener esquinas redondeadas
+    this.createRoundedTileImages();
+
     // Inicializar sistemas
     this.handManager = new HandManager();
     this.gameUI = new GameUI(this);
@@ -99,6 +102,53 @@ export class MahjongScene extends Phaser.Scene {
 
     // Iniciar nivel 1
     this.startLevel(1);
+  }
+
+  /**
+   * Crea versiones con esquinas redondeadas de las imágenes de tiles
+   */
+  private createRoundedTileImages(): void {
+    const padding = 8;
+    const innerWidth = GameSettings.tile.width - padding * 2;
+    const innerHeight = GameSettings.tile.height - padding * 2;
+    const cornerRadius = GameSettings.tile.cornerRadius - 2;
+
+    Object.values(TileType).forEach((type) => {
+      if (typeof type === "number") {
+        const tileConfig = TILE_COLORS[type as TileType];
+        if (tileConfig.imageUrl) {
+          const originalKey = `tile-icon-${type}`;
+          const roundedKey = `tile-icon-rounded-${type}`;
+
+          // Verificar si ya existe la textura redondeada
+          if (this.textures.exists(roundedKey)) return;
+
+          // Obtener la textura original
+          const originalTexture = this.textures.get(originalKey);
+          if (!originalTexture || originalTexture.key === "__MISSING") return;
+
+          // Crear canvas para dibujar la imagen redondeada
+          const canvas = document.createElement("canvas");
+          canvas.width = innerWidth;
+          canvas.height = innerHeight;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+
+          // Dibujar rectángulo redondeado como máscara
+          ctx.beginPath();
+          ctx.roundRect(0, 0, innerWidth, innerHeight, cornerRadius);
+          ctx.closePath();
+          ctx.clip();
+
+          // Obtener la imagen original
+          const sourceImage = originalTexture.getSourceImage() as HTMLImageElement;
+          ctx.drawImage(sourceImage, 0, 0, innerWidth, innerHeight);
+
+          // Crear textura desde el canvas
+          this.textures.addCanvas(roundedKey, canvas);
+        }
+      }
+    });
   }
 
   /**
