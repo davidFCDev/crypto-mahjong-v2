@@ -56,9 +56,9 @@ export const GameSettings = {
     slotHeight: 145,
     slotPadding: 8,
     bottomMargin: 130,
-    backgroundColor: 0x2d5a3d, // Verde oscuro
-    slotColor: 0x3d7a4d, // Verde slot
-    slotBorderColor: 0x5a9a6a, // Borde verde claro
+    backgroundColor: 0xf5efe6, // Beige muy claro, casi blanco
+    slotColor: 0xfaf8f4, // Slot casi blanco
+    slotBorderColor: 0xe0d8cc, // Borde beige suave
   },
 
   // Game rules

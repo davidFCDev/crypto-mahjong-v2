@@ -285,10 +285,10 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea el área del acumulador - Estilo 3D igual al badge
+   * Crea el área del acumulador - Estilo 3D beige
    */
   private createHand(): void {
-    const { canvas, hand, ui } = GameSettings;
+    const { canvas, hand } = GameSettings;
 
     const handY = canvas.height - hand.bottomMargin;
     const totalSlotWidth =
@@ -299,14 +299,14 @@ export class GameUI extends Phaser.GameObjects.Container {
     const handDepth = 16; // Profundidad 3D igual al badge
     const borderRadius = 12;
 
-    // Colores (mismo verde que el badge)
-    const badgeColor = (ui.colors as any).badge || 0x2e8b57;
-    const borderColor = (ui.colors as any).badgeBorder || 0x1e6b47;
+    // Colores beige del acumulador
+    const bgColor = hand.backgroundColor;
+    const borderColor = hand.slotBorderColor;
 
     this.handBg = this.scene.add.graphics();
 
     // Cara inferior (volumen 3D)
-    this.handBg.fillStyle(borderColor, 1);
+    this.handBg.fillStyle(this.darkenColor(bgColor, 0.25), 1);
     this.handBg.fillRoundedRect(
       handX,
       handY - handHeight / 2 + handDepth,
@@ -326,7 +326,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Fondo del acumulador (cara principal)
-    this.handBg.fillStyle(badgeColor, 1);
+    this.handBg.fillStyle(bgColor, 1);
     this.handBg.fillRoundedRect(
       handX,
       handY - handHeight / 2,
@@ -356,16 +356,16 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea un slot individual - Diseño simple con borde verde
+   * Crea un slot individual - Diseño simple con borde beige
    */
   private createSlot(index: number): Phaser.GameObjects.Container {
-    const { hand, ui } = GameSettings;
+    const { hand } = GameSettings;
     const pos = this.getSlotPosition(index);
 
     const container = this.scene.add.container(pos.x, pos.y);
 
     const slotBg = this.scene.add.graphics();
-    const borderColor = (ui.colors as any).badgeBorder || 0x1e6b47;
+    const borderColor = hand.slotBorderColor;
 
     // Borde del slot sutil
     slotBg.lineStyle(2, borderColor, 0.6);
@@ -378,7 +378,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Fondo semi-transparente
-    slotBg.fillStyle(0x000000, 0.12);
+    slotBg.fillStyle(0x000000, 0.08);
     slotBg.fillRoundedRect(
       -hand.slotWidth / 2,
       -hand.slotHeight / 2,
