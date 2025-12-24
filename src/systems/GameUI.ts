@@ -467,20 +467,20 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Crear imagen con la textura del tablero
     const tileImage = this.scene.add.image(0, 0, textureKey);
     
-    // Calcular escala para que quepa en el slot
-    const targetWidth = hand.slotWidth - 6;
-    const targetHeight = hand.slotHeight - 6;
+    // Calcular escala para que ocupe todo el slot
+    const targetWidth = hand.slotWidth - 4;
+    const targetHeight = hand.slotHeight - 4;
     const originalWidth = tileSettings.width + 8; // La textura tiene padding
     const originalHeight = tileSettings.height + tileSettings.depth + 8;
     
+    // Escalar para ajustar al slot exactamente
     const scaleX = targetWidth / originalWidth;
     const scaleY = targetHeight / originalHeight;
-    const scale = Math.min(scaleX, scaleY);
     
-    tileImage.setScale(scale);
+    tileImage.setScale(scaleX, scaleY);
     
     // Ajustar posición vertical para centrar visualmente
-    const depthOffset = (tileSettings.depth * scale) / 2;
+    const depthOffset = (tileSettings.depth * scaleY) / 2;
     tileImage.setY(-depthOffset);
     
     container.add(tileImage);
@@ -497,8 +497,8 @@ export class GameUI extends Phaser.GameObjects.Container {
       const innerWidth = tileSettings.width - padding * 2;
       const innerHeight = tileSettings.height - padding * 2;
       
-      const iconImage = this.scene.add.image(0, -depthOffset - (tileSettings.depth * scale) / 2, iconKey);
-      iconImage.setDisplaySize(innerWidth * scale, innerHeight * scale);
+      const iconImage = this.scene.add.image(0, -depthOffset - (tileSettings.depth * scaleY) / 2, iconKey);
+      iconImage.setDisplaySize(innerWidth * scaleX, innerHeight * scaleY);
       container.add(iconImage);
     }
 
