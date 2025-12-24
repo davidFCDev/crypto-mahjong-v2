@@ -128,13 +128,9 @@ export const GameSettings = {
       accent: 0xffd700, // Dorado
       text: 0xfff8dc, // Crema
       textSecondary: 0xaaaaaa,
-      // Badges - verdes claros diferenciados
-      levelBadge: 0x7dd87d, // Verde menta claro
-      levelBadgeBorder: 0x5dc85d,
-      scoreBadge: 0x8ce08c, // Verde lima claro
-      scoreBadgeBorder: 0x6cd06c,
-      timeBadge: 0x7ad4d4, // Verde turquesa claro
-      timeBadgeBorder: 0x5ac4c4,
+      // Badges - mismo color que el acumulador
+      badge: 0x5cb85c, // Verde claro (igual que hand.backgroundColor)
+      badgeBorder: 0x4ca84c, // Borde verde (igual que hand.slotBorderColor)
     },
   },
 };

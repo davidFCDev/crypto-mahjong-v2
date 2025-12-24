@@ -66,9 +66,9 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const bg = this.scene.add.graphics();
 
-    // Color verde menta claro
-    const badgeColor = (ui.colors as any).levelBadge || 0x7dd87d;
-    const borderColor = (ui.colors as any).levelBadgeBorder || 0x5dc85d;
+    // Mismo color que el acumulador
+    const badgeColor = (ui.colors as any).badge || 0x5cb85c;
+    const borderColor = (ui.colors as any).badgeBorder || 0x4ca84c;
 
     // Cara inferior (volumen 3D)
     bg.fillStyle(borderColor, 1);
@@ -117,7 +117,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#3a9a3a",
+      stroke: "#3a8a3a",
       strokeThickness: 3,
     });
     this.levelText.setOrigin(0.5);
@@ -141,9 +141,9 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const bg = this.scene.add.graphics();
 
-    // Colores del badge (verde lima claro)
-    const badgeColor = (ui.colors as any).scoreBadge || 0x8ce08c;
-    const borderColor = (ui.colors as any).scoreBadgeBorder || 0x6cd06c;
+    // Mismo color que el acumulador
+    const badgeColor = (ui.colors as any).badge || 0x5cb85c;
+    const borderColor = (ui.colors as any).badgeBorder || 0x4ca84c;
 
     // Cara inferior (volumen 3D)
     bg.fillStyle(borderColor, 1);
@@ -192,7 +192,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "42px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#4aa04a",
+      stroke: "#3a8a3a",
       strokeThickness: 4,
     });
     this.scoreText.setOrigin(0.5);
@@ -224,9 +224,9 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const bg = this.scene.add.graphics();
 
-    // Color turquesa claro
-    const badgeColor = (ui.colors as any).timeBadge || 0x7ad4d4;
-    const borderColor = (ui.colors as any).timeBadgeBorder || 0x5ac4c4;
+    // Mismo color que el acumulador
+    const badgeColor = (ui.colors as any).badge || 0x5cb85c;
+    const borderColor = (ui.colors as any).badgeBorder || 0x4ca84c;
 
     // Cara inferior (volumen 3D)
     bg.fillStyle(borderColor, 1);
@@ -275,7 +275,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#3a9a9a",
+      stroke: "#3a8a3a",
       strokeThickness: 3,
     });
     this.timeText.setOrigin(0.5);
