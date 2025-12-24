@@ -449,129 +449,90 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea una versión mini de una ficha para la mano - Estilo Mahjong vertical
+   * Crea una versión mini de una ficha para la mano - Usa la misma textura del tablero escalada
    */
   private createMiniTile(tile: TileState): Phaser.GameObjects.Container {
     const container = this.scene.add.container(0, 0);
-    const colors = TILE_COLORS[tile.type];
-    const { hand } = GameSettings;
-    const tileColors = GameSettings.tile.colors;
+    const { hand, tile: tileSettings } = GameSettings;
 
-    // Dimensiones verticales como las fichas principales
-    const w = hand.slotWidth - 6;
-    const h = hand.slotHeight - 6;
-    const d = 6; // Profundidad 3D
-    const r = 5; // Radio de esquinas
-    const margin = 3;
+    // Usar la textura cacheada del tablero (con 3D)
+    const textureKey = `tile-${tile.type}`;
+    
+    // Verificar si existe la textura
+    if (!this.scene.textures.exists(textureKey)) {
+      // Fallback: crear una ficha simple
+      return this.createFallbackMiniTile(tile);
+    }
 
-    const g = this.scene.add.graphics();
+    // Crear imagen con la textura del tablero
+    const tileImage = this.scene.add.image(0, 0, textureKey);
+    
+    // Calcular escala para que quepa en el slot
+    const targetWidth = hand.slotWidth - 6;
+    const targetHeight = hand.slotHeight - 6;
+    const originalWidth = tileSettings.width + 8; // La textura tiene padding
+    const originalHeight = tileSettings.height + tileSettings.depth + 8;
+    
+    const scaleX = targetWidth / originalWidth;
+    const scaleY = targetHeight / originalHeight;
+    const scale = Math.min(scaleX, scaleY);
+    
+    tileImage.setScale(scale);
+    
+    // Ajustar posición vertical para centrar visualmente
+    const depthOffset = (tileSettings.depth * scale) / 2;
+    tileImage.setY(-depthOffset);
+    
+    container.add(tileImage);
 
-    // === SOMBRA DIFUSA ===
-    g.fillStyle(0x000000, 0.2);
-    g.fillRoundedRect(-w / 2 + 2, -h / 2 + d + 2, w, h, r);
-
-    // === CARA INFERIOR (volumen 3D hacia abajo) ===
-    g.fillStyle(tileColors.bottom, 1);
-    g.fillRoundedRect(-w / 2, -h / 2 + d, w, h, r);
-
-    // === CARA PRINCIPAL ===
-    g.fillStyle(tileColors.face, 1);
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
-
-    // Borde principal
-    g.lineStyle(1.5, tileColors.border, 1);
-    g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
-
-    // === ÁREA DE COLOR (interior) ===
-    const innerW = w - margin * 2;
-    const innerH = h - margin * 2;
-    const innerR = r - 1;
-
-    // Verificar si hay imagen disponible para este tipo (usar versión redondeada)
+    // Añadir la imagen del icono si existe (redondeada)
     const roundedTextureKey = `tile-icon-rounded-${tile.type}`;
     const originalTextureKey = `tile-icon-${tile.type}`;
     const hasRoundedImage = this.scene.textures.exists(roundedTextureKey);
     const hasImage = hasRoundedImage || this.scene.textures.exists(originalTextureKey);
 
     if (hasImage) {
-      // Fondo blanco igual que las fichas del tablero
-      g.fillStyle(tileColors.face, 1);
-      g.fillRoundedRect(
-        -w / 2 + margin,
-        -h / 2 + margin,
-        innerW,
-        innerH,
-        innerR
-      );
-
-      // Borde interior verde como las fichas del tablero
-      g.lineStyle(1.5, tileColors.border, 1);
-      g.strokeRoundedRect(
-        -w / 2 + margin,
-        -h / 2 + margin,
-        innerW,
-        innerH,
-        innerR
-      );
-
-      container.add(g);
-
-      // Añadir imagen redondeada (un poco más pequeña para el padding)
-      const imgPadding = 5;
-      const imgW = innerW - imgPadding * 2;
-      const imgH = innerH - imgPadding * 2;
+      const iconKey = hasRoundedImage ? roundedTextureKey : originalTextureKey;
+      const padding = 8;
+      const innerWidth = tileSettings.width - padding * 2;
+      const innerHeight = tileSettings.height - padding * 2;
       
-      // Usar textura redondeada si existe
-      const textureKey = hasRoundedImage ? roundedTextureKey : originalTextureKey;
-      const tileImage = this.scene.add.image(0, -d / 2, textureKey);
-      tileImage.setDisplaySize(imgW, imgH);
-      container.add(tileImage);
-    } else {
-      // Fondo del color principal
-      g.fillStyle(colors.main, 1);
-      g.fillRoundedRect(
-        -w / 2 + margin,
-        -h / 2 + margin,
-        innerW,
-        innerH,
-        innerR
-      );
-
-      // Borde interior sutil
-      g.lineStyle(1.5, this.darkenColor(colors.main, 0.35), 1);
-      g.strokeRoundedRect(
-        -w / 2 + margin,
-        -h / 2 + margin,
-        innerW,
-        innerH,
-        innerR
-      );
-
-      // === EFECTOS DE LUZ ===
-      // Brillo superior
-      g.fillStyle(0xffffff, 0.2);
-      g.fillRoundedRect(
-        -w / 2 + margin + 2,
-        -h / 2 + margin + 2,
-        innerW - 4,
-        innerH * 0.25,
-        { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
-      );
-
-      container.add(g);
-
-      // Letra con estilo cartoon - ajustada para fichas verticales
-      const fontSize = Math.floor(w * 0.55);
-      const symbol = this.scene.add.text(0, -d / 2, colors.letter, {
-        fontSize: `${fontSize}px`,
-        fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
-        color: "#ffffff",
-        stroke: this.colorToHex(colors.accent),
-        strokeThickness: 3,
-      });
-      symbol.setOrigin(0.5);
-      container.add(symbol);
+      const iconImage = this.scene.add.image(0, -depthOffset - (tileSettings.depth * scale) / 2, iconKey);
+      iconImage.setDisplaySize(innerWidth * scale, innerHeight * scale);
+      container.add(iconImage);
     }
+
+    return container;
+  }
+
+  /**
+   * Fallback para crear mini ficha si no existe la textura
+   */
+  private createFallbackMiniTile(tile: TileState): Phaser.GameObjects.Container {
+    const container = this.scene.add.container(0, 0);
+    const colors = TILE_COLORS[tile.type];
+    const { hand } = GameSettings;
+    const tileColors = GameSettings.tile.colors;
+
+    const w = hand.slotWidth - 6;
+    const h = hand.slotHeight - 6;
+    const r = 5;
+
+    const g = this.scene.add.graphics();
+    g.fillStyle(tileColors.face, 1);
+    g.fillRoundedRect(-w / 2, -h / 2, w, h, r);
+    g.lineStyle(1.5, tileColors.border, 1);
+    g.strokeRoundedRect(-w / 2, -h / 2, w, h, r);
+    container.add(g);
+
+    const fontSize = Math.floor(w * 0.4);
+    const symbol = this.scene.add.text(0, 0, colors.letter, {
+      fontSize: `${fontSize}px`,
+      fontFamily: "'Fredoka One', sans-serif",
+      color: "#ffffff",
+    });
+    symbol.setOrigin(0.5);
+    container.add(symbol);
 
     return container;
   }
