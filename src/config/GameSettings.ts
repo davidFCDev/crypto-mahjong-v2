@@ -57,8 +57,8 @@ export const GameSettings = {
     slotPadding: 8,
     bottomMargin: 130,
     backgroundColor: 0x2d5a3d, // Verde oscuro
-    slotColor: 0x3d7a4d, // Verde slot más claro
-    slotBorderColor: 0x1e4a2d, // Borde verde oscuro
+    slotColor: 0x1e4a2d, // Verde slot más oscuro para mejor contraste
+    slotBorderColor: 0x153a1d, // Borde verde muy oscuro
   },
 
   // Game rules

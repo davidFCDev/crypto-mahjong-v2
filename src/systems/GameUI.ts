@@ -467,9 +467,9 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Crear imagen con la textura del tablero
     const tileImage = this.scene.add.image(0, 0, textureKey);
 
-    // Calcular escala para que ocupe todo el slot
-    const targetWidth = hand.slotWidth - 4;
-    const targetHeight = hand.slotHeight - 4;
+    // Calcular escala para que ocupe todo el slot (sin margen)
+    const targetWidth = hand.slotWidth;
+    const targetHeight = hand.slotHeight;
     const originalWidth = tileSettings.width + 8; // La textura tiene padding
     const originalHeight = tileSettings.height + tileSettings.depth + 8;
 

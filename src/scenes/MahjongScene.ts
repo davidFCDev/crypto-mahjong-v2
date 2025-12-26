@@ -153,7 +153,7 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Imagen de fondo
+   * Crea el fondo del juego - Imagen de fondo con overlay suave
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
@@ -172,6 +172,12 @@ export class MahjongScene extends Phaser.Scene {
     bg.setScale(scale);
 
     bg.setDepth(-2);
+
+    // Overlay suave para oscurecer el fondo
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.15); // Negro muy transparente
+    overlay.fillRect(0, 0, canvas.width, canvas.height);
+    overlay.setDepth(-1);
   }
 
   /**
