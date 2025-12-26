@@ -20,19 +20,19 @@ export const GameSettings = {
     padding: 2,
     cornerRadius: 11,
     shadowOffset: 16,
-    // Colores de la ficha - Cara blanca con 3D beige
+    // Colores de la ficha - Cara blanca con 3D beige intenso
     colors: {
       face: 0xffffff, // Blanco - relleno del borde
-      side: 0xe8d4b8, // Beige lateral
-      bottom: 0xd4c4a8, // Beige base
-      border: 0xc4b498, // Borde beige oscuro
+      side: 0xd4b896, // Beige más intenso lateral
+      bottom: 0xc4a878, // Beige oscuro base
+      border: 0xb49868, // Borde beige marrón
       highlight: 0xffffff, // Brillo blanco
       blocked: 0x888888,
       blockedOverlay: 0x000000,
       blockedAlpha: 0.45,
       // Colores para fichas accesibles
-      sideLight: 0xf0e4d0, // Beige lateral claro
-      bottomLight: 0xe0d4c0, // Beige base claro
+      sideLight: 0xe0c8a8, // Beige lateral claro
+      bottomLight: 0xd0b898, // Beige base claro
     },
   } as TileDimensions & {
     cornerRadius: number;
