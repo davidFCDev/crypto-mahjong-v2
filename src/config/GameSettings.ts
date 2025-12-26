@@ -20,19 +20,19 @@ export const GameSettings = {
     padding: 2,
     cornerRadius: 11,
     shadowOffset: 16,
-    // Colores base de la ficha estilo Mahjong
+    // Colores base de la ficha - Negro/gris oscuro
     colors: {
-      face: 0xfefcf8, // Blanco marfil
-      side: 0xd4c4a8, // Beige lateral
-      bottom: 0x2d5a3d, // Verde base
-      border: 0x1e4a2d, // Borde verde oscuro
-      highlight: 0xffffff, // Brillo
-      blocked: 0x666666,
+      face: 0x3a3a3a, // Gris oscuro cara principal
+      side: 0x2a2a2a, // Gris más oscuro lateral
+      bottom: 0x1a1a1a, // Negro base
+      border: 0x0a0a0a, // Borde negro
+      highlight: 0x4a4a4a, // Brillo sutil
+      blocked: 0x222222,
       blockedOverlay: 0x000000,
       blockedAlpha: 0.45,
-      // Colores claros para fichas accesibles
-      sideLight: 0xe8dcc8, // Beige claro lateral
-      bottomLight: 0x3d7a4d, // Verde claro base
+      // Colores para fichas accesibles
+      sideLight: 0x4a4a4a, // Gris lateral claro
+      bottomLight: 0x2a2a2a, // Gris base claro
     },
   } as TileDimensions & {
     cornerRadius: number;
@@ -56,9 +56,9 @@ export const GameSettings = {
     slotHeight: 145,
     slotPadding: 8,
     bottomMargin: 130,
-    backgroundColor: 0x2a2a2a, // Negro/gris oscuro
-    slotColor: 0x3a3a3a, // Gris slot más claro
-    slotBorderColor: 0x1a1a1a, // Borde negro
+    backgroundColor: 0x2d5a3d, // Verde oscuro
+    slotColor: 0x3d7a4d, // Verde slot más claro
+    slotBorderColor: 0x1e4a2d, // Borde verde oscuro
   },
 
   // Game rules
@@ -129,8 +129,8 @@ export const GameSettings = {
       text: 0xfff8dc, // Crema
       textSecondary: 0xaaaaaa,
       // Badges - mismo color que el acumulador
-      badge: 0x2a2a2a, // Negro/gris oscuro (igual que hand.backgroundColor)
-      badgeBorder: 0x1a1a1a, // Borde negro (igual que hand.slotBorderColor)
+      badge: 0x2d5a3d, // Verde oscuro (igual que hand.backgroundColor)
+      badgeBorder: 0x1e4a2d, // Borde verde (igual que hand.slotBorderColor)
     },
   },
 };

@@ -117,7 +117,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#000000",
+      stroke: "#1a3a1a",
       strokeThickness: 3,
     });
     this.levelText.setOrigin(0.5);
@@ -192,7 +192,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "42px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#000000",
+      stroke: "#1a3a1a",
       strokeThickness: 4,
     });
     this.scoreText.setOrigin(0.5);
@@ -275,7 +275,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#000000",
+      stroke: "#1a3a1a",
       strokeThickness: 3,
     });
     this.timeText.setOrigin(0.5);
