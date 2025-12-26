@@ -356,7 +356,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea un slot individual - Diseño simple con borde beige
+   * Crea un slot individual - Diseño visible con fondo oscuro
    */
   private createSlot(index: number): Phaser.GameObjects.Container {
     const { hand } = GameSettings;
@@ -365,11 +365,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     const container = this.scene.add.container(pos.x, pos.y);
 
     const slotBg = this.scene.add.graphics();
-    const borderColor = hand.slotBorderColor;
 
-    // Borde del slot sutil
-    slotBg.lineStyle(2, borderColor, 0.6);
-    slotBg.strokeRoundedRect(
+    // Fondo del slot con color del config - más visible
+    slotBg.fillStyle(hand.slotColor, 1);
+    slotBg.fillRoundedRect(
       -hand.slotWidth / 2,
       -hand.slotHeight / 2,
       hand.slotWidth,
@@ -377,9 +376,9 @@ export class GameUI extends Phaser.GameObjects.Container {
       8
     );
 
-    // Fondo semi-transparente
-    slotBg.fillStyle(0x000000, 0.08);
-    slotBg.fillRoundedRect(
+    // Borde del slot
+    slotBg.lineStyle(2, hand.slotBorderColor, 1);
+    slotBg.strokeRoundedRect(
       -hand.slotWidth / 2,
       -hand.slotHeight / 2,
       hand.slotWidth,
@@ -467,21 +466,18 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Crear imagen con la textura del tablero
     const tileImage = this.scene.add.image(0, 0, textureKey);
 
-    // Calcular escala para que ocupe todo el slot (sin margen)
-    const targetWidth = hand.slotWidth;
-    const targetHeight = hand.slotHeight;
+    // Calcular escala para que ocupe todo el slot
     const originalWidth = tileSettings.width + 8; // La textura tiene padding
     const originalHeight = tileSettings.height + tileSettings.depth + 8;
 
-    // Escalar para ajustar al slot exactamente
-    const scaleX = targetWidth / originalWidth;
-    const scaleY = targetHeight / originalHeight;
+    // Escalar para llenar el slot completamente
+    const scaleX = hand.slotWidth / originalWidth;
+    const scaleY = hand.slotHeight / originalHeight;
 
     tileImage.setScale(scaleX, scaleY);
 
-    // Ajustar posición vertical para centrar visualmente
-    const depthOffset = (tileSettings.depth * scaleY) / 2;
-    tileImage.setY(-depthOffset);
+    // Centrar la ficha en el slot (sin offset vertical)
+    tileImage.setOrigin(0.5, 0.5);
 
     container.add(tileImage);
 
@@ -498,11 +494,10 @@ export class GameUI extends Phaser.GameObjects.Container {
       const innerWidth = tileSettings.width - padding * 2;
       const innerHeight = tileSettings.height - padding * 2;
 
-      const iconImage = this.scene.add.image(
-        0,
-        -depthOffset - (tileSettings.depth * scaleY) / 2,
-        iconKey
-      );
+      // Calcular offset del icono para que quede centrado en la cara de la ficha
+      const faceOffsetY = -(tileSettings.depth * scaleY) / 2;
+      
+      const iconImage = this.scene.add.image(0, faceOffsetY, iconKey);
       iconImage.setDisplaySize(innerWidth * scaleX, innerHeight * scaleY);
       container.add(iconImage);
     }
