@@ -55,7 +55,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const handWidth = totalSlotWidth + 30;
     const handStartX = (canvas.width - handWidth) / 2;
 
-    const badgeWidth = 90;
+    const badgeWidth = 110; // Más ancho para niveles de 2 dígitos (Lv.99)
     // Posicionar al inicio del acumulador (centrado del badge)
     const badgeX = handStartX + badgeWidth / 2;
 
@@ -134,7 +134,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     this.scoreBadge = this.scene.add.container(canvas.width / 2, 55);
 
-    const badgeWidth = 200;
+    const badgeWidth = 260; // Más ancho para scores de 6 dígitos (500.000)
     const badgeHeight = 75;
     const badgeDepth = 16; // Profundidad 3D
     const borderRadius = 12; // Esquinas redondeadas
@@ -496,7 +496,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
       // Calcular offset del icono para que quede centrado en la cara de la ficha
       const faceOffsetY = -(tileSettings.depth * scaleY) / 2;
-      
+
       const iconImage = this.scene.add.image(0, faceOffsetY, iconKey);
       iconImage.setDisplaySize(innerWidth * scaleX, innerHeight * scaleY);
       container.add(iconImage);
