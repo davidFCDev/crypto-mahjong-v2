@@ -117,7 +117,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#3a8a3a",
+      stroke: "#8a2020",
       strokeThickness: 3,
     });
     this.levelText.setOrigin(0.5);
@@ -192,7 +192,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "42px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#3a8a3a",
+      stroke: "#8a2020",
       strokeThickness: 4,
     });
     this.scoreText.setOrigin(0.5);
@@ -275,7 +275,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "32px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#3a8a3a",
+      stroke: "#8a2020",
       strokeThickness: 3,
     });
     this.timeText.setOrigin(0.5);
@@ -457,7 +457,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     // Usar la textura cacheada del tablero (con 3D)
     const textureKey = `tile-${tile.type}`;
-    
+
     // Verificar si existe la textura
     if (!this.scene.textures.exists(textureKey)) {
       // Fallback: crear una ficha simple
@@ -466,38 +466,43 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     // Crear imagen con la textura del tablero
     const tileImage = this.scene.add.image(0, 0, textureKey);
-    
+
     // Calcular escala para que ocupe todo el slot
     const targetWidth = hand.slotWidth - 4;
     const targetHeight = hand.slotHeight - 4;
     const originalWidth = tileSettings.width + 8; // La textura tiene padding
     const originalHeight = tileSettings.height + tileSettings.depth + 8;
-    
+
     // Escalar para ajustar al slot exactamente
     const scaleX = targetWidth / originalWidth;
     const scaleY = targetHeight / originalHeight;
-    
+
     tileImage.setScale(scaleX, scaleY);
-    
+
     // Ajustar posición vertical para centrar visualmente
     const depthOffset = (tileSettings.depth * scaleY) / 2;
     tileImage.setY(-depthOffset);
-    
+
     container.add(tileImage);
 
     // Añadir la imagen del icono si existe (redondeada)
     const roundedTextureKey = `tile-icon-rounded-${tile.type}`;
     const originalTextureKey = `tile-icon-${tile.type}`;
     const hasRoundedImage = this.scene.textures.exists(roundedTextureKey);
-    const hasImage = hasRoundedImage || this.scene.textures.exists(originalTextureKey);
+    const hasImage =
+      hasRoundedImage || this.scene.textures.exists(originalTextureKey);
 
     if (hasImage) {
       const iconKey = hasRoundedImage ? roundedTextureKey : originalTextureKey;
       const padding = 8;
       const innerWidth = tileSettings.width - padding * 2;
       const innerHeight = tileSettings.height - padding * 2;
-      
-      const iconImage = this.scene.add.image(0, -depthOffset - (tileSettings.depth * scaleY) / 2, iconKey);
+
+      const iconImage = this.scene.add.image(
+        0,
+        -depthOffset - (tileSettings.depth * scaleY) / 2,
+        iconKey
+      );
       iconImage.setDisplaySize(innerWidth * scaleX, innerHeight * scaleY);
       container.add(iconImage);
     }
@@ -508,7 +513,9 @@ export class GameUI extends Phaser.GameObjects.Container {
   /**
    * Fallback para crear mini ficha si no existe la textura
    */
-  private createFallbackMiniTile(tile: TileState): Phaser.GameObjects.Container {
+  private createFallbackMiniTile(
+    tile: TileState
+  ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(0, 0);
     const colors = TILE_COLORS[tile.type];
     const { hand } = GameSettings;
