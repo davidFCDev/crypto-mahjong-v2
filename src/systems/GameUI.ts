@@ -541,11 +541,9 @@ export class GameUI extends Phaser.GameObjects.Container {
 
   /**
    * Anima la eliminación de fichas que hicieron match
-   * Las fichas se elevan FUERA del acumulador inmediatamente, permitiendo que nuevas fichas fluyan
+   * Las fichas se elevan FUERA del acumulador desde la posición central de las 3 fichas
    */
   public animateMatch(tileIds: string[], onComplete?: () => void): void {
-    const { canvas } = GameSettings;
-    
     // Crear copias visuales de las fichas ANTES de eliminarlas
     const animationSprites: Phaser.GameObjects.Container[] = [];
     const originalPositions: { x: number; y: number }[] = [];
@@ -559,18 +557,13 @@ export class GameUI extends Phaser.GameObjects.Container {
         // Crear una copia visual para la animación
         const copy = this.scene.add.container(sprite.x, sprite.y);
         
-        // Clonar los hijos del sprite original
+        // Clonar los hijos del sprite original (solo imágenes, no graphics)
         sprite.list.forEach((child) => {
           if (child instanceof Phaser.GameObjects.Image) {
             const imgCopy = this.scene.add.image(child.x, child.y, child.texture.key);
             imgCopy.setScale(child.scaleX, child.scaleY);
             imgCopy.setOrigin(child.originX, child.originY);
             copy.add(imgCopy);
-          } else if (child instanceof Phaser.GameObjects.Graphics) {
-            // Para graphics, crear una aproximación simple
-            const g = this.scene.add.graphics();
-            g.copyPosition(child);
-            copy.add(g);
           }
         });
         
@@ -590,84 +583,60 @@ export class GameUI extends Phaser.GameObjects.Container {
     }
 
     // Llamar onComplete INMEDIATAMENTE para liberar el acumulador
-    // La animación visual continúa de forma independiente
     if (onComplete) {
       onComplete();
     }
 
-    // Posición de animación: centro superior de la pantalla, encima del acumulador
-    const animationCenterX = canvas.width / 2;
-    const animationCenterY = canvas.height - 280; // Bien arriba del acumulador
+    // Calcular la posición central de las 3 fichas (ficha del medio)
+    // Ordenar por posición X para encontrar la del centro
+    const sortedPositions = [...originalPositions].sort((a, b) => a.x - b.x);
+    const centerTilePos = sortedPositions[Math.floor(sortedPositions.length / 2)];
+    
+    // La animación sube desde la posición de la ficha central
+    const animationCenterX = centerTilePos.x;
+    const animationCenterY = centerTilePos.y - 180; // Subir desde la ficha central
 
-    // Fase 1: Elevar las fichas rápidamente hacia arriba y al centro
+    // Fase 1: Elevar las fichas suavemente hacia arriba desde la ficha central
     animationSprites.forEach((sprite, index) => {
-      const delay = index * 30;
+      const delay = index * 60; // Más espaciado
 
-      // Efecto de brillo al salir
-      const glow = this.scene.add.graphics();
-      glow.fillStyle(0xffffff, 0.8);
-      glow.fillCircle(0, 0, 40);
-      glow.setPosition(sprite.x, sprite.y);
-      glow.setAlpha(0);
-      glow.setBlendMode(Phaser.BlendModes.ADD);
-      glow.setDepth(999);
-      this.add(glow);
-
-      // Flash de salida
-      this.scene.tweens.add({
-        targets: glow,
-        alpha: 0.7,
-        scaleX: 1.5,
-        scaleY: 1.5,
-        duration: 100,
-        delay: delay,
-        onComplete: () => {
-          this.scene.tweens.add({
-            targets: glow,
-            alpha: 0,
-            duration: 150,
-            onComplete: () => glow.destroy(),
-          });
-        },
-      });
-
-      // Fase 1: Elevar rápidamente hacia la zona de animación
+      // Fase 1: Elevar suavemente hacia la zona de animación
       this.scene.tweens.add({
         targets: sprite,
-        x: animationCenterX + (index - 1) * 60, // Separar horizontalmente
+        x: animationCenterX + (index - 1) * 50, // Separar horizontalmente
         y: animationCenterY,
-        scaleX: 1.1,
-        scaleY: 1.1,
-        duration: 200,
+        scaleX: 1.15,
+        scaleY: 1.15,
+        duration: 350, // Más lento y suave
         delay: delay,
-        ease: "Back.easeOut",
+        ease: "Cubic.easeOut",
         onComplete: () => {
-          // Fase 2: Converger al centro con rotación
+          // Fase 2: Converger al centro con rotación suave
           this.scene.tweens.add({
             targets: sprite,
             x: animationCenterX,
-            y: animationCenterY - 20,
-            rotation: (index - 1) * 0.4,
-            scaleX: 0.95,
-            scaleY: 0.95,
-            duration: 180,
-            ease: "Power2.easeIn",
+            y: animationCenterY - 30,
+            rotation: (index - 1) * 0.25,
+            scaleX: 1.0,
+            scaleY: 1.0,
+            duration: 280, // Más suave
+            ease: "Sine.easeInOut",
             onComplete: () => {
               // Fase 3: Explosión final (solo en la última ficha)
               if (index === animationSprites.length - 1) {
-                this.createMatchParticles(animationCenterX, animationCenterY - 20);
-                this.createFlashEffect(animationCenterX, animationCenterY - 20);
+                this.createMatchParticles(animationCenterX, animationCenterY - 30);
+                this.createFlashEffect(animationCenterX, animationCenterY - 30);
               }
 
-              // Desaparecer con efecto
+              // Desaparecer con efecto suave
               this.scene.tweens.add({
                 targets: sprite,
                 scaleX: 0,
                 scaleY: 0,
                 alpha: 0,
-                rotation: sprite.rotation + 0.8,
-                duration: 120,
-                ease: "Back.easeIn",
+                rotation: sprite.rotation + 0.5,
+                duration: 200, // Más suave
+                ease: "Cubic.easeIn",
                 onComplete: () => {
                   sprite.destroy();
                 },
