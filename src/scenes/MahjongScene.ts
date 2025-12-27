@@ -173,9 +173,9 @@ export class MahjongScene extends Phaser.Scene {
 
     bg.setDepth(-2);
 
-    // Overlay suave para oscurecer el fondo
+    // Overlay para oscurecer el fondo
     const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.15); // Negro muy transparente
+    overlay.fillStyle(0x000000, 0.30); // Oscurecer más el fondo
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setDepth(-1);
   }
@@ -424,8 +424,6 @@ export class MahjongScene extends Phaser.Scene {
     if (matchResult.matched) {
       // Delay breve para que se vea la tercera ficha antes del match
       this.time.delayedCall(100, () => {
-        // Reproducir sonido de trio
-        SoundManager.playTrio();
         // Animar match
         const matchedIds = matchResult.tiles.map((t) => t.id);
         this.gameUI.animateMatch(matchedIds, () => {
@@ -443,6 +441,11 @@ export class MahjongScene extends Phaser.Scene {
           this.checkWinCondition();
 
           this.isAnimating = false;
+        });
+        
+        // Reproducir sonido de trio con delay para que coincida con la explosión
+        this.time.delayedCall(500, () => {
+          SoundManager.playTrio();
         });
       });
     } else {

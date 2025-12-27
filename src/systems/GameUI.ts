@@ -653,12 +653,12 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   private createMatchParticles(x: number, y: number): void {
     const colors = [0xffd700, 0xff6b6b, 0x4ecdc4, 0xffe66d, 0xc44dff, 0x44ff88];
-    const particleCount = 16;
+    const particleCount = 20; // Más partículas
 
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2;
-      const speed = 120 + Math.random() * 80;
-      const size = 6 + Math.random() * 6;
+      const speed = 150 + Math.random() * 100; // Más velocidad
+      const size = 10 + Math.random() * 8; // Más grandes
       const color = colors[Math.floor(Math.random() * colors.length)];
 
       const particle = this.scene.add.graphics();
@@ -666,6 +666,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       particle.fillCircle(0, 0, size);
       particle.setPosition(x, y);
       particle.setAlpha(1);
+      particle.setDepth(1001); // Por encima de las fichas
       this.add(particle);
 
       // Animar partícula hacia afuera con gravedad
@@ -675,37 +676,38 @@ export class GameUI extends Phaser.GameObjects.Container {
       this.scene.tweens.add({
         targets: particle,
         x: targetX,
-        y: targetY + 30, // Simular gravedad
+        y: targetY + 40, // Simular gravedad
         alpha: 0,
-        scaleX: 0.3,
-        scaleY: 0.3,
-        duration: 400 + Math.random() * 200,
+        scaleX: 0.2,
+        scaleY: 0.2,
+        duration: 600 + Math.random() * 300, // Más duración
         ease: "Power2.easeOut",
         onComplete: () => particle.destroy(),
       });
     }
 
-    // Estrellas/sparkles adicionales
-    for (let i = 0; i < 8; i++) {
+    // Estrellas/sparkles adicionales - más grandes y visibles
+    for (let i = 0; i < 12; i++) { // Más estrellas
       const star = this.scene.add.text(x, y, "✦", {
-        fontSize: `${16 + Math.random() * 12}px`,
+        fontSize: `${24 + Math.random() * 16}px`, // Más grandes
         color: "#ffd700",
       });
       star.setOrigin(0.5);
+      star.setDepth(1001);
       this.add(star);
 
       const angle = Math.random() * Math.PI * 2;
-      const distance = 60 + Math.random() * 60;
+      const distance = 80 + Math.random() * 80; // Más distancia
 
       this.scene.tweens.add({
         targets: star,
         x: x + Math.cos(angle) * distance,
-        y: y + Math.sin(angle) * distance - 20,
+        y: y + Math.sin(angle) * distance - 30,
         alpha: 0,
-        scaleX: 0,
-        scaleY: 0,
-        rotation: Math.random() * 2,
-        duration: 500 + Math.random() * 200,
+        scaleX: 0.3,
+        scaleY: 0.3,
+        rotation: Math.random() * 3,
+        duration: 700 + Math.random() * 300, // Más duración
         ease: "Power2.easeOut",
         onComplete: () => star.destroy(),
       });
