@@ -31,11 +31,11 @@ export class HandManager {
   }
 
   /**
-   * Añade una ficha a la mano
+   * Añade una ficha a la mano - siempre al final (derecha)
    * Retorna el índice del slot donde se añadió, o -1 si la mano está llena
    */
   public addTile(tile: TileState): number {
-    // Buscar el primer slot vacío
+    // Buscar el primer slot vacío (siempre será el de más a la derecha)
     const emptySlot = this.slots.find((slot) => !slot.isOccupied);
 
     if (!emptySlot) {
@@ -46,27 +46,22 @@ export class HandManager {
     tile.isInHand = true;
     tile.isAccessible = false;
 
-    // Ocupar el slot
+    // Ocupar el slot - NO reorganizamos para evitar desplazamientos durante animaciones
     emptySlot.tile = tile;
     emptySlot.isOccupied = true;
-
-    // Reordenar: agrupar fichas del mismo tipo
-    this.reorganizeSlots();
 
     return emptySlot.index;
   }
 
   /**
-   * Reorganiza los slots para agrupar fichas del mismo tipo
+   * Compacta los slots moviendo fichas hacia la izquierda para llenar huecos
+   * Se llama después de eliminar fichas por match
    */
-  private reorganizeSlots(): void {
-    // Extraer todas las fichas
+  public compactSlots(): void {
+    // Extraer todas las fichas manteniendo el orden
     const tiles = this.slots
       .filter((slot) => slot.isOccupied && slot.tile)
       .map((slot) => slot.tile!);
-
-    // Ordenar por tipo
-    tiles.sort((a, b) => a.type - b.type);
 
     // Limpiar slots
     this.slots.forEach((slot) => {
@@ -74,7 +69,7 @@ export class HandManager {
       slot.isOccupied = false;
     });
 
-    // Reasignar fichas ordenadas
+    // Reasignar fichas desde la izquierda (sin reordenar por tipo)
     for (let i = 0; i < tiles.length; i++) {
       this.slots[i].tile = tiles[i];
       this.slots[i].isOccupied = true;
@@ -118,6 +113,7 @@ export class HandManager {
 
   /**
    * Elimina las fichas del match de la mano
+   * NO compacta automáticamente - se debe llamar compactSlots() después de la animación
    */
   public removeMatchedTiles(tiles: TileState[]): void {
     const tileIds = new Set(tiles.map((t) => t.id));
@@ -130,29 +126,8 @@ export class HandManager {
       }
     }
 
-    // Compactar slots (mover fichas hacia la izquierda)
+    // Compactar inmediatamente para mantener fichas a la izquierda
     this.compactSlots();
-  }
-
-  /**
-   * Compacta los slots moviendo fichas hacia la izquierda
-   */
-  private compactSlots(): void {
-    const tiles = this.slots
-      .filter((slot) => slot.isOccupied && slot.tile)
-      .map((slot) => slot.tile!);
-
-    // Limpiar todos los slots
-    this.slots.forEach((slot) => {
-      slot.tile = null;
-      slot.isOccupied = false;
-    });
-
-    // Reasignar desde el principio
-    for (let i = 0; i < tiles.length; i++) {
-      this.slots[i].tile = tiles[i];
-      this.slots[i].isOccupied = true;
-    }
   }
 
   /**
