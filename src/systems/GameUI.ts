@@ -541,62 +541,103 @@ export class GameUI extends Phaser.GameObjects.Container {
 
   /**
    * Anima la eliminación de fichas que hicieron match
-   * Efecto satisfactorio: las fichas convergen al centro, giran y explotan con partículas
+   * Las fichas se elevan FUERA del acumulador inmediatamente, permitiendo que nuevas fichas fluyan
    */
   public animateMatch(tileIds: string[], onComplete?: () => void): void {
-    const sprites: Phaser.GameObjects.Container[] = [];
+    const { canvas } = GameSettings;
+    
+    // Crear copias visuales de las fichas ANTES de eliminarlas
+    const animationSprites: Phaser.GameObjects.Container[] = [];
+    const originalPositions: { x: number; y: number }[] = [];
 
     tileIds.forEach((id) => {
       const sprite = this.handTileSprites.get(id);
       if (sprite) {
-        sprites.push(sprite);
+        // Guardar posición original
+        originalPositions.push({ x: sprite.x, y: sprite.y });
+        
+        // Crear una copia visual para la animación
+        const copy = this.scene.add.container(sprite.x, sprite.y);
+        
+        // Clonar los hijos del sprite original
+        sprite.list.forEach((child) => {
+          if (child instanceof Phaser.GameObjects.Image) {
+            const imgCopy = this.scene.add.image(child.x, child.y, child.texture.key);
+            imgCopy.setScale(child.scaleX, child.scaleY);
+            imgCopy.setOrigin(child.originX, child.originY);
+            copy.add(imgCopy);
+          } else if (child instanceof Phaser.GameObjects.Graphics) {
+            // Para graphics, crear una aproximación simple
+            const g = this.scene.add.graphics();
+            g.copyPosition(child);
+            copy.add(g);
+          }
+        });
+        
+        copy.setDepth(1000); // Por encima de todo
+        this.add(copy);
+        animationSprites.push(copy);
+        
+        // Eliminar el sprite original INMEDIATAMENTE
+        sprite.destroy();
+        this.handTileSprites.delete(id);
       }
     });
 
-    if (sprites.length === 0) {
+    if (animationSprites.length === 0) {
       onComplete?.();
       return;
     }
 
-    // Calcular centro de las 3 fichas
-    let centerX = 0;
-    let centerY = 0;
-    sprites.forEach((sprite) => {
-      centerX += sprite.x;
-      centerY += sprite.y;
-    });
-    centerX /= sprites.length;
-    centerY /= sprites.length;
+    // Llamar onComplete INMEDIATAMENTE para liberar el acumulador
+    // La animación visual continúa de forma independiente
+    if (onComplete) {
+      onComplete();
+    }
 
-    // Fase 1: Las fichas se iluminan y flotan hacia arriba
-    sprites.forEach((sprite, index) => {
-      const delay = index * 50; // Escalonar ligeramente
+    // Posición de animación: centro superior de la pantalla, encima del acumulador
+    const animationCenterX = canvas.width / 2;
+    const animationCenterY = canvas.height - 280; // Bien arriba del acumulador
 
-      // Efecto de brillo (glow) - crear un overlay blanco
+    // Fase 1: Elevar las fichas rápidamente hacia arriba y al centro
+    animationSprites.forEach((sprite, index) => {
+      const delay = index * 30;
+
+      // Efecto de brillo al salir
       const glow = this.scene.add.graphics();
-      glow.fillStyle(0xffffff, 0);
-      const bounds = sprite.getBounds();
-      glow.fillRoundedRect(-bounds.width / 2, -bounds.height / 2, bounds.width, bounds.height, 8);
+      glow.fillStyle(0xffffff, 0.8);
+      glow.fillCircle(0, 0, 40);
       glow.setPosition(sprite.x, sprite.y);
+      glow.setAlpha(0);
+      glow.setBlendMode(Phaser.BlendModes.ADD);
+      glow.setDepth(999);
       this.add(glow);
 
-      // Animar el glow
+      // Flash de salida
       this.scene.tweens.add({
         targets: glow,
-        alpha: 0.6,
-        duration: 200,
+        alpha: 0.7,
+        scaleX: 1.5,
+        scaleY: 1.5,
+        duration: 100,
         delay: delay,
-        yoyo: true,
-        ease: "Sine.easeInOut",
-        onComplete: () => glow.destroy(),
+        onComplete: () => {
+          this.scene.tweens.add({
+            targets: glow,
+            alpha: 0,
+            duration: 150,
+            onComplete: () => glow.destroy(),
+          });
+        },
       });
 
-      // Fase 1: Flotar y brillar
+      // Fase 1: Elevar rápidamente hacia la zona de animación
       this.scene.tweens.add({
         targets: sprite,
-        y: sprite.y - 20,
-        scaleX: 1.2,
-        scaleY: 1.2,
+        x: animationCenterX + (index - 1) * 60, // Separar horizontalmente
+        y: animationCenterY,
+        scaleX: 1.1,
+        scaleY: 1.1,
         duration: 200,
         delay: delay,
         ease: "Back.easeOut",
@@ -604,39 +645,31 @@ export class GameUI extends Phaser.GameObjects.Container {
           // Fase 2: Converger al centro con rotación
           this.scene.tweens.add({
             targets: sprite,
-            x: centerX,
-            y: centerY - 40,
-            rotation: (index - 1) * 0.3, // Rotación diferente para cada ficha
-            scaleX: 0.9,
-            scaleY: 0.9,
-            duration: 250,
-            ease: "Power3.easeIn",
+            x: animationCenterX,
+            y: animationCenterY - 20,
+            rotation: (index - 1) * 0.4,
+            scaleX: 0.95,
+            scaleY: 0.95,
+            duration: 180,
+            ease: "Power2.easeIn",
             onComplete: () => {
-              // Fase 3: Explosión final
-              if (index === sprites.length - 1) {
-                // Crear partículas de explosión
-                this.createMatchParticles(centerX, centerY - 40);
-                
-                // Flash blanco
-                this.createFlashEffect(centerX, centerY - 40);
+              // Fase 3: Explosión final (solo en la última ficha)
+              if (index === animationSprites.length - 1) {
+                this.createMatchParticles(animationCenterX, animationCenterY - 20);
+                this.createFlashEffect(animationCenterX, animationCenterY - 20);
               }
 
-              // Escalar a 0 con bounce
+              // Desaparecer con efecto
               this.scene.tweens.add({
                 targets: sprite,
                 scaleX: 0,
                 scaleY: 0,
                 alpha: 0,
-                rotation: sprite.rotation + 0.5,
-                duration: 150,
+                rotation: sprite.rotation + 0.8,
+                duration: 120,
                 ease: "Back.easeIn",
                 onComplete: () => {
                   sprite.destroy();
-                  this.handTileSprites.delete(tileIds[index]);
-                  if (index === sprites.length - 1 && onComplete) {
-                    // Pequeño delay para que se vean las partículas
-                    this.scene.time.delayedCall(100, () => onComplete());
-                  }
                 },
               });
             },
