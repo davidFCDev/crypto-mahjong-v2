@@ -541,7 +541,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
   /**
    * Anima la eliminación de fichas que hicieron match
-   * Efecto sutil: las fichas se levantan un poco y desaparecen
+   * Efecto satisfactorio: las fichas convergen al centro, giran y explotan con partículas
    */
   public animateMatch(tileIds: string[], onComplete?: () => void): void {
     const sprites: Phaser.GameObjects.Container[] = [];
@@ -553,43 +553,89 @@ export class GameUI extends Phaser.GameObjects.Container {
       }
     });
 
-    // Animación sutil: levantar las 3 fichas, shake y desvanecer
-    sprites.forEach((sprite, index) => {
-      const originalX = sprite.x;
-      const originalY = sprite.y;
+    if (sprites.length === 0) {
+      onComplete?.();
+      return;
+    }
 
-      // Primero: levantar las fichas suavemente
+    // Calcular centro de las 3 fichas
+    let centerX = 0;
+    let centerY = 0;
+    sprites.forEach((sprite) => {
+      centerX += sprite.x;
+      centerY += sprite.y;
+    });
+    centerX /= sprites.length;
+    centerY /= sprites.length;
+
+    // Fase 1: Las fichas se iluminan y flotan hacia arriba
+    sprites.forEach((sprite, index) => {
+      const delay = index * 50; // Escalonar ligeramente
+
+      // Efecto de brillo (glow) - crear un overlay blanco
+      const glow = this.scene.add.graphics();
+      glow.fillStyle(0xffffff, 0);
+      const bounds = sprite.getBounds();
+      glow.fillRoundedRect(-bounds.width / 2, -bounds.height / 2, bounds.width, bounds.height, 8);
+      glow.setPosition(sprite.x, sprite.y);
+      this.add(glow);
+
+      // Animar el glow
+      this.scene.tweens.add({
+        targets: glow,
+        alpha: 0.6,
+        duration: 200,
+        delay: delay,
+        yoyo: true,
+        ease: "Sine.easeInOut",
+        onComplete: () => glow.destroy(),
+      });
+
+      // Fase 1: Flotar y brillar
       this.scene.tweens.add({
         targets: sprite,
-        y: originalY - 25,
-        scaleX: 1.15,
-        scaleY: 1.15,
-        duration: 150,
-        ease: "Power2",
+        y: sprite.y - 20,
+        scaleX: 1.2,
+        scaleY: 1.2,
+        duration: 200,
+        delay: delay,
+        ease: "Back.easeOut",
         onComplete: () => {
-          // Shake suave horizontal
+          // Fase 2: Converger al centro con rotación
           this.scene.tweens.add({
             targets: sprite,
-            x: originalX + 4,
-            duration: 40,
-            yoyo: true,
-            repeat: 3,
-            ease: "Sine.easeInOut",
+            x: centerX,
+            y: centerY - 40,
+            rotation: (index - 1) * 0.3, // Rotación diferente para cada ficha
+            scaleX: 0.9,
+            scaleY: 0.9,
+            duration: 250,
+            ease: "Power3.easeIn",
             onComplete: () => {
-              // Finalmente: desvanecer hacia arriba
+              // Fase 3: Explosión final
+              if (index === sprites.length - 1) {
+                // Crear partículas de explosión
+                this.createMatchParticles(centerX, centerY - 40);
+                
+                // Flash blanco
+                this.createFlashEffect(centerX, centerY - 40);
+              }
+
+              // Escalar a 0 con bounce
               this.scene.tweens.add({
                 targets: sprite,
-                y: originalY - 50,
+                scaleX: 0,
+                scaleY: 0,
                 alpha: 0,
-                scaleX: 0.8,
-                scaleY: 0.8,
-                duration: 180,
-                ease: "Power2",
+                rotation: sprite.rotation + 0.5,
+                duration: 150,
+                ease: "Back.easeIn",
                 onComplete: () => {
                   sprite.destroy();
                   this.handTileSprites.delete(tileIds[index]);
                   if (index === sprites.length - 1 && onComplete) {
-                    onComplete();
+                    // Pequeño delay para que se vean las partículas
+                    this.scene.time.delayedCall(100, () => onComplete());
                   }
                 },
               });
@@ -597,6 +643,103 @@ export class GameUI extends Phaser.GameObjects.Container {
           });
         },
       });
+    });
+  }
+
+  /**
+   * Crea partículas de explosión para el match
+   */
+  private createMatchParticles(x: number, y: number): void {
+    const colors = [0xffd700, 0xff6b6b, 0x4ecdc4, 0xffe66d, 0xc44dff, 0x44ff88];
+    const particleCount = 16;
+
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i / particleCount) * Math.PI * 2;
+      const speed = 120 + Math.random() * 80;
+      const size = 6 + Math.random() * 6;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      const particle = this.scene.add.graphics();
+      particle.fillStyle(color, 1);
+      particle.fillCircle(0, 0, size);
+      particle.setPosition(x, y);
+      particle.setAlpha(1);
+      this.add(particle);
+
+      // Animar partícula hacia afuera con gravedad
+      const targetX = x + Math.cos(angle) * speed;
+      const targetY = y + Math.sin(angle) * speed;
+
+      this.scene.tweens.add({
+        targets: particle,
+        x: targetX,
+        y: targetY + 30, // Simular gravedad
+        alpha: 0,
+        scaleX: 0.3,
+        scaleY: 0.3,
+        duration: 400 + Math.random() * 200,
+        ease: "Power2.easeOut",
+        onComplete: () => particle.destroy(),
+      });
+    }
+
+    // Estrellas/sparkles adicionales
+    for (let i = 0; i < 8; i++) {
+      const star = this.scene.add.text(x, y, "✦", {
+        fontSize: `${16 + Math.random() * 12}px`,
+        color: "#ffd700",
+      });
+      star.setOrigin(0.5);
+      this.add(star);
+
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 60 + Math.random() * 60;
+
+      this.scene.tweens.add({
+        targets: star,
+        x: x + Math.cos(angle) * distance,
+        y: y + Math.sin(angle) * distance - 20,
+        alpha: 0,
+        scaleX: 0,
+        scaleY: 0,
+        rotation: Math.random() * 2,
+        duration: 500 + Math.random() * 200,
+        ease: "Power2.easeOut",
+        onComplete: () => star.destroy(),
+      });
+    }
+  }
+
+  /**
+   * Crea efecto de flash para el match
+   */
+  private createFlashEffect(x: number, y: number): void {
+    const flash = this.scene.add.graphics();
+    flash.fillStyle(0xffffff, 0.8);
+    flash.fillCircle(0, 0, 60);
+    flash.setPosition(x, y);
+    flash.setAlpha(0);
+    flash.setBlendMode(Phaser.BlendModes.ADD);
+    this.add(flash);
+
+    this.scene.tweens.add({
+      targets: flash,
+      alpha: 0.9,
+      scaleX: 1.5,
+      scaleY: 1.5,
+      duration: 100,
+      ease: "Power2.easeOut",
+      onComplete: () => {
+        this.scene.tweens.add({
+          targets: flash,
+          alpha: 0,
+          scaleX: 2,
+          scaleY: 2,
+          duration: 200,
+          ease: "Power2.easeOut",
+          onComplete: () => flash.destroy(),
+        });
+      },
     });
   }
 
