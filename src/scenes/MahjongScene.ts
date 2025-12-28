@@ -175,7 +175,7 @@ export class MahjongScene extends Phaser.Scene {
 
     // Overlay para oscurecer el fondo
     const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.30); // Oscurecer más el fondo
+    overlay.fillStyle(0x000000, 0.3); // Oscurecer más el fondo
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setDepth(-1);
   }
@@ -442,7 +442,7 @@ export class MahjongScene extends Phaser.Scene {
 
           this.isAnimating = false;
         });
-        
+
         // Reproducir sonido de trio con delay para que coincida con la explosión
         this.time.delayedCall(500, () => {
           SoundManager.playTrio();

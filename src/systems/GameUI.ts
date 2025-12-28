@@ -6,6 +6,13 @@
 import GameSettings from "../config/GameSettings";
 import { TILE_COLORS, type HandSlot, type TileState } from "../types";
 
+// Callbacks para los power-ups
+export interface PowerUpCallbacks {
+  onUndo?: () => boolean; // Retorna true si se pudo hacer undo
+  onPauseTime?: () => boolean; // Retorna true si se pausó
+  onHint?: () => boolean; // Retorna true si se encontró un hint
+}
+
 export class GameUI extends Phaser.GameObjects.Container {
   // Badge de score
   private scoreBadge!: Phaser.GameObjects.Container;
@@ -27,6 +34,18 @@ export class GameUI extends Phaser.GameObjects.Container {
   private handTileSprites: Map<string, Phaser.GameObjects.Container> =
     new Map();
 
+  // Power-up buttons
+  private undoButton!: Phaser.GameObjects.Container;
+  private clockButton!: Phaser.GameObjects.Container;
+  private keyButton!: Phaser.GameObjects.Container;
+  private undoUsesLeft: number = 3;
+  private clockUsesLeft: number = 1;
+  private keyUsesLeft: number = 2;
+  private undoCountText!: Phaser.GameObjects.Text;
+  private clockCountText!: Phaser.GameObjects.Text;
+  private keyCountText!: Phaser.GameObjects.Text;
+  private powerUpCallbacks: PowerUpCallbacks = {};
+
   // State
   private currentScore: number = 0;
   private currentLevel: number = 1;
@@ -37,10 +56,18 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.createLevelBadge();
     this.createScoreBadge();
     this.createTimeBadge();
+    this.createPowerUpButtons();
     this.createHand();
 
     scene.add.existing(this);
     this.setDepth(1000);
+  }
+
+  /**
+   * Configura los callbacks de los power-ups
+   */
+  public setPowerUpCallbacks(callbacks: PowerUpCallbacks): void {
+    this.powerUpCallbacks = callbacks;
   }
 
   /**
@@ -282,6 +309,263 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.timeBadge.add(this.timeText);
 
     this.add(this.timeBadge);
+  }
+
+  /**
+   * Crea los botones de power-ups entre el tablero y el acumulador
+   */
+  private createPowerUpButtons(): void {
+    const { canvas, hand } = GameSettings;
+    
+    // Posición Y: entre el tablero y el acumulador
+    const handY = canvas.height - hand.bottomMargin;
+    const buttonsY = handY - (hand.slotHeight / 2) - 70; // 70px arriba del acumulador
+    
+    const buttonSize = 50;
+    const buttonSpacing = 80;
+    const centerX = canvas.width / 2;
+    
+    // Colores diferentes para cada botón (estilo badge)
+    const colors = {
+      undo: { main: 0x5c9dbd, border: 0x4c8dad }, // Azul
+      clock: { main: 0xbd9d5c, border: 0xad8d4c }, // Dorado/Naranja
+      key: { main: 0xbd5c9d, border: 0xad4c8d }    // Rosa/Púrpura
+    };
+    
+    // Crear los 3 botones
+    this.undoButton = this.createPowerUpButton(
+      centerX - buttonSpacing,
+      buttonsY,
+      buttonSize,
+      colors.undo,
+      'undo',
+      this.undoUsesLeft
+    );
+    
+    this.clockButton = this.createPowerUpButton(
+      centerX,
+      buttonsY,
+      buttonSize,
+      colors.clock,
+      'clock',
+      this.clockUsesLeft
+    );
+    
+    this.keyButton = this.createPowerUpButton(
+      centerX + buttonSpacing,
+      buttonsY,
+      buttonSize,
+      colors.key,
+      'key',
+      this.keyUsesLeft
+    );
+    
+    this.add(this.undoButton);
+    this.add(this.clockButton);
+    this.add(this.keyButton);
+  }
+
+  /**
+   * Crea un botón de power-up individual con estilo 3D
+   */
+  private createPowerUpButton(
+    x: number,
+    y: number,
+    size: number,
+    colors: { main: number; border: number },
+    type: 'undo' | 'clock' | 'key',
+    usesLeft: number
+  ): Phaser.GameObjects.Container {
+    const container = this.scene.add.container(x, y);
+    const depth = 8;
+    const radius = size / 2;
+    
+    const bg = this.scene.add.graphics();
+    
+    // Sombra/profundidad 3D (círculo inferior)
+    bg.fillStyle(this.darkenColor(colors.border, 0.3), 1);
+    bg.fillCircle(0, depth, radius);
+    
+    // Cara principal (círculo superior)
+    bg.fillStyle(colors.main, 1);
+    bg.fillCircle(0, 0, radius);
+    
+    // Borde
+    bg.lineStyle(2, colors.border, 1);
+    bg.strokeCircle(0, 0, radius);
+    
+    container.add(bg);
+    
+    // Dibujar icono
+    const icon = this.scene.add.graphics();
+    icon.lineStyle(3, 0xffffff, 1);
+    
+    if (type === 'undo') {
+      // Flecha circular hacia atrás
+      const arrowRadius = 12;
+      // Arco
+      icon.beginPath();
+      icon.arc(0, 0, arrowRadius, Phaser.Math.DegToRad(-45), Phaser.Math.DegToRad(180), false);
+      icon.strokePath();
+      // Flecha
+      icon.beginPath();
+      icon.moveTo(-arrowRadius - 5, -5);
+      icon.lineTo(-arrowRadius, -12);
+      icon.lineTo(-arrowRadius + 5, -5);
+      icon.strokePath();
+    } else if (type === 'clock') {
+      // Reloj simple
+      const clockRadius = 13;
+      icon.strokeCircle(0, 0, clockRadius);
+      // Manecillas
+      icon.beginPath();
+      icon.moveTo(0, 0);
+      icon.lineTo(0, -8); // Manecilla minutos
+      icon.moveTo(0, 0);
+      icon.lineTo(6, 0);  // Manecilla horas
+      icon.strokePath();
+    } else if (type === 'key') {
+      // Llave simple
+      // Cabeza de la llave (círculo)
+      icon.strokeCircle(-5, -5, 6);
+      // Cuerpo de la llave
+      icon.beginPath();
+      icon.moveTo(0, 0);
+      icon.lineTo(10, 10);
+      icon.moveTo(6, 6);
+      icon.lineTo(10, 6);
+      icon.moveTo(8, 8);
+      icon.lineTo(12, 8);
+      icon.strokePath();
+    }
+    
+    container.add(icon);
+    
+    // Contador de usos (pequeño badge)
+    const countBadgeSize = 18;
+    const countBg = this.scene.add.graphics();
+    countBg.fillStyle(0x333333, 1);
+    countBg.fillCircle(radius - 5, -radius + 5, countBadgeSize / 2);
+    countBg.lineStyle(1, 0x555555, 1);
+    countBg.strokeCircle(radius - 5, -radius + 5, countBadgeSize / 2);
+    container.add(countBg);
+    
+    const countText = this.scene.add.text(radius - 5, -radius + 5, usesLeft.toString(), {
+      fontSize: '12px',
+      fontFamily: "'Fredoka One', cursive",
+      color: '#ffffff',
+    });
+    countText.setOrigin(0.5);
+    container.add(countText);
+    
+    // Guardar referencia al texto del contador
+    if (type === 'undo') this.undoCountText = countText;
+    else if (type === 'clock') this.clockCountText = countText;
+    else if (type === 'key') this.keyCountText = countText;
+    
+    // Hacer interactivo
+    const hitArea = this.scene.add.circle(0, 0, radius);
+    hitArea.setInteractive({ useHandCursor: true });
+    hitArea.setAlpha(0.001);
+    container.add(hitArea);
+    
+    hitArea.on('pointerdown', () => this.onPowerUpClick(type));
+    hitArea.on('pointerover', () => {
+      this.scene.tweens.add({
+        targets: container,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 100,
+        ease: 'Back.easeOut'
+      });
+    });
+    hitArea.on('pointerout', () => {
+      this.scene.tweens.add({
+        targets: container,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: 'Back.easeOut'
+      });
+    });
+    
+    return container;
+  }
+
+  /**
+   * Maneja el click en un power-up
+   */
+  private onPowerUpClick(type: 'undo' | 'clock' | 'key'): void {
+    let usesLeft: number;
+    let callback: (() => boolean) | undefined;
+    let countText: Phaser.GameObjects.Text;
+    let button: Phaser.GameObjects.Container;
+    
+    if (type === 'undo') {
+      usesLeft = this.undoUsesLeft;
+      callback = this.powerUpCallbacks.onUndo;
+      countText = this.undoCountText;
+      button = this.undoButton;
+    } else if (type === 'clock') {
+      usesLeft = this.clockUsesLeft;
+      callback = this.powerUpCallbacks.onPauseTime;
+      countText = this.clockCountText;
+      button = this.clockButton;
+    } else {
+      usesLeft = this.keyUsesLeft;
+      callback = this.powerUpCallbacks.onHint;
+      countText = this.keyCountText;
+      button = this.keyButton;
+    }
+    
+    // Verificar si hay usos disponibles
+    if (usesLeft <= 0) {
+      // Shake para indicar que no hay usos
+      this.scene.tweens.add({
+        targets: button,
+        x: button.x - 5,
+        duration: 50,
+        yoyo: true,
+        repeat: 3,
+        ease: 'Linear'
+      });
+      return;
+    }
+    
+    // Ejecutar callback
+    const success = callback ? callback() : false;
+    
+    if (success) {
+      // Decrementar usos
+      if (type === 'undo') {
+        this.undoUsesLeft--;
+        usesLeft = this.undoUsesLeft;
+      } else if (type === 'clock') {
+        this.clockUsesLeft--;
+        usesLeft = this.clockUsesLeft;
+      } else {
+        this.keyUsesLeft--;
+        usesLeft = this.keyUsesLeft;
+      }
+      
+      // Actualizar texto
+      countText.setText(usesLeft.toString());
+      
+      // Efecto visual de uso
+      this.scene.tweens.add({
+        targets: button,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 100,
+        yoyo: true,
+        ease: 'Back.easeOut'
+      });
+      
+      // Si no hay más usos, atenuar el botón
+      if (usesLeft <= 0) {
+        button.setAlpha(0.5);
+      }
+    }
   }
 
   /**
@@ -553,24 +837,28 @@ export class GameUI extends Phaser.GameObjects.Container {
       if (sprite) {
         // Guardar posición original
         originalPositions.push({ x: sprite.x, y: sprite.y });
-        
+
         // Crear una copia visual para la animación
         const copy = this.scene.add.container(sprite.x, sprite.y);
-        
+
         // Clonar los hijos del sprite original (solo imágenes, no graphics)
         sprite.list.forEach((child) => {
           if (child instanceof Phaser.GameObjects.Image) {
-            const imgCopy = this.scene.add.image(child.x, child.y, child.texture.key);
+            const imgCopy = this.scene.add.image(
+              child.x,
+              child.y,
+              child.texture.key
+            );
             imgCopy.setScale(child.scaleX, child.scaleY);
             imgCopy.setOrigin(child.originX, child.originY);
             copy.add(imgCopy);
           }
         });
-        
+
         copy.setDepth(1000); // Por encima de todo
         this.add(copy);
         animationSprites.push(copy);
-        
+
         // Eliminar el sprite original INMEDIATAMENTE
         sprite.destroy();
         this.handTileSprites.delete(id);
@@ -590,8 +878,9 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Calcular la posición central de las 3 fichas (ficha del medio)
     // Ordenar por posición X para encontrar la del centro
     const sortedPositions = [...originalPositions].sort((a, b) => a.x - b.x);
-    const centerTilePos = sortedPositions[Math.floor(sortedPositions.length / 2)];
-    
+    const centerTilePos =
+      sortedPositions[Math.floor(sortedPositions.length / 2)];
+
     // La animación sube desde la posición de la ficha central
     const animationCenterX = centerTilePos.x;
     const animationCenterY = centerTilePos.y - 180; // Subir desde la ficha central
@@ -624,7 +913,10 @@ export class GameUI extends Phaser.GameObjects.Container {
             onComplete: () => {
               // Fase 3: Explosión final (solo en la última ficha)
               if (index === animationSprites.length - 1) {
-                this.createMatchParticles(animationCenterX, animationCenterY - 30);
+                this.createMatchParticles(
+                  animationCenterX,
+                  animationCenterY - 30
+                );
                 this.createFlashEffect(animationCenterX, animationCenterY - 30);
               }
 
@@ -687,7 +979,8 @@ export class GameUI extends Phaser.GameObjects.Container {
     }
 
     // Estrellas/sparkles adicionales - más grandes y visibles
-    for (let i = 0; i < 12; i++) { // Más estrellas
+    for (let i = 0; i < 12; i++) {
+      // Más estrellas
       const star = this.scene.add.text(x, y, "✦", {
         fontSize: `${24 + Math.random() * 16}px`, // Más grandes
         color: "#ffd700",
