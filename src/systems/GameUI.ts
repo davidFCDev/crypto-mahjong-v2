@@ -316,50 +316,50 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   private createPowerUpButtons(): void {
     const { canvas, hand } = GameSettings;
-    
+
     // Posición Y: entre el tablero y el acumulador
     const handY = canvas.height - hand.bottomMargin;
-    const buttonsY = handY - (hand.slotHeight / 2) - 70; // 70px arriba del acumulador
-    
-    const buttonSize = 50;
-    const buttonSpacing = 80;
+    const buttonsY = handY - hand.slotHeight / 2 - 80; // 80px arriba del acumulador
+
+    const buttonSize = 70;
+    const buttonSpacing = 100;
     const centerX = canvas.width / 2;
-    
+
     // Colores diferentes para cada botón (estilo badge)
     const colors = {
       undo: { main: 0x5c9dbd, border: 0x4c8dad }, // Azul
       clock: { main: 0xbd9d5c, border: 0xad8d4c }, // Dorado/Naranja
-      key: { main: 0xbd5c9d, border: 0xad4c8d }    // Rosa/Púrpura
+      key: { main: 0xbd5c9d, border: 0xad4c8d }, // Rosa/Púrpura
     };
-    
+
     // Crear los 3 botones
     this.undoButton = this.createPowerUpButton(
       centerX - buttonSpacing,
       buttonsY,
       buttonSize,
       colors.undo,
-      'undo',
+      "undo",
       this.undoUsesLeft
     );
-    
+
     this.clockButton = this.createPowerUpButton(
       centerX,
       buttonsY,
       buttonSize,
       colors.clock,
-      'clock',
+      "clock",
       this.clockUsesLeft
     );
-    
+
     this.keyButton = this.createPowerUpButton(
       centerX + buttonSpacing,
       buttonsY,
       buttonSize,
       colors.key,
-      'key',
+      "key",
       this.keyUsesLeft
     );
-    
+
     this.add(this.undoButton);
     this.add(this.clockButton);
     this.add(this.keyButton);
@@ -373,140 +373,152 @@ export class GameUI extends Phaser.GameObjects.Container {
     y: number,
     size: number,
     colors: { main: number; border: number },
-    type: 'undo' | 'clock' | 'key',
+    type: "undo" | "clock" | "key",
     usesLeft: number
   ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
-    const depth = 8;
+    const depth = 10;
     const radius = size / 2;
-    
+
     const bg = this.scene.add.graphics();
-    
+
     // Sombra/profundidad 3D (círculo inferior)
     bg.fillStyle(this.darkenColor(colors.border, 0.3), 1);
     bg.fillCircle(0, depth, radius);
-    
+
     // Cara principal (círculo superior)
     bg.fillStyle(colors.main, 1);
     bg.fillCircle(0, 0, radius);
-    
+
     // Borde
-    bg.lineStyle(2, colors.border, 1);
+    bg.lineStyle(3, colors.border, 1);
     bg.strokeCircle(0, 0, radius);
-    
+
     container.add(bg);
-    
-    // Dibujar icono
+
+    // Dibujar icono (proporcional al tamaño del botón)
     const icon = this.scene.add.graphics();
-    icon.lineStyle(3, 0xffffff, 1);
-    
-    if (type === 'undo') {
+    icon.lineStyle(4, 0xffffff, 1);
+
+    if (type === "undo") {
       // Flecha circular hacia atrás
-      const arrowRadius = 12;
+      const arrowRadius = 18;
       // Arco
       icon.beginPath();
-      icon.arc(0, 0, arrowRadius, Phaser.Math.DegToRad(-45), Phaser.Math.DegToRad(180), false);
+      icon.arc(
+        0,
+        0,
+        arrowRadius,
+        Phaser.Math.DegToRad(-45),
+        Phaser.Math.DegToRad(180),
+        false
+      );
       icon.strokePath();
       // Flecha
       icon.beginPath();
-      icon.moveTo(-arrowRadius - 5, -5);
-      icon.lineTo(-arrowRadius, -12);
-      icon.lineTo(-arrowRadius + 5, -5);
+      icon.moveTo(-arrowRadius - 6, -6);
+      icon.lineTo(-arrowRadius, -16);
+      icon.lineTo(-arrowRadius + 6, -6);
       icon.strokePath();
-    } else if (type === 'clock') {
+    } else if (type === "clock") {
       // Reloj simple
-      const clockRadius = 13;
+      const clockRadius = 18;
       icon.strokeCircle(0, 0, clockRadius);
       // Manecillas
       icon.beginPath();
       icon.moveTo(0, 0);
-      icon.lineTo(0, -8); // Manecilla minutos
+      icon.lineTo(0, -12); // Manecilla minutos
       icon.moveTo(0, 0);
-      icon.lineTo(6, 0);  // Manecilla horas
+      icon.lineTo(9, 0); // Manecilla horas
       icon.strokePath();
-    } else if (type === 'key') {
+    } else if (type === "key") {
       // Llave simple
       // Cabeza de la llave (círculo)
-      icon.strokeCircle(-5, -5, 6);
+      icon.strokeCircle(-7, -7, 9);
       // Cuerpo de la llave
       icon.beginPath();
       icon.moveTo(0, 0);
-      icon.lineTo(10, 10);
-      icon.moveTo(6, 6);
-      icon.lineTo(10, 6);
-      icon.moveTo(8, 8);
-      icon.lineTo(12, 8);
+      icon.lineTo(14, 14);
+      icon.moveTo(9, 9);
+      icon.lineTo(14, 9);
+      icon.moveTo(12, 12);
+      icon.lineTo(17, 12);
       icon.strokePath();
     }
-    
+
     container.add(icon);
-    
+
     // Contador de usos (pequeño badge)
-    const countBadgeSize = 18;
+    const countBadgeSize = 22;
     const countBg = this.scene.add.graphics();
     countBg.fillStyle(0x333333, 1);
-    countBg.fillCircle(radius - 5, -radius + 5, countBadgeSize / 2);
+    countBg.fillCircle(radius - 6, -radius + 6, countBadgeSize / 2);
     countBg.lineStyle(1, 0x555555, 1);
-    countBg.strokeCircle(radius - 5, -radius + 5, countBadgeSize / 2);
+    countBg.strokeCircle(radius - 6, -radius + 6, countBadgeSize / 2);
     container.add(countBg);
-    
-    const countText = this.scene.add.text(radius - 5, -radius + 5, usesLeft.toString(), {
-      fontSize: '12px',
-      fontFamily: "'Fredoka One', cursive",
-      color: '#ffffff',
-    });
+
+    const countText = this.scene.add.text(
+      radius - 6,
+      -radius + 6,
+      usesLeft.toString(),
+      {
+        fontSize: "14px",
+        fontFamily: "'Fredoka One', cursive",
+        color: "#ffffff",
+      }
+    );
     countText.setOrigin(0.5);
     container.add(countText);
-    
+
     // Guardar referencia al texto del contador
-    if (type === 'undo') this.undoCountText = countText;
-    else if (type === 'clock') this.clockCountText = countText;
-    else if (type === 'key') this.keyCountText = countText;
-    
+    if (type === "undo") this.undoCountText = countText;
+    else if (type === "clock") this.clockCountText = countText;
+    else if (type === "key") this.keyCountText = countText;
+
     // Hacer interactivo
     const hitArea = this.scene.add.circle(0, 0, radius);
     hitArea.setInteractive({ useHandCursor: true });
     hitArea.setAlpha(0.001);
     container.add(hitArea);
-    
-    hitArea.on('pointerdown', () => this.onPowerUpClick(type));
-    hitArea.on('pointerover', () => {
+
+    hitArea.on("pointerdown", () => this.onPowerUpClick(type));
+    hitArea.on("pointerover", () => {
       this.scene.tweens.add({
         targets: container,
         scaleX: 1.1,
         scaleY: 1.1,
         duration: 100,
-        ease: 'Back.easeOut'
+        ease: "Back.easeOut",
       });
     });
-    hitArea.on('pointerout', () => {
+    hitArea.on("pointerout", () => {
       this.scene.tweens.add({
         targets: container,
         scaleX: 1,
         scaleY: 1,
         duration: 100,
-        ease: 'Back.easeOut'
+        ease: "Back.easeOut",
       });
     });
-    
+
     return container;
   }
 
   /**
    * Maneja el click en un power-up
    */
-  private onPowerUpClick(type: 'undo' | 'clock' | 'key'): void {
+  private onPowerUpClick(type: "undo" | "clock" | "key"): void {
     let usesLeft: number;
     let callback: (() => boolean) | undefined;
     let countText: Phaser.GameObjects.Text;
     let button: Phaser.GameObjects.Container;
-    
-    if (type === 'undo') {
+
+    if (type === "undo") {
       usesLeft = this.undoUsesLeft;
       callback = this.powerUpCallbacks.onUndo;
       countText = this.undoCountText;
       button = this.undoButton;
-    } else if (type === 'clock') {
+    } else if (type === "clock") {
       usesLeft = this.clockUsesLeft;
       callback = this.powerUpCallbacks.onPauseTime;
       countText = this.clockCountText;
@@ -517,7 +529,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       countText = this.keyCountText;
       button = this.keyButton;
     }
-    
+
     // Verificar si hay usos disponibles
     if (usesLeft <= 0) {
       // Shake para indicar que no hay usos
@@ -527,30 +539,30 @@ export class GameUI extends Phaser.GameObjects.Container {
         duration: 50,
         yoyo: true,
         repeat: 3,
-        ease: 'Linear'
+        ease: "Linear",
       });
       return;
     }
-    
+
     // Ejecutar callback
     const success = callback ? callback() : false;
-    
+
     if (success) {
       // Decrementar usos
-      if (type === 'undo') {
+      if (type === "undo") {
         this.undoUsesLeft--;
         usesLeft = this.undoUsesLeft;
-      } else if (type === 'clock') {
+      } else if (type === "clock") {
         this.clockUsesLeft--;
         usesLeft = this.clockUsesLeft;
       } else {
         this.keyUsesLeft--;
         usesLeft = this.keyUsesLeft;
       }
-      
+
       // Actualizar texto
       countText.setText(usesLeft.toString());
-      
+
       // Efecto visual de uso
       this.scene.tweens.add({
         targets: button,
@@ -558,9 +570,9 @@ export class GameUI extends Phaser.GameObjects.Container {
         scaleY: 0.9,
         duration: 100,
         yoyo: true,
-        ease: 'Back.easeOut'
+        ease: "Back.easeOut",
       });
-      
+
       // Si no hay más usos, atenuar el botón
       if (usesLeft <= 0) {
         button.setAlpha(0.5);
@@ -1095,6 +1107,47 @@ export class GameUI extends Phaser.GameObjects.Container {
     if (this.timerEvent) {
       this.timerEvent.destroy();
     }
+  }
+
+  /**
+   * Pausa el timer (congela el tiempo restante)
+   * Retorna true si se pausó correctamente
+   */
+  public pauseTimer(): boolean {
+    if (this.timerEvent && this.timeRemaining > 0) {
+      this.timerEvent.paused = true;
+      
+      // Efecto visual de pausa (parpadeo del timer)
+      this.scene.tweens.add({
+        targets: this.timeBadge,
+        alpha: 0.5,
+        duration: 200,
+        yoyo: true,
+        repeat: 2,
+        onComplete: () => {
+          this.timeBadge.setAlpha(1);
+        }
+      });
+      
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Reanuda el timer pausado
+   */
+  public resumeTimer(): void {
+    if (this.timerEvent) {
+      this.timerEvent.paused = false;
+    }
+  }
+
+  /**
+   * Verifica si el timer está pausado
+   */
+  public isTimerPaused(): boolean {
+    return this.timerEvent?.paused ?? false;
   }
 
   /**

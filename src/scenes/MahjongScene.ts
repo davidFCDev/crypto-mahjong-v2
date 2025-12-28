@@ -97,6 +97,13 @@ export class MahjongScene extends Phaser.Scene {
     this.handManager = new HandManager();
     this.gameUI = new GameUI(this);
 
+    // Configurar callbacks de power-ups
+    this.gameUI.setPowerUpCallbacks({
+      onUndo: () => this.handleUndo(),
+      onPauseTime: () => this.handlePauseTime(),
+      onHint: () => this.handleHint(),
+    });
+
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
@@ -540,6 +547,163 @@ export class MahjongScene extends Phaser.Scene {
     this.gameState.score = 0;
     this.gameUI.updateScore(0);
     this.startLevel(1);
+  }
+
+  /**
+   * Power-up: Undo - Devuelve la última ficha de la mano al tablero con animación
+   */
+  private handleUndo(): boolean {
+    if (!this.gameState.isPlaying || this.isAnimating) return false;
+    
+    // Obtener el índice del slot antes de remover (para saber desde dónde animar)
+    const currentSlotIndex = this.handManager.getTileCount() - 1;
+    if (currentSlotIndex < 0) return false;
+    
+    // Obtener la posición del slot en la mano (punto de partida de la animación)
+    const slotPos = this.gameUI.getSlotPosition(currentSlotIndex);
+    
+    // Obtener la última ficha de la mano
+    const tile = this.handManager.removeLastTile();
+    if (!tile) return false;
+    
+    // Encontrar la ficha original en gameState para obtener su posición
+    const originalTile = this.gameState.tiles.find(t => t.id === tile.id);
+    if (!originalTile) return false;
+    
+    // Restaurar estado de la ficha
+    originalTile.isInHand = false;
+    originalTile.isAccessible = true;
+    
+    this.isAnimating = true;
+    
+    // Calcular posición destino en el tablero
+    const targetPos = BoardGenerator.calculateScreenPosition(
+      originalTile.position,
+      this.currentLevelConfig,
+      this.boardBounds
+    );
+    
+    // Determinar si debe mostrar el volumen 3D inferior
+    const showBottom3D = !this.hasAdjacentTileBelow(originalTile);
+    
+    // Crear el sprite de la ficha EN la posición del slot (donde está ahora)
+    const tileSprite = new Tile3D(this, slotPos.x, slotPos.y, originalTile, showBottom3D);
+    tileSprite.on("tile-clicked", (state: TileState) => {
+      this.onTileClicked(state);
+    });
+    this.tileSprites.set(originalTile.id, tileSprite);
+    this.boardContainer.add(tileSprite);
+    
+    // Configurar profundidad correcta
+    tileSprite.setLayerDepth(originalTile.position.z);
+    
+    // Animar desde la mano hasta la posición original en el tablero
+    this.tweens.add({
+      targets: tileSprite,
+      x: targetPos.x,
+      y: targetPos.y,
+      duration: 350,
+      ease: "Back.easeOut",
+      onComplete: () => {
+        this.isAnimating = false;
+        
+        // Actualizar accesibilidad
+        this.updateBoardAccessibility();
+        this.updateTiles3DEffect();
+      }
+    });
+    
+    // Actualizar UI de la mano inmediatamente
+    this.gameUI.updateHand(this.handManager.getSlots());
+    
+    // Reproducir sonido
+    SoundManager.playSelectTile();
+    
+    return true;
+  }
+
+  /**
+   * Power-up: Clock - Pausa el timer para este nivel
+   */
+  private handlePauseTime(): boolean {
+    if (!this.gameState.isPlaying) return false;
+    
+    // Pausar el timer permanentemente para este nivel
+    const success = this.gameUI.pauseTimer();
+    
+    if (success) {
+      SoundManager.playSelectTile();
+    }
+    
+    return success;
+  }
+
+  /**
+   * Power-up: Hint - Encuentra y resuelve automáticamente el mejor trío
+   */
+  private handleHint(): boolean {
+    if (!this.gameState.isPlaying || this.isAnimating) return false;
+    
+    // Buscar fichas accesibles en el tablero
+    const accessibleTiles = this.gameState.tiles.filter(
+      t => !t.isInHand && !t.isMatched && t.isAccessible
+    );
+    
+    // Contar por tipo
+    const typeCounts = new Map<number, TileState[]>();
+    for (const tile of accessibleTiles) {
+      const existing = typeCounts.get(tile.type) || [];
+      existing.push(tile);
+      typeCounts.set(tile.type, existing);
+    }
+    
+    // Encontrar un tipo con 3 o más fichas accesibles
+    let bestTrio: TileState[] | null = null;
+    for (const [_type, tiles] of typeCounts) {
+      if (tiles.length >= 3) {
+        bestTrio = tiles.slice(0, 3);
+        break;
+      }
+    }
+    
+    // Si no hay trío completo en el tablero, buscar combinando con la mano
+    if (!bestTrio) {
+      const handTiles = this.handManager.getTilesInHand();
+      const handTypeCounts = new Map<number, number>();
+      
+      for (const tile of handTiles) {
+        handTypeCounts.set(tile.type, (handTypeCounts.get(tile.type) || 0) + 1);
+      }
+      
+      // Buscar tipo donde mano + tablero = 3
+      for (const [type, boardTiles] of typeCounts) {
+        const inHand = handTypeCounts.get(type) || 0;
+        const inBoard = boardTiles.length;
+        
+        if (inHand + inBoard >= 3 && inBoard > 0) {
+          // Tomar las fichas del tablero necesarias
+          const needed = 3 - inHand;
+          bestTrio = boardTiles.slice(0, Math.min(needed, inBoard));
+          break;
+        }
+      }
+    }
+    
+    if (!bestTrio || bestTrio.length === 0) return false;
+    
+    // Simular clicks en las fichas del trío
+    this.isAnimating = true;
+    let delay = 0;
+    
+    for (const tile of bestTrio) {
+      this.time.delayedCall(delay, () => {
+        this.onTileClicked(tile);
+      });
+      delay += 200;
+    }
+    
+    SoundManager.playSelectTile();
+    return true;
   }
 
   update(): void {

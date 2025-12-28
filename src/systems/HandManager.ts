@@ -191,4 +191,28 @@ export class HandManager {
   public reset(): void {
     this.slots = this.initializeSlots();
   }
+
+  /**
+   * Elimina y retorna la última ficha de la mano (para undo)
+   * Retorna null si la mano está vacía
+   */
+  public removeLastTile(): TileState | null {
+    // Buscar el último slot ocupado (de derecha a izquierda)
+    for (let i = this.maxSlots - 1; i >= 0; i--) {
+      if (this.slots[i].isOccupied && this.slots[i].tile) {
+        const tile = this.slots[i].tile!;
+        
+        // Limpiar el slot
+        this.slots[i].tile = null;
+        this.slots[i].isOccupied = false;
+        
+        // Restaurar estado de la ficha
+        tile.isInHand = false;
+        tile.isAccessible = true;
+        
+        return tile;
+      }
+    }
+    return null;
+  }
 }
