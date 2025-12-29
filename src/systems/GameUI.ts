@@ -252,7 +252,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         fontFamily: "Arial",
         fontSize: "56px",
         color: "#e74c3c",
-        stroke: "#000000",
+        stroke: "#8b0000",
         strokeThickness: 5,
         shadow: {
           offsetX: 2,
