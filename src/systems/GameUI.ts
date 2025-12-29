@@ -247,13 +247,21 @@ export class GameUI extends Phaser.GameObjects.Container {
     for (let i = 0; i < this.lives; i++) {
       const heartContainer = this.scene.add.container(0, y);
 
+      // Fondo circular para dar más énfasis
+      const bg = this.scene.add.graphics();
+      bg.fillStyle(0x000000, 0.3);
+      bg.fillCircle(0, 0, 28);
+      bg.lineStyle(2, 0xffffff, 0.5);
+      bg.strokeCircle(0, 0, 28);
+      heartContainer.add(bg);
+
       // Usar símbolo de corazón ♥ con texto estilizado
       const heart = this.scene.add.text(0, 0, "♥", {
         fontFamily: "Arial",
         fontSize: "56px",
         color: "#e74c3c",
-        stroke: "#c0392b",
-        strokeThickness: 3,
+        stroke: "#8b0000",
+        strokeThickness: 4,
       });
       heart.setOrigin(0.5);
 
