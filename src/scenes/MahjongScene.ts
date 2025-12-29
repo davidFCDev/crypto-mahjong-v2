@@ -104,6 +104,11 @@ export class MahjongScene extends Phaser.Scene {
       onHint: () => this.handleHint(),
     });
 
+    // Escuchar evento de tiempo agotado
+    this.gameUI.on("time-up", () => {
+      this.handleTimeUp();
+    });
+
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
@@ -458,7 +463,7 @@ export class MahjongScene extends Phaser.Scene {
     } else {
       // Verificar game over (mano llena sin match)
       if (this.handManager.isFull()) {
-        this.gameOver();
+        this.handleLoseLife();
       } else {
         this.isAnimating = false;
       }
@@ -513,6 +518,31 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
+   * Maneja cuando se acaba el tiempo
+   */
+  private handleTimeUp(): void {
+    if (!this.gameState.isPlaying) return;
+    this.handleLoseLife();
+  }
+
+  /**
+   * Maneja la pérdida de una vida
+   */
+  private handleLoseLife(): void {
+    const hasLivesLeft = this.gameUI.loseLife();
+    
+    if (hasLivesLeft) {
+      // Reiniciar el nivel actual
+      this.time.delayedCall(500, () => {
+        this.startLevel(this.gameState.currentLevel);
+      });
+    } else {
+      // Game over definitivo
+      this.gameOver();
+    }
+  }
+
+  /**
    * Game Over
    */
   private gameOver(): void {
@@ -546,6 +576,7 @@ export class MahjongScene extends Phaser.Scene {
   private restartGame(): void {
     this.gameState.score = 0;
     this.gameUI.updateScore(0);
+    this.gameUI.resetLives();
     this.startLevel(1);
   }
 

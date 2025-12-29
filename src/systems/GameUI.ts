@@ -27,6 +27,12 @@ export class GameUI extends Phaser.GameObjects.Container {
   private timeText!: Phaser.GameObjects.Text;
   private timeRemaining: number = 60;
   private timerEvent?: Phaser.Time.TimerEvent;
+  private levelStartTime: number = 60; // Tiempo inicial del nivel para calcular duración
+  private levelStartScore: number = 0; // Score al inicio del nivel
+
+  // Sistema de vidas
+  private lives: number = 2;
+  private heartContainers: Phaser.GameObjects.Container[] = [];
 
   // Hand elements
   private handBg!: Phaser.GameObjects.Graphics;
@@ -55,6 +61,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     this.createLevelBadge();
     this.createScoreBadge();
+    this.createLivesDisplay();
     this.createTimeBadge();
     this.createPowerUpButtons();
     this.createHand();
@@ -226,6 +233,102 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.scoreBadge.add(this.scoreText);
 
     this.add(this.scoreBadge);
+  }
+
+  /**
+   * Crea el display de vidas (corazones) - Debajo del score
+   */
+  private createLivesDisplay(): void {
+    const { canvas } = GameSettings;
+    
+    const heartSize = 28;
+    const heartSpacing = 10;
+    const totalWidth = this.lives * heartSize + (this.lives - 1) * heartSpacing;
+    const startX = canvas.width / 2 - totalWidth / 2 + heartSize / 2;
+    const y = 115; // Justo debajo del score badge
+    
+    for (let i = 0; i < this.lives; i++) {
+      const heartContainer = this.scene.add.container(
+        startX + i * (heartSize + heartSpacing),
+        y
+      );
+      
+      // Dibujar corazón
+      const heart = this.scene.add.graphics();
+      this.drawHeart(heart, 0, 0, heartSize, 0xe74c3c); // Rojo
+      heartContainer.add(heart);
+      
+      this.heartContainers.push(heartContainer);
+      this.add(heartContainer);
+    }
+  }
+
+  /**
+   * Dibuja un corazón usando círculos y triángulo (compatible con Phaser Graphics)
+   */
+  private drawHeart(graphics: Phaser.GameObjects.Graphics, x: number, y: number, size: number, color: number): void {
+    const s = size / 2;
+    const circleRadius = s * 0.5;
+    
+    graphics.fillStyle(color, 1);
+    
+    // Dos círculos para la parte superior del corazón
+    graphics.fillCircle(x - circleRadius * 0.65, y - circleRadius * 0.3, circleRadius);
+    graphics.fillCircle(x + circleRadius * 0.65, y - circleRadius * 0.3, circleRadius);
+    
+    // Triángulo para la parte inferior
+    graphics.fillTriangle(
+      x - s * 0.85, y,           // Esquina izquierda
+      x + s * 0.85, y,           // Esquina derecha
+      x, y + s * 0.9             // Punta inferior
+    );
+    
+    // Borde oscuro
+    graphics.lineStyle(2, 0xc0392b, 1);
+    graphics.strokeCircle(x - circleRadius * 0.65, y - circleRadius * 0.3, circleRadius);
+    graphics.strokeCircle(x + circleRadius * 0.65, y - circleRadius * 0.3, circleRadius);
+  }
+
+  /**
+   * Pierde una vida. Retorna true si aún quedan vidas, false si game over
+   */
+  public loseLife(): boolean {
+    if (this.lives <= 0) return false;
+    
+    this.lives--;
+    
+    // Animar el corazón que se pierde
+    const heartToLose = this.heartContainers[this.lives];
+    if (heartToLose) {
+      this.scene.tweens.add({
+        targets: heartToLose,
+        scaleX: 0,
+        scaleY: 0,
+        alpha: 0,
+        duration: 300,
+        ease: "Back.easeIn"
+      });
+    }
+    
+    return this.lives > 0;
+  }
+
+  /**
+   * Obtiene las vidas restantes
+   */
+  public getLives(): number {
+    return this.lives;
+  }
+
+  /**
+   * Reinicia las vidas
+   */
+  public resetLives(): void {
+    this.lives = 2;
+    this.heartContainers.forEach((heart, i) => {
+      heart.setScale(1);
+      heart.setAlpha(1);
+    });
   }
 
   /**
@@ -1068,6 +1171,8 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   public resetTimer(): void {
     this.timeRemaining = 60;
+    this.levelStartTime = 60; // Guardar tiempo inicial del nivel
+    this.levelStartScore = this.currentScore; // Guardar score al inicio del nivel
     this.timeText.setText("60");
 
     // Cancelar timer anterior si existe
@@ -1082,6 +1187,20 @@ export class GameUI extends Phaser.GameObjects.Container {
       callbackScope: this,
       loop: true,
     });
+  }
+
+  /**
+   * Obtiene el tiempo que se tardó en completar el nivel
+   */
+  public getLevelTime(): number {
+    return this.levelStartTime - this.timeRemaining;
+  }
+
+  /**
+   * Obtiene el score conseguido en este nivel
+   */
+  public getLevelScore(): number {
+    return this.currentScore - this.levelStartScore;
   }
 
   /**
@@ -1188,28 +1307,28 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas } = GameSettings;
 
     const overlay = this.scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.5);
+    overlay.fillStyle(0x000000, 0.6);
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     this.add(overlay);
 
-    const modalWidth = 380;
-    const modalHeight = 220;
-    const borderRadius = 16;
+    const modalWidth = 450;
+    const modalHeight = 340;
+    const borderRadius = 20;
     const depth3D = 16;
 
-    // Colores estilo badges (verde)
-    const badgeColor = 0x27ae60;
-    const borderColor = 0x1e8449;
+    // Colores rojo bonito
+    const badgeColor = 0xe74c3c;
+    const borderColor = 0xc0392b;
 
-    // Contenedor centrado correctamente
+    // Contenedor centrado
     const winContainer = this.scene.add.container(
       canvas.width / 2,
-      canvas.height / 2 - modalHeight / 2
+      canvas.height / 2 - modalHeight / 2 + 30
     );
 
     const bg = this.scene.add.graphics();
 
-    // Cara 3D inferior (como los badges)
+    // Cara 3D inferior
     bg.fillStyle(borderColor, 1);
     bg.fillRoundedRect(
       -modalWidth / 2,
@@ -1220,7 +1339,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara 3D
-    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+    bg.lineStyle(3, this.darkenColor(borderColor, 0.3), 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
       depth3D,
@@ -1229,7 +1348,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       borderRadius
     );
 
-    // Cara principal (como los badges)
+    // Cara principal
     bg.fillStyle(badgeColor, 1);
     bg.fillRoundedRect(
       -modalWidth / 2,
@@ -1240,7 +1359,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara principal
-    bg.lineStyle(2, borderColor, 1);
+    bg.lineStyle(3, borderColor, 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
       0,
@@ -1250,39 +1369,88 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
     winContainer.add(bg);
 
-    const winText = this.scene.add.text(0, 60, "LEVEL COMPLETE!", {
-      fontSize: "32px",
+    // Título
+    const winText = this.scene.add.text(0, 50, "LEVEL COMPLETE!", {
+      fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
-      stroke: "#145a32",
-      strokeThickness: 4,
+      stroke: "#7b241c",
+      strokeThickness: 5,
       align: "center",
     });
     winText.setOrigin(0.5);
     winContainer.add(winText);
 
+    // Estadísticas del nivel
+    const levelTime = this.getLevelTime();
+    const levelScore = this.getLevelScore();
+
+    // Tiempo
+    const timeLabel = this.scene.add.text(-80, 110, "⏱ TIME:", {
+      fontSize: "22px",
+      fontFamily: "'Fredoka One', sans-serif",
+      color: "#fadbd8",
+    });
+    timeLabel.setOrigin(0, 0.5);
+    winContainer.add(timeLabel);
+
+    const timeValue = this.scene.add.text(80, 110, `${levelTime}s`, {
+      fontSize: "26px",
+      fontFamily: "'Fredoka One', sans-serif",
+      color: "#ffffff",
+      stroke: "#7b241c",
+      strokeThickness: 2,
+    });
+    timeValue.setOrigin(0, 0.5);
+    winContainer.add(timeValue);
+
+    // Score del nivel
+    const scoreLabel = this.scene.add.text(-80, 155, "⭐ SCORE:", {
+      fontSize: "22px",
+      fontFamily: "'Fredoka One', sans-serif",
+      color: "#fadbd8",
+    });
+    scoreLabel.setOrigin(0, 0.5);
+    winContainer.add(scoreLabel);
+
+    const scoreValue = this.scene.add.text(80, 155, `+${levelScore}`, {
+      fontSize: "26px",
+      fontFamily: "'Fredoka One', sans-serif",
+      color: "#ffffff",
+      stroke: "#7b241c",
+      strokeThickness: 2,
+    });
+    scoreValue.setOrigin(0, 0.5);
+    winContainer.add(scoreValue);
+
+    // Línea separadora
+    const separator = this.scene.add.graphics();
+    separator.lineStyle(2, 0xffffff, 0.3);
+    separator.lineBetween(-150, 200, 150, 200);
+    winContainer.add(separator);
+
     // Botón con estilo 3D (blanco como contraste)
-    const continueBtn = this.scene.add.container(0, 135);
-    const btnWidth = 220;
-    const btnHeight = 52;
-    const btnDepth = 6;
+    const continueBtn = this.scene.add.container(0, 260);
+    const btnWidth = 250;
+    const btnHeight = 58;
+    const btnDepth = 8;
 
     const btnBg = this.scene.add.graphics();
     // Sombra del botón
-    btnBg.fillStyle(0xcccccc, 1);
-    btnBg.fillRoundedRect(-btnWidth / 2, btnDepth, btnWidth, btnHeight, 12);
+    btnBg.fillStyle(0xdddddd, 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, btnDepth, btnWidth, btnHeight, 14);
     // Cara del botón (blanco)
     btnBg.fillStyle(0xffffff, 1);
-    btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 12);
+    btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
     // Borde
-    btnBg.lineStyle(2, borderColor, 1);
-    btnBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 12);
+    btnBg.lineStyle(3, borderColor, 1);
+    btnBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
     continueBtn.add(btnBg);
 
-    const btnText = this.scene.add.text(0, btnHeight / 2, "NEXT LEVEL", {
-      fontSize: "20px",
+    const btnText = this.scene.add.text(0, btnHeight / 2, "NEXT LEVEL →", {
+      fontSize: "24px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#1e8449",
+      color: "#c0392b",
     });
     btnText.setOrigin(0.5);
     continueBtn.add(btnText);
@@ -1291,11 +1459,23 @@ export class GameUI extends Phaser.GameObjects.Container {
     continueBtn.setInteractive({ useHandCursor: true });
 
     continueBtn.on("pointerover", () => {
-      btnBg.alpha = 0.9;
+      this.scene.tweens.add({
+        targets: continueBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2"
+      });
     });
 
     continueBtn.on("pointerout", () => {
-      btnBg.alpha = 1;
+      this.scene.tweens.add({
+        targets: continueBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2"
+      });
     });
 
     continueBtn.on("pointerdown", () => {
@@ -1313,7 +1493,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       targets: winContainer,
       scaleX: 1,
       scaleY: 1,
-      duration: 300,
+      duration: 400,
       ease: "Back.easeOut",
     });
   }
