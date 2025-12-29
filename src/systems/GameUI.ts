@@ -1443,11 +1443,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Línea separadora
     const separator = this.scene.add.graphics();
     separator.lineStyle(2, 0xffffff, 0.3);
-    separator.lineBetween(-150, offsetY + 210, 150, offsetY + 210);
+    separator.lineBetween(-150, offsetY + 200, 150, offsetY + 200);
     winContainer.add(separator);
 
     // Botón con estilo 3D (blanco como contraste)
-    const continueBtn = this.scene.add.container(0, offsetY + 280);
+    const continueBtn = this.scene.add.container(0, offsetY + 260);
     const btnWidth = 250;
     const btnHeight = 58;
     const btnDepth = 8;
@@ -1612,11 +1612,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Línea separadora
     const separator = this.scene.add.graphics();
     separator.lineStyle(2, 0xffffff, 0.3);
-    separator.lineBetween(-150, offsetY + 165, 150, offsetY + 165);
+    separator.lineBetween(-150, offsetY + 155, 150, offsetY + 155);
     tryAgainContainer.add(separator);
 
     // Botón con estilo 3D (blanco como contraste)
-    const tryAgainBtn = this.scene.add.container(0, offsetY + 235);
+    const tryAgainBtn = this.scene.add.container(0, offsetY + 215);
     const btnWidth = 250;
     const btnHeight = 58;
     const btnDepth = 8;
