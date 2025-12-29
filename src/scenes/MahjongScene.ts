@@ -640,66 +640,92 @@ export class MahjongScene extends Phaser.Scene {
 
   /**
    * Power-up: Hint - Encuentra y resuelve automáticamente el mejor trío
+   * Prioriza completar tríos con fichas que ya están en el acumulador
    */
   private handleHint(): boolean {
     if (!this.gameState.isPlaying || this.isAnimating) return false;
+    
+    // Obtener fichas en el acumulador
+    const handTiles = this.handManager.getTilesInHand();
+    
+    // Contar fichas por tipo en el acumulador
+    const handTypeCounts = new Map<number, number>();
+    for (const tile of handTiles) {
+      handTypeCounts.set(tile.type, (handTypeCounts.get(tile.type) || 0) + 1);
+    }
     
     // Buscar fichas accesibles en el tablero
     const accessibleTiles = this.gameState.tiles.filter(
       t => !t.isInHand && !t.isMatched && t.isAccessible
     );
     
-    // Contar por tipo
-    const typeCounts = new Map<number, TileState[]>();
+    // Agrupar fichas del tablero por tipo
+    const boardTypeCounts = new Map<number, TileState[]>();
     for (const tile of accessibleTiles) {
-      const existing = typeCounts.get(tile.type) || [];
+      const existing = boardTypeCounts.get(tile.type) || [];
       existing.push(tile);
-      typeCounts.set(tile.type, existing);
+      boardTypeCounts.set(tile.type, existing);
     }
     
-    // Encontrar un tipo con 3 o más fichas accesibles
-    let bestTrio: TileState[] | null = null;
-    for (const [_type, tiles] of typeCounts) {
-      if (tiles.length >= 3) {
-        bestTrio = tiles.slice(0, 3);
-        break;
-      }
-    }
+    // Estrategia: Encontrar el trío que mejor convenga
+    // Prioridad 1: Completar un trío con 2 fichas en el acumulador (necesita 1 del tablero)
+    // Prioridad 2: Completar un trío con 1 ficha en el acumulador (necesita 2 del tablero)
+    // Prioridad 3: Trío completo en el tablero (necesita 3 del tablero)
     
-    // Si no hay trío completo en el tablero, buscar combinando con la mano
-    if (!bestTrio) {
-      const handTiles = this.handManager.getTilesInHand();
-      const handTypeCounts = new Map<number, number>();
-      
-      for (const tile of handTiles) {
-        handTypeCounts.set(tile.type, (handTypeCounts.get(tile.type) || 0) + 1);
-      }
-      
-      // Buscar tipo donde mano + tablero = 3
-      for (const [type, boardTiles] of typeCounts) {
-        const inHand = handTypeCounts.get(type) || 0;
-        const inBoard = boardTiles.length;
-        
-        if (inHand + inBoard >= 3 && inBoard > 0) {
-          // Tomar las fichas del tablero necesarias
-          const needed = 3 - inHand;
-          bestTrio = boardTiles.slice(0, Math.min(needed, inBoard));
+    let tilesToClick: TileState[] = [];
+    
+    // Prioridad 1: 2 en mano, 1 en tablero
+    for (const [type, countInHand] of handTypeCounts) {
+      if (countInHand >= 2) {
+        const boardTiles = boardTypeCounts.get(type) || [];
+        if (boardTiles.length >= 1) {
+          tilesToClick = [boardTiles[0]];
           break;
         }
       }
     }
     
-    if (!bestTrio || bestTrio.length === 0) return false;
+    // Prioridad 2: 1 en mano, 2 en tablero
+    if (tilesToClick.length === 0) {
+      for (const [type, countInHand] of handTypeCounts) {
+        if (countInHand >= 1) {
+          const boardTiles = boardTypeCounts.get(type) || [];
+          if (boardTiles.length >= 2) {
+            tilesToClick = [boardTiles[0], boardTiles[1]];
+            break;
+          }
+        }
+      }
+    }
     
-    // Simular clicks en las fichas del trío
-    this.isAnimating = true;
+    // Prioridad 3: 0 en mano, 3 en tablero (solo si hay espacio en el acumulador)
+    if (tilesToClick.length === 0) {
+      const slotsAvailable = 5 - handTiles.length;
+      if (slotsAvailable >= 3) {
+        for (const [_type, boardTiles] of boardTypeCounts) {
+          if (boardTiles.length >= 3) {
+            tilesToClick = [boardTiles[0], boardTiles[1], boardTiles[2]];
+            break;
+          }
+        }
+      }
+    }
+    
+    if (tilesToClick.length === 0) return false;
+    
+    // Hacer click en las fichas con delay
     let delay = 0;
+    const totalTiles = tilesToClick.length;
     
-    for (const tile of bestTrio) {
+    for (let i = 0; i < totalTiles; i++) {
+      const tile = tilesToClick[i];
       this.time.delayedCall(delay, () => {
-        this.onTileClicked(tile);
+        // Verificar que el juego sigue activo y la ficha sigue accesible
+        if (this.gameState.isPlaying && !tile.isInHand && !tile.isMatched) {
+          this.onTileClicked(tile);
+        }
       });
-      delay += 200;
+      delay += 250;
     }
     
     SoundManager.playCardToHand();
