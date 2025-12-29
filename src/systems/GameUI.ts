@@ -428,11 +428,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     const buttonSpacing = 100;
     const centerX = canvas.width / 2;
 
-    // Colores diferentes para cada botón (estilo badge)
+    // Colores diferentes para cada botón (estilo badge) - Tonos más vivos
     const colors = {
-      undo: { main: 0x5c9dbd, border: 0x4c8dad }, // Azul
-      clock: { main: 0xbd9d5c, border: 0xad8d4c }, // Dorado/Naranja
-      key: { main: 0xbd5c9d, border: 0xad4c8d }, // Rosa/Púrpura
+      undo: { main: 0x3498db, border: 0x2980b9 }, // Azul brillante
+      clock: { main: 0xf1c40f, border: 0xd4a800 }, // Amarillo/Dorado brillante
+      key: { main: 0x9b59b6, border: 0x8e44ad }, // Púrpura vibrante
     };
 
     // Crear los 3 botones
