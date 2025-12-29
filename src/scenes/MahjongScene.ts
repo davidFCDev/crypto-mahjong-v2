@@ -617,7 +617,7 @@ export class MahjongScene extends Phaser.Scene {
     this.gameUI.updateHand(this.handManager.getSlots());
     
     // Reproducir sonido
-    SoundManager.playSelectTile();
+    SoundManager.playCardToHand();
     
     return true;
   }
@@ -632,7 +632,7 @@ export class MahjongScene extends Phaser.Scene {
     const success = this.gameUI.pauseTimer();
     
     if (success) {
-      SoundManager.playSelectTile();
+      SoundManager.playCardToHand();
     }
     
     return success;
@@ -702,7 +702,7 @@ export class MahjongScene extends Phaser.Scene {
       delay += 200;
     }
     
-    SoundManager.playSelectTile();
+    SoundManager.playCardToHand();
     return true;
   }
 
