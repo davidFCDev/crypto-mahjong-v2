@@ -236,16 +236,16 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea el display de vidas (corazones) - Debajo del score
+   * Crea el display de vidas (corazones) - Entre el score y el tablero
    */
   private createLivesDisplay(): void {
     const { canvas } = GameSettings;
     
-    const heartSize = 28;
-    const heartSpacing = 10;
+    const heartSize = 24;
+    const heartSpacing = 8;
     const totalWidth = this.lives * heartSize + (this.lives - 1) * heartSpacing;
     const startX = canvas.width / 2 - totalWidth / 2 + heartSize / 2;
-    const y = 115; // Justo debajo del score badge
+    const y = 130; // Entre el score badge (termina ~120) y el tablero (empieza 145)
     
     for (let i = 0; i < this.lives; i++) {
       const heartContainer = this.scene.add.container(
