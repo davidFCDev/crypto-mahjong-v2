@@ -240,26 +240,26 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   private createLivesDisplay(): void {
     const { canvas } = GameSettings;
-    
-    const heartSize = 32;
-    const heartSpacing = 12;
+
+    const heartSize = 36;
+    const heartSpacing = 8;
     const totalWidth = this.lives * heartSize + (this.lives - 1) * heartSpacing;
     const startX = canvas.width / 2 - totalWidth / 2 + heartSize / 2;
-    const y = 118; // Entre el score badge y el tablero
-    
+    const y = 140; // Debajo del score badge (termina en ~110) y antes del tablero (145)
+
     for (let i = 0; i < this.lives; i++) {
       const heartContainer = this.scene.add.container(
         startX + i * (heartSize + heartSpacing),
         y
       );
-      
+
       // Usar texto con emoji de corazón rojo
       const heartText = this.scene.add.text(0, 0, "❤️", {
-        fontSize: "28px",
+        fontSize: "32px",
       });
       heartText.setOrigin(0.5);
       heartContainer.add(heartText);
-      
+
       this.heartContainers.push(heartContainer);
       this.add(heartContainer);
     }
@@ -270,9 +270,9 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   public loseLife(): boolean {
     if (this.lives <= 0) return false;
-    
+
     this.lives--;
-    
+
     // Animar el corazón que se pierde
     const heartToLose = this.heartContainers[this.lives];
     if (heartToLose) {
@@ -282,10 +282,10 @@ export class GameUI extends Phaser.GameObjects.Container {
         scaleY: 0,
         alpha: 0,
         duration: 300,
-        ease: "Back.easeIn"
+        ease: "Back.easeIn",
       });
     }
-    
+
     return this.lives > 0;
   }
 
@@ -1440,7 +1440,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         scaleX: 1.05,
         scaleY: 1.05,
         duration: 100,
-        ease: "Power2"
+        ease: "Power2",
       });
     });
 
@@ -1450,7 +1450,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         scaleX: 1,
         scaleY: 1,
         duration: 100,
-        ease: "Power2"
+        ease: "Power2",
       });
     });
 

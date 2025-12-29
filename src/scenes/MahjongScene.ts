@@ -530,7 +530,7 @@ export class MahjongScene extends Phaser.Scene {
    */
   private handleLoseLife(): void {
     const hasLivesLeft = this.gameUI.loseLife();
-    
+
     if (hasLivesLeft) {
       // Reiniciar el nivel actual
       this.time.delayedCall(500, () => {
