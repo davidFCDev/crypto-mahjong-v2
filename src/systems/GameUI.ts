@@ -241,11 +241,11 @@ export class GameUI extends Phaser.GameObjects.Container {
   private createLivesDisplay(): void {
     const { canvas } = GameSettings;
 
-    const heartSize = 36;
-    const heartSpacing = 8;
+    const heartSize = 40;
+    const heartSpacing = 15;
     const totalWidth = this.lives * heartSize + (this.lives - 1) * heartSpacing;
     const startX = canvas.width / 2 - totalWidth / 2 + heartSize / 2;
-    const y = 140; // Debajo del score badge (termina en ~110) y antes del tablero (145)
+    const y = 180; // Debajo del score badge y antes del tablero
 
     for (let i = 0; i < this.lives; i++) {
       const heartContainer = this.scene.add.container(
@@ -253,16 +253,40 @@ export class GameUI extends Phaser.GameObjects.Container {
         y
       );
 
-      // Usar texto con emoji de corazón rojo
-      const heartText = this.scene.add.text(0, 0, "❤️", {
-        fontSize: "32px",
-      });
-      heartText.setOrigin(0.5);
-      heartContainer.add(heartText);
+      // Dibujar corazón con Graphics
+      const heart = this.scene.add.graphics();
+      this.drawHeart(heart, 0, 0, heartSize, 0xe74c3c);
+      heartContainer.add(heart);
 
       this.heartContainers.push(heartContainer);
       this.add(heartContainer);
     }
+  }
+
+  /**
+   * Dibuja un corazón usando círculos y triángulo
+   */
+  private drawHeart(graphics: Phaser.GameObjects.Graphics, x: number, y: number, size: number, color: number): void {
+    const s = size / 2;
+    const circleRadius = s * 0.55;
+    
+    graphics.fillStyle(color, 1);
+    
+    // Dos círculos para la parte superior del corazón
+    graphics.fillCircle(x - circleRadius * 0.55, y - circleRadius * 0.2, circleRadius);
+    graphics.fillCircle(x + circleRadius * 0.55, y - circleRadius * 0.2, circleRadius);
+    
+    // Triángulo para la parte inferior
+    graphics.fillTriangle(
+      x - s * 0.95, y + circleRadius * 0.15,  // Esquina izquierda
+      x + s * 0.95, y + circleRadius * 0.15,  // Esquina derecha
+      x, y + s * 1.1                          // Punta inferior
+    );
+    
+    // Borde oscuro
+    graphics.lineStyle(2, 0xc0392b, 1);
+    graphics.strokeCircle(x - circleRadius * 0.55, y - circleRadius * 0.2, circleRadius);
+    graphics.strokeCircle(x + circleRadius * 0.55, y - circleRadius * 0.2, circleRadius);
   }
 
   /**
