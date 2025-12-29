@@ -242,7 +242,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas } = GameSettings;
 
     const heartSpacing = 10;
-    const y = 145; // Debajo del score badge y antes del tablero
+    const y = 175; // Debajo del score badge y antes del tablero
 
     for (let i = 0; i < this.lives; i++) {
       const heartContainer = this.scene.add.container(0, y);
@@ -250,10 +250,10 @@ export class GameUI extends Phaser.GameObjects.Container {
       // Usar símbolo de corazón ♥ con texto estilizado
       const heart = this.scene.add.text(0, 0, "♥", {
         fontFamily: "Arial",
-        fontSize: "42px",
+        fontSize: "56px",
         color: "#e74c3c",
         stroke: "#c0392b",
-        strokeThickness: 2,
+        strokeThickness: 3,
       });
       heart.setOrigin(0.5);
 
@@ -271,8 +271,8 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   private repositionHearts(): void {
     const { canvas } = GameSettings;
-    const heartSpacing = 10;
-    const heartWidth = 35;
+    const heartSpacing = 12;
+    const heartWidth = 45;
     const visibleHearts = this.heartContainers.filter(h => h.visible);
     const totalWidth = visibleHearts.length * heartWidth + (visibleHearts.length - 1) * heartSpacing;
     const startX = canvas.width / 2 - totalWidth / 2 + heartWidth / 2;
