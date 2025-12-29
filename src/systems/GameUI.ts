@@ -1358,11 +1358,14 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const bg = this.scene.add.graphics();
 
+    // Offset para centrar verticalmente
+    const offsetY = -modalHeight / 2;
+
     // Cara 3D inferior
     bg.fillStyle(borderColor, 1);
     bg.fillRoundedRect(
       -modalWidth / 2,
-      depth3D,
+      offsetY + depth3D,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1372,7 +1375,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     bg.lineStyle(3, this.darkenColor(borderColor, 0.3), 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
-      depth3D,
+      offsetY + depth3D,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1382,7 +1385,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     bg.fillStyle(badgeColor, 1);
     bg.fillRoundedRect(
       -modalWidth / 2,
-      0,
+      offsetY,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1392,7 +1395,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     bg.lineStyle(3, borderColor, 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
-      0,
+      offsetY,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1400,7 +1403,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     winContainer.add(bg);
 
     // Título
-    const winText = this.scene.add.text(0, 50, "LEVEL COMPLETE!", {
+    const winText = this.scene.add.text(0, offsetY + 50, "LEVEL COMPLETE!", {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
@@ -1415,52 +1418,36 @@ export class GameUI extends Phaser.GameObjects.Container {
     const levelTime = this.getLevelTime();
     const levelScore = this.getLevelScore();
 
-    // Tiempo
-    const timeLabel = this.scene.add.text(-80, 110, "TIME:", {
-      fontSize: "22px",
-      fontFamily: "'Fredoka One', sans-serif",
-      color: "#fadbd8",
-    });
-    timeLabel.setOrigin(0, 0.5);
-    winContainer.add(timeLabel);
-
-    const timeValue = this.scene.add.text(80, 110, `${levelTime}s`, {
-      fontSize: "26px",
+    // Tiempo - centrado
+    const timeText = this.scene.add.text(0, offsetY + 115, `TIME: ${levelTime}s`, {
+      fontSize: "24px",
       fontFamily: "'Fredoka One', sans-serif",
       color: "#ffffff",
       stroke: "#7b241c",
       strokeThickness: 2,
     });
-    timeValue.setOrigin(0, 0.5);
-    winContainer.add(timeValue);
+    timeText.setOrigin(0.5);
+    winContainer.add(timeText);
 
-    // Score del nivel
-    const scoreLabel = this.scene.add.text(-80, 155, "SCORE:", {
-      fontSize: "22px",
-      fontFamily: "'Fredoka One', sans-serif",
-      color: "#fadbd8",
-    });
-    scoreLabel.setOrigin(0, 0.5);
-    winContainer.add(scoreLabel);
-
-    const scoreValue = this.scene.add.text(80, 155, `+${levelScore}`, {
-      fontSize: "26px",
+    // Score del nivel - centrado
+    const scoreText = this.scene.add.text(0, offsetY + 160, `SCORE: +${levelScore}`, {
+      fontSize: "24px",
       fontFamily: "'Fredoka One', sans-serif",
       color: "#ffffff",
       stroke: "#7b241c",
       strokeThickness: 2,
     });
-    scoreValue.setOrigin(0, 0.5);
-    winContainer.add(scoreValue);
+    scoreText.setOrigin(0.5);
+    winContainer.add(scoreText);
 
     // Línea separadora
     const separator = this.scene.add.graphics();
     separator.lineStyle(2, 0xffffff, 0.3);
-    separator.lineBetween(-150, 200, 150, 200);
+    separator.lineBetween(-150, offsetY + 210, 150, offsetY + 210);
     winContainer.add(separator);
 
     // Botón con estilo 3D (blanco como contraste)
-    const continueBtn = this.scene.add.container(0, 260);
+    const continueBtn = this.scene.add.container(0, offsetY + 280);
     const btnWidth = 250;
     const btnHeight = 58;
     const btnDepth = 8;
@@ -1540,13 +1527,13 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.add(overlay);
 
     const modalWidth = 450;
-    const modalHeight = 280;
+    const modalHeight = 300;
     const borderRadius = 20;
     const depth3D = 16;
 
-    // Mismo rojo que el botón de pista
+    // Mismos colores que el otro modal
     const badgeColor = 0xe74c3c;
-    const borderColor = 0x8b0000;
+    const borderColor = 0xc0392b;
 
     // Contenedor centrado
     const tryAgainContainer = this.scene.add.container(
@@ -1556,11 +1543,14 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const bg = this.scene.add.graphics();
 
+    // Offset para centrar verticalmente
+    const offsetY = -modalHeight / 2;
+
     // Cara 3D inferior
     bg.fillStyle(borderColor, 1);
     bg.fillRoundedRect(
       -modalWidth / 2,
-      depth3D,
+      offsetY + depth3D,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1570,7 +1560,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     bg.lineStyle(3, this.darkenColor(borderColor, 0.3), 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
-      depth3D,
+      offsetY + depth3D,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1580,7 +1570,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     bg.fillStyle(badgeColor, 1);
     bg.fillRoundedRect(
       -modalWidth / 2,
-      0,
+      offsetY,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1590,7 +1580,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     bg.lineStyle(3, borderColor, 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
-      0,
+      offsetY,
       modalWidth,
       modalHeight,
       borderRadius
@@ -1598,7 +1588,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     tryAgainContainer.add(bg);
 
     // Título
-    const titleText = this.scene.add.text(0, 50, "TIME'S UP!", {
+    const titleText = this.scene.add.text(0, offsetY + 55, "TIME'S UP!", {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
@@ -1610,7 +1600,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     tryAgainContainer.add(titleText);
 
     // Subtítulo con vidas restantes
-    const livesText = this.scene.add.text(0, 110, `${this.lives} life remaining`, {
+    const livesText = this.scene.add.text(0, offsetY + 115, `${this.lives} life remaining`, {
       fontSize: "24px",
       fontFamily: "'Fredoka One', sans-serif",
       color: "#fadbd8",
@@ -1622,11 +1612,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Línea separadora
     const separator = this.scene.add.graphics();
     separator.lineStyle(2, 0xffffff, 0.3);
-    separator.lineBetween(-150, 150, 150, 150);
+    separator.lineBetween(-150, offsetY + 165, 150, offsetY + 165);
     tryAgainContainer.add(separator);
 
     // Botón con estilo 3D (blanco como contraste)
-    const tryAgainBtn = this.scene.add.container(0, 210);
+    const tryAgainBtn = this.scene.add.container(0, offsetY + 235);
     const btnWidth = 250;
     const btnHeight = 58;
     const btnDepth = 8;
