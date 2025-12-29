@@ -280,8 +280,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas } = GameSettings;
     const heartSpacing = 12;
     const heartWidth = 45;
-    const visibleHearts = this.heartContainers.filter(h => h.visible);
-    const totalWidth = visibleHearts.length * heartWidth + (visibleHearts.length - 1) * heartSpacing;
+    const visibleHearts = this.heartContainers.filter((h) => h.visible);
+    const totalWidth =
+      visibleHearts.length * heartWidth +
+      (visibleHearts.length - 1) * heartSpacing;
     const startX = canvas.width / 2 - totalWidth / 2 + heartWidth / 2;
 
     visibleHearts.forEach((heart, i) => {
@@ -297,17 +299,33 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     this.lives--;
 
-    // Animar el corazón que se pierde
+    // Cambiar el corazón a vacío (solo borde)
     const heartToLose = this.heartContainers[this.lives];
     if (heartToLose) {
-      this.scene.tweens.add({
-        targets: heartToLose,
-        scaleX: 0,
-        scaleY: 0,
-        alpha: 0,
-        duration: 300,
-        ease: "Back.easeIn",
-      });
+      const heartText = heartToLose.getAt(0) as Phaser.GameObjects.Text;
+      if (heartText) {
+        // Animar el corazón sacudiéndose
+        this.scene.tweens.add({
+          targets: heartToLose,
+          scaleX: 1.3,
+          scaleY: 1.3,
+          duration: 100,
+          yoyo: true,
+          repeat: 2,
+          ease: "Power2",
+          onComplete: () => {
+            // Cambiar a corazón vacío
+            heartText.setStyle({
+              fontFamily: "Arial",
+              fontSize: "56px",
+              color: "transparent",
+              stroke: "#8b0000",
+              strokeThickness: 3,
+            });
+            heartText.setShadow(0, 0, "#000000", 0, false, false);
+          }
+        });
+      }
     }
 
     return this.lives > 0;
@@ -328,6 +346,18 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.heartContainers.forEach((heart, i) => {
       heart.setScale(1);
       heart.setAlpha(1);
+      // Restaurar corazón lleno
+      const heartText = heart.getAt(0) as Phaser.GameObjects.Text;
+      if (heartText) {
+        heartText.setStyle({
+          fontFamily: "Arial",
+          fontSize: "56px",
+          color: "#e74c3c",
+          stroke: "#8b0000",
+          strokeThickness: 5,
+        });
+        heartText.setShadow(2, 2, "#000000", 4, true, true);
+      }
     });
   }
 
@@ -1323,7 +1353,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Contenedor centrado
     const winContainer = this.scene.add.container(
       canvas.width / 2,
-      canvas.height / 2 - modalHeight / 2 + 30
+      canvas.height / 2
     );
 
     const bg = this.scene.add.graphics();
@@ -1386,7 +1416,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const levelScore = this.getLevelScore();
 
     // Tiempo
-    const timeLabel = this.scene.add.text(-80, 110, "⏱ TIME:", {
+    const timeLabel = this.scene.add.text(-80, 110, "TIME:", {
       fontSize: "22px",
       fontFamily: "'Fredoka One', sans-serif",
       color: "#fadbd8",
@@ -1405,7 +1435,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     winContainer.add(timeValue);
 
     // Score del nivel
-    const scoreLabel = this.scene.add.text(-80, 155, "⭐ SCORE:", {
+    const scoreLabel = this.scene.add.text(-80, 155, "SCORE:", {
       fontSize: "22px",
       fontFamily: "'Fredoka One', sans-serif",
       color: "#fadbd8",
@@ -1491,6 +1521,172 @@ export class GameUI extends Phaser.GameObjects.Container {
     winContainer.setScale(0);
     this.scene.tweens.add({
       targets: winContainer,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 400,
+      ease: "Back.easeOut",
+    });
+  }
+
+  /**
+   * Muestra modal de Try Again cuando pierdes una vida pero te queda otra
+   */
+  public showTryAgainMessage(onTryAgain: () => void): void {
+    const { canvas } = GameSettings;
+
+    const overlay = this.scene.add.graphics();
+    overlay.fillStyle(0x000000, 0.6);
+    overlay.fillRect(0, 0, canvas.width, canvas.height);
+    this.add(overlay);
+
+    const modalWidth = 450;
+    const modalHeight = 280;
+    const borderRadius = 20;
+    const depth3D = 16;
+
+    // Mismo rojo que el botón de pista
+    const badgeColor = 0xe74c3c;
+    const borderColor = 0x8b0000;
+
+    // Contenedor centrado
+    const tryAgainContainer = this.scene.add.container(
+      canvas.width / 2,
+      canvas.height / 2
+    );
+
+    const bg = this.scene.add.graphics();
+
+    // Cara 3D inferior
+    bg.fillStyle(borderColor, 1);
+    bg.fillRoundedRect(
+      -modalWidth / 2,
+      depth3D,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
+    // Borde de la cara 3D
+    bg.lineStyle(3, this.darkenColor(borderColor, 0.3), 1);
+    bg.strokeRoundedRect(
+      -modalWidth / 2,
+      depth3D,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
+    // Cara principal
+    bg.fillStyle(badgeColor, 1);
+    bg.fillRoundedRect(
+      -modalWidth / 2,
+      0,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+
+    // Borde de la cara principal
+    bg.lineStyle(3, borderColor, 1);
+    bg.strokeRoundedRect(
+      -modalWidth / 2,
+      0,
+      modalWidth,
+      modalHeight,
+      borderRadius
+    );
+    tryAgainContainer.add(bg);
+
+    // Título
+    const titleText = this.scene.add.text(0, 50, "TIME'S UP!", {
+      fontSize: "38px",
+      fontFamily: "'Fredoka One', Arial Black, sans-serif",
+      color: "#ffffff",
+      stroke: "#7b241c",
+      strokeThickness: 5,
+      align: "center",
+    });
+    titleText.setOrigin(0.5);
+    tryAgainContainer.add(titleText);
+
+    // Subtítulo con vidas restantes
+    const livesText = this.scene.add.text(0, 110, `${this.lives} life remaining`, {
+      fontSize: "24px",
+      fontFamily: "'Fredoka One', sans-serif",
+      color: "#fadbd8",
+      align: "center",
+    });
+    livesText.setOrigin(0.5);
+    tryAgainContainer.add(livesText);
+
+    // Línea separadora
+    const separator = this.scene.add.graphics();
+    separator.lineStyle(2, 0xffffff, 0.3);
+    separator.lineBetween(-150, 150, 150, 150);
+    tryAgainContainer.add(separator);
+
+    // Botón con estilo 3D (blanco como contraste)
+    const tryAgainBtn = this.scene.add.container(0, 210);
+    const btnWidth = 250;
+    const btnHeight = 58;
+    const btnDepth = 8;
+
+    const btnBg = this.scene.add.graphics();
+    // Sombra del botón
+    btnBg.fillStyle(0xdddddd, 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, btnDepth, btnWidth, btnHeight, 14);
+    // Cara del botón (blanco)
+    btnBg.fillStyle(0xffffff, 1);
+    btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    // Borde
+    btnBg.lineStyle(3, borderColor, 1);
+    btnBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    tryAgainBtn.add(btnBg);
+
+    const btnText = this.scene.add.text(0, btnHeight / 2, "TRY AGAIN", {
+      fontSize: "24px",
+      fontFamily: "'Fredoka One', Arial Black, sans-serif",
+      color: "#c0392b",
+    });
+    btnText.setOrigin(0.5);
+    tryAgainBtn.add(btnText);
+
+    tryAgainBtn.setSize(btnWidth, btnHeight + btnDepth);
+    tryAgainBtn.setInteractive({ useHandCursor: true });
+
+    tryAgainBtn.on("pointerover", () => {
+      this.scene.tweens.add({
+        targets: tryAgainBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    tryAgainBtn.on("pointerout", () => {
+      this.scene.tweens.add({
+        targets: tryAgainBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    tryAgainBtn.on("pointerdown", () => {
+      tryAgainContainer.destroy();
+      overlay.destroy();
+      onTryAgain();
+    });
+
+    tryAgainContainer.add(tryAgainBtn);
+    this.add(tryAgainContainer);
+
+    // Animación de entrada
+    tryAgainContainer.setScale(0);
+    this.scene.tweens.add({
+      targets: tryAgainContainer,
       scaleX: 1,
       scaleY: 1,
       duration: 400,
