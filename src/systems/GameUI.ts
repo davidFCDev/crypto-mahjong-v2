@@ -432,7 +432,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const colors = {
       undo: { main: 0x3498db, border: 0x2980b9 }, // Azul brillante
       clock: { main: 0xf1c40f, border: 0xd4a800 }, // Amarillo/Dorado brillante
-      key: { main: 0x9b59b6, border: 0x8e44ad }, // Púrpura vibrante
+      key: { main: 0xe74c3c, border: 0x8b0000 }, // Rojo (mismo que corazones)
     };
 
     // Crear los 3 botones
