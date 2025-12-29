@@ -448,21 +448,21 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     container.add(icon);
 
-    // Contador de usos (pequeño badge)
-    const countBadgeSize = 22;
+    // Contador de usos (badge más visible)
+    const countBadgeSize = 28;
     const countBg = this.scene.add.graphics();
-    countBg.fillStyle(0x333333, 1);
-    countBg.fillCircle(radius - 6, -radius + 6, countBadgeSize / 2);
-    countBg.lineStyle(1, 0x555555, 1);
-    countBg.strokeCircle(radius - 6, -radius + 6, countBadgeSize / 2);
+    countBg.fillStyle(0x222222, 1);
+    countBg.fillCircle(radius - 4, -radius + 4, countBadgeSize / 2);
+    countBg.lineStyle(2, 0x444444, 1);
+    countBg.strokeCircle(radius - 4, -radius + 4, countBadgeSize / 2);
     container.add(countBg);
 
     const countText = this.scene.add.text(
-      radius - 6,
-      -radius + 6,
+      radius - 4,
+      -radius + 4,
       usesLeft.toString(),
       {
-        fontSize: "14px",
+        fontSize: "18px",
         fontFamily: "'Fredoka One', cursive",
         color: "#ffffff",
       }
@@ -1116,7 +1116,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   public pauseTimer(): boolean {
     if (this.timerEvent && this.timeRemaining > 0) {
       this.timerEvent.paused = true;
-      
+
       // Efecto visual de pausa (parpadeo del timer)
       this.scene.tweens.add({
         targets: this.timeBadge,
@@ -1126,9 +1126,9 @@ export class GameUI extends Phaser.GameObjects.Container {
         repeat: 2,
         onComplete: () => {
           this.timeBadge.setAlpha(1);
-        }
+        },
       });
-      
+
       return true;
     }
     return false;

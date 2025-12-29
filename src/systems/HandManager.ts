@@ -201,15 +201,15 @@ export class HandManager {
     for (let i = this.maxSlots - 1; i >= 0; i--) {
       if (this.slots[i].isOccupied && this.slots[i].tile) {
         const tile = this.slots[i].tile!;
-        
+
         // Limpiar el slot
         this.slots[i].tile = null;
         this.slots[i].isOccupied = false;
-        
+
         // Restaurar estado de la ficha
         tile.isInHand = false;
         tile.isAccessible = true;
-        
+
         return tile;
       }
     }

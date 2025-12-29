@@ -51,7 +51,7 @@ export class MahjongScene extends Phaser.Scene {
   // Área disponible: desde 150 hasta 1073
   private boardBounds = {
     x: 5,
-    y: 160, // Después del score badge (55 + 95 + margen)
+    y: 145, // Después del score badge (un poco más arriba)
     width: GameSettings.canvas.width - 10,
     height:
       GameSettings.canvas.height -
@@ -554,49 +554,55 @@ export class MahjongScene extends Phaser.Scene {
    */
   private handleUndo(): boolean {
     if (!this.gameState.isPlaying || this.isAnimating) return false;
-    
+
     // Obtener el índice del slot antes de remover (para saber desde dónde animar)
     const currentSlotIndex = this.handManager.getTileCount() - 1;
     if (currentSlotIndex < 0) return false;
-    
+
     // Obtener la posición del slot en la mano (punto de partida de la animación)
     const slotPos = this.gameUI.getSlotPosition(currentSlotIndex);
-    
+
     // Obtener la última ficha de la mano
     const tile = this.handManager.removeLastTile();
     if (!tile) return false;
-    
+
     // Encontrar la ficha original en gameState para obtener su posición
-    const originalTile = this.gameState.tiles.find(t => t.id === tile.id);
+    const originalTile = this.gameState.tiles.find((t) => t.id === tile.id);
     if (!originalTile) return false;
-    
+
     // Restaurar estado de la ficha
     originalTile.isInHand = false;
     originalTile.isAccessible = true;
-    
+
     this.isAnimating = true;
-    
+
     // Calcular posición destino en el tablero
     const targetPos = BoardGenerator.calculateScreenPosition(
       originalTile.position,
       this.currentLevelConfig,
       this.boardBounds
     );
-    
+
     // Determinar si debe mostrar el volumen 3D inferior
     const showBottom3D = !this.hasAdjacentTileBelow(originalTile);
-    
+
     // Crear el sprite de la ficha EN la posición del slot (donde está ahora)
-    const tileSprite = new Tile3D(this, slotPos.x, slotPos.y, originalTile, showBottom3D);
+    const tileSprite = new Tile3D(
+      this,
+      slotPos.x,
+      slotPos.y,
+      originalTile,
+      showBottom3D
+    );
     tileSprite.on("tile-clicked", (state: TileState) => {
       this.onTileClicked(state);
     });
     this.tileSprites.set(originalTile.id, tileSprite);
     this.boardContainer.add(tileSprite);
-    
+
     // Configurar profundidad correcta
     tileSprite.setLayerDepth(originalTile.position.z);
-    
+
     // Animar desde la mano hasta la posición original en el tablero
     this.tweens.add({
       targets: tileSprite,
@@ -606,19 +612,19 @@ export class MahjongScene extends Phaser.Scene {
       ease: "Back.easeOut",
       onComplete: () => {
         this.isAnimating = false;
-        
+
         // Actualizar accesibilidad
         this.updateBoardAccessibility();
         this.updateTiles3DEffect();
-      }
+      },
     });
-    
+
     // Actualizar UI de la mano inmediatamente
     this.gameUI.updateHand(this.handManager.getSlots());
-    
+
     // Reproducir sonido
     SoundManager.playCardToHand();
-    
+
     return true;
   }
 
@@ -627,14 +633,14 @@ export class MahjongScene extends Phaser.Scene {
    */
   private handlePauseTime(): boolean {
     if (!this.gameState.isPlaying) return false;
-    
+
     // Pausar el timer permanentemente para este nivel
     const success = this.gameUI.pauseTimer();
-    
+
     if (success) {
       SoundManager.playCardToHand();
     }
-    
+
     return success;
   }
 
@@ -644,21 +650,21 @@ export class MahjongScene extends Phaser.Scene {
    */
   private handleHint(): boolean {
     if (!this.gameState.isPlaying || this.isAnimating) return false;
-    
+
     // Obtener fichas en el acumulador
     const handTiles = this.handManager.getTilesInHand();
-    
+
     // Contar fichas por tipo en el acumulador
     const handTypeCounts = new Map<number, number>();
     for (const tile of handTiles) {
       handTypeCounts.set(tile.type, (handTypeCounts.get(tile.type) || 0) + 1);
     }
-    
+
     // Buscar fichas accesibles en el tablero
     const accessibleTiles = this.gameState.tiles.filter(
-      t => !t.isInHand && !t.isMatched && t.isAccessible
+      (t) => !t.isInHand && !t.isMatched && t.isAccessible
     );
-    
+
     // Agrupar fichas del tablero por tipo
     const boardTypeCounts = new Map<number, TileState[]>();
     for (const tile of accessibleTiles) {
@@ -666,14 +672,14 @@ export class MahjongScene extends Phaser.Scene {
       existing.push(tile);
       boardTypeCounts.set(tile.type, existing);
     }
-    
+
     // Estrategia: Encontrar el trío que mejor convenga
     // Prioridad 1: Completar un trío con 2 fichas en el acumulador (necesita 1 del tablero)
     // Prioridad 2: Completar un trío con 1 ficha en el acumulador (necesita 2 del tablero)
     // Prioridad 3: Trío completo en el tablero (necesita 3 del tablero)
-    
+
     let tilesToClick: TileState[] = [];
-    
+
     // Prioridad 1: 2 en mano, 1 en tablero
     for (const [type, countInHand] of handTypeCounts) {
       if (countInHand >= 2) {
@@ -684,7 +690,7 @@ export class MahjongScene extends Phaser.Scene {
         }
       }
     }
-    
+
     // Prioridad 2: 1 en mano, 2 en tablero
     if (tilesToClick.length === 0) {
       for (const [type, countInHand] of handTypeCounts) {
@@ -697,7 +703,7 @@ export class MahjongScene extends Phaser.Scene {
         }
       }
     }
-    
+
     // Prioridad 3: 0 en mano, 3 en tablero (solo si hay espacio en el acumulador)
     if (tilesToClick.length === 0) {
       const slotsAvailable = 5 - handTiles.length;
@@ -710,13 +716,13 @@ export class MahjongScene extends Phaser.Scene {
         }
       }
     }
-    
+
     if (tilesToClick.length === 0) return false;
-    
+
     // Hacer click en las fichas con delay
     let delay = 0;
     const totalTiles = tilesToClick.length;
-    
+
     for (let i = 0; i < totalTiles; i++) {
       const tile = tilesToClick[i];
       this.time.delayedCall(delay, () => {
@@ -727,7 +733,7 @@ export class MahjongScene extends Phaser.Scene {
       });
       delay += 250;
     }
-    
+
     SoundManager.playCardToHand();
     return true;
   }
