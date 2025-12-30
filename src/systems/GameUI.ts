@@ -1346,9 +1346,9 @@ export class GameUI extends Phaser.GameObjects.Container {
     const borderRadius = 20;
     const depth3D = 16;
 
-    // Colores rojo bonito
-    const badgeColor = 0xe74c3c;
-    const borderColor = 0xc0392b;
+    // Colores verde (mismo que badges)
+    const badgeColor = 0x3cb371;
+    const borderColor = 0x2e8b57;
 
     // Contenedor centrado
     const winContainer = this.scene.add.container(
@@ -1407,7 +1407,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
-      stroke: "#7b241c",
+      stroke: "#1e6b4a",
       strokeThickness: 5,
       align: "center",
     });
@@ -1427,7 +1427,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
         color: "#ffffff",
-        stroke: "#7b241c",
+        stroke: "#1e6b4a",
         strokeThickness: 2,
       }
     );
@@ -1443,7 +1443,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
         color: "#ffffff",
-        stroke: "#7b241c",
+        stroke: "#1e6b4a",
         strokeThickness: 2,
       }
     );
@@ -1541,9 +1541,9 @@ export class GameUI extends Phaser.GameObjects.Container {
     const borderRadius = 20;
     const depth3D = 16;
 
-    // Mismos colores que el otro modal
-    const badgeColor = 0xe74c3c;
-    const borderColor = 0xc0392b;
+    // Colores verde (mismo que badges)
+    const badgeColor = 0x3cb371;
+    const borderColor = 0x2e8b57;
 
     // Contenedor centrado
     const tryAgainContainer = this.scene.add.container(
@@ -1602,7 +1602,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
-      stroke: "#7b241c",
+      stroke: "#1e6b4a",
       strokeThickness: 5,
       align: "center",
     });
@@ -1617,7 +1617,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#fadbd8",
+        color: "#d4edda",
         align: "center",
       }
     );
