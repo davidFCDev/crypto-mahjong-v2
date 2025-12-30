@@ -69,12 +69,6 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // Cargar imagen de fondo
-    this.load.image(
-      "background",
-      "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj"
-    );
-
     // Cargar imágenes de los tiles que tienen imageUrl
     Object.values(TileType).forEach((type) => {
       if (typeof type === "number") {
@@ -165,31 +159,64 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Imagen de fondo con overlay suave
+   * Crea el fondo del juego - Patrón geométrico sutil
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    // Añadir imagen de fondo centrada y escalada para cubrir
-    const bg = this.add.image(
-      canvas.width / 2,
-      canvas.height / 2,
-      "background"
-    );
+    // Fondo base con gradiente suave (más claro arriba, más oscuro abajo)
+    const bgGraphics = this.add.graphics();
+    
+    // Color base verde suave
+    const baseColor = 0x2d5a3d;
+    const lighterColor = 0x3d7a4d;
+    
+    // Fondo sólido
+    bgGraphics.fillStyle(baseColor, 1);
+    bgGraphics.fillRect(0, 0, canvas.width, canvas.height);
+    bgGraphics.setDepth(-3);
 
-    // Escalar para cubrir todo el canvas manteniendo proporción
-    const scaleX = canvas.width / bg.width;
-    const scaleY = canvas.height / bg.height;
-    const scale = Math.max(scaleX, scaleY);
-    bg.setScale(scale);
+    // Crear patrón de rombos/diamantes sutiles
+    const patternGraphics = this.add.graphics();
+    patternGraphics.setDepth(-2);
+    
+    const diamondSize = 60;
+    const spacing = diamondSize * 1.5;
+    
+    // Dibujar patrón de diamantes con opacidad muy baja
+    patternGraphics.lineStyle(1, lighterColor, 0.15);
+    
+    for (let y = -diamondSize; y < canvas.height + diamondSize; y += spacing) {
+      for (let x = -diamondSize; x < canvas.width + diamondSize; x += spacing) {
+        // Offset en filas alternas
+        const offsetX = (Math.floor(y / spacing) % 2) * (spacing / 2);
+        const posX = x + offsetX;
+        
+        // Dibujar diamante
+        patternGraphics.beginPath();
+        patternGraphics.moveTo(posX, y - diamondSize / 2);
+        patternGraphics.lineTo(posX + diamondSize / 2, y);
+        patternGraphics.lineTo(posX, y + diamondSize / 2);
+        patternGraphics.lineTo(posX - diamondSize / 2, y);
+        patternGraphics.closePath();
+        patternGraphics.strokePath();
+      }
+    }
 
-    bg.setDepth(-2);
-
-    // Overlay para oscurecer el fondo
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.3); // Oscurecer más el fondo
-    overlay.fillRect(0, 0, canvas.width, canvas.height);
-    overlay.setDepth(-1);
+    // Añadir viñeta sutil en las esquinas para dar profundidad
+    const vignetteGraphics = this.add.graphics();
+    vignetteGraphics.setDepth(-1);
+    
+    // Gradiente radial simulado con círculos concéntricos desde las esquinas
+    const cornerDarkness = 0.12;
+    vignetteGraphics.fillStyle(0x000000, cornerDarkness);
+    
+    // Esquinas sutiles
+    const cornerSize = 300;
+    vignetteGraphics.fillTriangle(0, 0, cornerSize, 0, 0, cornerSize);
+    vignetteGraphics.fillTriangle(canvas.width, 0, canvas.width - cornerSize, 0, canvas.width, cornerSize);
+    vignetteGraphics.fillTriangle(0, canvas.height, cornerSize, canvas.height, 0, canvas.height - cornerSize);
+    vignetteGraphics.fillTriangle(canvas.width, canvas.height, canvas.width - cornerSize, canvas.height, canvas.width, canvas.height - cornerSize);
   }
 
   /**
