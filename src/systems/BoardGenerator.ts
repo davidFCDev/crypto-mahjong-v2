@@ -184,7 +184,8 @@ export class BoardGenerator {
   }
 
   /**
-   * Genera tipos de fichas asegurando grupos de 3
+   * Genera tipos de fichas asegurando grupos de 3 con distribución equilibrada
+   * Todos los tipos tienen la misma cantidad de fichas (o difieren en máximo 1 grupo)
    */
   private static generateTileTypes(
     count: number,
@@ -193,13 +194,23 @@ export class BoardGenerator {
     const types: TileType[] = [];
     const groupCount = Math.floor(count / 3);
 
+    // Crear array de tipos disponibles y mezclarlo para distribución aleatoria
+    const availableTypes: TileType[] = [];
+    for (let t = 0; t < maxTypes; t++) {
+      availableTypes.push(t as TileType);
+    }
+    this.shuffleArray(availableTypes);
+
+    // Distribuir grupos de forma equilibrada entre todos los tipos
     for (let i = 0; i < groupCount; i++) {
-      const type = (i % maxTypes) as TileType;
+      // Seleccionar tipo de forma cíclica pero sobre el array mezclado
+      const typeIndex = i % maxTypes;
+      const type = availableTypes[typeIndex];
       // Añadir 3 fichas del mismo tipo
       types.push(type, type, type);
     }
 
-    // Mezclar los tipos
+    // Mezclar los tipos para que no estén agrupados
     this.shuffleArray(types);
 
     return types;

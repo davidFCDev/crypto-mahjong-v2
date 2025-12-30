@@ -79,19 +79,19 @@ export const GameSettings = {
     // Configuración: más tileTypes = menos tríos repetidos = más difícil
     // Más capas = fichas más dispersas verticalmente = más difícil
     const configs = [
-      // Niveles introductorios (1-2): pocos tipos, muchos tríos repetidos
-      { rows: 4, cols: 4, layers: 3, tileTypes: 3, coverageRate: 0.55 }, // Nivel 1: Muy fácil
-      { rows: 4, cols: 4, layers: 3, tileTypes: 4, coverageRate: 0.6 }, // Nivel 2: Fácil
+      // Niveles introductorios (1-2): más tipos para mayor variedad
+      { rows: 4, cols: 4, layers: 3, tileTypes: 5, coverageRate: 0.55 }, // Nivel 1: Introducción
+      { rows: 4, cols: 4, layers: 3, tileTypes: 6, coverageRate: 0.6 }, // Nivel 2: Fácil
 
       // Niveles intermedios (3-5): dificultad creciente
-      { rows: 4, cols: 4, layers: 4, tileTypes: 6, coverageRate: 0.7 }, // Nivel 3: Salto de dificultad
-      { rows: 4, cols: 4, layers: 5, tileTypes: 7, coverageRate: 0.75 }, // Nivel 4
-      { rows: 4, cols: 4, layers: 5, tileTypes: 8, coverageRate: 0.78 }, // Nivel 5
+      { rows: 4, cols: 4, layers: 4, tileTypes: 7, coverageRate: 0.7 }, // Nivel 3: Salto de dificultad
+      { rows: 4, cols: 4, layers: 5, tileTypes: 8, coverageRate: 0.75 }, // Nivel 4
+      { rows: 4, cols: 4, layers: 5, tileTypes: 9, coverageRate: 0.78 }, // Nivel 5
 
       // Niveles avanzados (6-8): alta dificultad
-      { rows: 4, cols: 4, layers: 6, tileTypes: 9, coverageRate: 0.8 }, // Nivel 6
-      { rows: 4, cols: 4, layers: 6, tileTypes: 10, coverageRate: 0.82 }, // Nivel 7
-      { rows: 4, cols: 4, layers: 7, tileTypes: 11, coverageRate: 0.85 }, // Nivel 8
+      { rows: 4, cols: 4, layers: 6, tileTypes: 10, coverageRate: 0.8 }, // Nivel 6
+      { rows: 4, cols: 4, layers: 6, tileTypes: 11, coverageRate: 0.82 }, // Nivel 7
+      { rows: 4, cols: 4, layers: 7, tileTypes: 12, coverageRate: 0.85 }, // Nivel 8
 
       // Niveles experto (9-10+): máxima dificultad
       { rows: 4, cols: 4, layers: 8, tileTypes: 12, coverageRate: 0.88 }, // Nivel 9

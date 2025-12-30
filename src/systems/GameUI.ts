@@ -323,7 +323,7 @@ export class GameUI extends Phaser.GameObjects.Container {
               strokeThickness: 3,
             });
             heartText.setShadow(0, 0, "#000000", 0, false, false);
-          }
+          },
         });
       }
     }
@@ -1419,24 +1419,34 @@ export class GameUI extends Phaser.GameObjects.Container {
     const levelScore = this.getLevelScore();
 
     // Tiempo - centrado
-    const timeText = this.scene.add.text(0, offsetY + 115, `TIME: ${levelTime}s`, {
-      fontSize: "24px",
-      fontFamily: "'Fredoka One', sans-serif",
-      color: "#ffffff",
-      stroke: "#7b241c",
-      strokeThickness: 2,
-    });
+    const timeText = this.scene.add.text(
+      0,
+      offsetY + 115,
+      `TIME: ${levelTime}s`,
+      {
+        fontSize: "24px",
+        fontFamily: "'Fredoka One', sans-serif",
+        color: "#ffffff",
+        stroke: "#7b241c",
+        strokeThickness: 2,
+      }
+    );
     timeText.setOrigin(0.5);
     winContainer.add(timeText);
 
     // Score del nivel - centrado
-    const scoreText = this.scene.add.text(0, offsetY + 160, `SCORE: +${levelScore}`, {
-      fontSize: "24px",
-      fontFamily: "'Fredoka One', sans-serif",
-      color: "#ffffff",
-      stroke: "#7b241c",
-      strokeThickness: 2,
-    });
+    const scoreText = this.scene.add.text(
+      0,
+      offsetY + 160,
+      `SCORE: +${levelScore}`,
+      {
+        fontSize: "24px",
+        fontFamily: "'Fredoka One', sans-serif",
+        color: "#ffffff",
+        stroke: "#7b241c",
+        strokeThickness: 2,
+      }
+    );
     scoreText.setOrigin(0.5);
     winContainer.add(scoreText);
 
@@ -1600,12 +1610,17 @@ export class GameUI extends Phaser.GameObjects.Container {
     tryAgainContainer.add(titleText);
 
     // Subtítulo con vidas restantes
-    const livesText = this.scene.add.text(0, offsetY + 115, `${this.lives} life remaining`, {
-      fontSize: "24px",
-      fontFamily: "'Fredoka One', sans-serif",
-      color: "#fadbd8",
-      align: "center",
-    });
+    const livesText = this.scene.add.text(
+      0,
+      offsetY + 115,
+      `${this.lives} life remaining`,
+      {
+        fontSize: "24px",
+        fontFamily: "'Fredoka One', sans-serif",
+        color: "#fadbd8",
+        align: "center",
+      }
+    );
     livesText.setOrigin(0.5);
     tryAgainContainer.add(livesText);
 
