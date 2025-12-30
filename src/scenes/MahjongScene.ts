@@ -164,14 +164,10 @@ export class MahjongScene extends Phaser.Scene {
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    // Fondo base con gradiente suave (más claro arriba, más oscuro abajo)
+    // Fondo sólido amarillo crema
     const bgGraphics = this.add.graphics();
-    
-    // Color base amarillo crema suave
     const baseColor = 0xf5e6c8;
-    const lighterColor = 0xfff8e7;
     
-    // Fondo sólido
     bgGraphics.fillStyle(baseColor, 1);
     bgGraphics.fillRect(0, 0, canvas.width, canvas.height);
     bgGraphics.setDepth(-3);
@@ -183,8 +179,8 @@ export class MahjongScene extends Phaser.Scene {
     const diamondSize = 60;
     const spacing = diamondSize * 1.5;
     
-    // Dibujar patrón de diamantes con opacidad muy baja
-    patternGraphics.lineStyle(1, 0xd4b896, 0.4);
+    // Dibujar patrón de diamantes en tono más oscuro
+    patternGraphics.lineStyle(1, 0xd4b896, 0.35);
     
     for (let y = -diamondSize; y < canvas.height + diamondSize; y += spacing) {
       for (let x = -diamondSize; x < canvas.width + diamondSize; x += spacing) {
@@ -202,21 +198,6 @@ export class MahjongScene extends Phaser.Scene {
         patternGraphics.strokePath();
       }
     }
-
-    // Añadir viñeta sutil en las esquinas para dar profundidad
-    const vignetteGraphics = this.add.graphics();
-    vignetteGraphics.setDepth(-1);
-    
-    // Gradiente radial simulado con círculos concéntricos desde las esquinas
-    const cornerDarkness = 0.12;
-    vignetteGraphics.fillStyle(0x000000, cornerDarkness);
-    
-    // Esquinas sutiles
-    const cornerSize = 300;
-    vignetteGraphics.fillTriangle(0, 0, cornerSize, 0, 0, cornerSize);
-    vignetteGraphics.fillTriangle(canvas.width, 0, canvas.width - cornerSize, 0, canvas.width, cornerSize);
-    vignetteGraphics.fillTriangle(0, canvas.height, cornerSize, canvas.height, 0, canvas.height - cornerSize);
-    vignetteGraphics.fillTriangle(canvas.width, canvas.height, canvas.width - cornerSize, canvas.height, canvas.width, canvas.height - cornerSize);
   }
 
   /**
