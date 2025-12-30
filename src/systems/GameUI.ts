@@ -1373,7 +1373,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara 3D
-    bg.lineStyle(3, this.darkenColor(borderColor, 0.3), 1);
+    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
       offsetY + depth3D,
@@ -1393,7 +1393,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara principal
-    bg.lineStyle(3, borderColor, 1);
+    bg.lineStyle(2, borderColor, 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
       offsetY,
@@ -1408,7 +1408,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
-      stroke: "#1e6b4a",
+      stroke: "#1a3a1a",
       strokeThickness: 5,
       align: "center",
     });
@@ -1427,7 +1427,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#2d2d2d",
+        color: "#1a1a1a",
       }
     );
     timeText.setOrigin(0.5);
@@ -1441,7 +1441,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#2d2d2d",
+        color: "#1a1a1a",
       }
     );
     scoreText.setOrigin(0.5);
@@ -1467,14 +1467,14 @@ export class GameUI extends Phaser.GameObjects.Container {
     btnBg.fillStyle(0xffffff, 1);
     btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
     // Borde
-    btnBg.lineStyle(3, borderColor, 1);
+    btnBg.lineStyle(2, borderColor, 1);
     btnBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
     continueBtn.add(btnBg);
 
     const btnText = this.scene.add.text(0, btnHeight / 2, "NEXT LEVEL →", {
       fontSize: "24px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#2d2d2d",
+      color: "#1a1a1a",
     });
     btnText.setOrigin(0.5);
     continueBtn.add(btnText);
@@ -1565,7 +1565,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara 3D
-    bg.lineStyle(3, this.darkenColor(borderColor, 0.3), 1);
+    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
       offsetY + depth3D,
@@ -1585,7 +1585,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     );
 
     // Borde de la cara principal
-    bg.lineStyle(3, borderColor, 1);
+    bg.lineStyle(2, borderColor, 1);
     bg.strokeRoundedRect(
       -modalWidth / 2,
       offsetY,
@@ -1600,7 +1600,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
       color: "#ffffff",
-      stroke: "#1e6b4a",
+      stroke: "#1a3a1a",
       strokeThickness: 5,
       align: "center",
     });
@@ -1615,7 +1615,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#2d2d2d",
+        color: "#1a1a1a",
         align: "center",
       }
     );
@@ -1642,14 +1642,14 @@ export class GameUI extends Phaser.GameObjects.Container {
     btnBg.fillStyle(0xffffff, 1);
     btnBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
     // Borde
-    btnBg.lineStyle(3, borderColor, 1);
+    btnBg.lineStyle(2, borderColor, 1);
     btnBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
     tryAgainBtn.add(btnBg);
 
     const btnText = this.scene.add.text(0, btnHeight / 2, "TRY AGAIN", {
       fontSize: "24px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#2d2d2d",
+      color: "#1a1a1a",
     });
     btnText.setOrigin(0.5);
     tryAgainBtn.add(btnText);
