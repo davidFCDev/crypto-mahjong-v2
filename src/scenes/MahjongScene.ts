@@ -159,14 +159,14 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Patrón de rombos alternados
+   * Crea el fondo del juego - Patrón de rombos alternados estilo cartoon
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    // Colores para el patrón de rombos
-    const color1 = 0xfaf3e0; // Crema claro
-    const color2 = 0xf0e6c8; // Crema más oscuro
+    // Colores para el patrón de rombos - tonos trigo/arena cartoon
+    const color1 = 0xf5deb3; // Trigo - base
+    const color2 = 0xdeb887; // Burlywood - contraste
     
     // Tamaño de cada rombo
     const diamondWidth = 80;

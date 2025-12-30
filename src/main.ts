@@ -16,7 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
     height: GameSettings.canvas.height,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  backgroundColor: "#faf3e0",
+  backgroundColor: "#f5deb3",
   scene: [GameScene],
   physics: {
     default: "arcade",
