@@ -167,9 +167,9 @@ export class MahjongScene extends Phaser.Scene {
     // Fondo base con gradiente suave (más claro arriba, más oscuro abajo)
     const bgGraphics = this.add.graphics();
     
-    // Color base verde suave
-    const baseColor = 0x2d5a3d;
-    const lighterColor = 0x3d7a4d;
+    // Color base amarillo crema suave
+    const baseColor = 0xf5e6c8;
+    const lighterColor = 0xfff8e7;
     
     // Fondo sólido
     bgGraphics.fillStyle(baseColor, 1);
@@ -184,7 +184,7 @@ export class MahjongScene extends Phaser.Scene {
     const spacing = diamondSize * 1.5;
     
     // Dibujar patrón de diamantes con opacidad muy baja
-    patternGraphics.lineStyle(1, lighterColor, 0.15);
+    patternGraphics.lineStyle(1, 0xd4b896, 0.4);
     
     for (let y = -diamondSize; y < canvas.height + diamondSize; y += spacing) {
       for (let x = -diamondSize; x < canvas.width + diamondSize; x += spacing) {
