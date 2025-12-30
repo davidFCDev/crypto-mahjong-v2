@@ -56,9 +56,9 @@ export const GameSettings = {
     slotHeight: 145,
     slotPadding: 8,
     bottomMargin: 130,
-    backgroundColor: 0x2d5a3d, // Verde oscuro
-    slotColor: 0x1e4a2d, // Verde slot más oscuro para mejor contraste
-    slotBorderColor: 0x153a1d, // Borde verde muy oscuro
+    backgroundColor: 0x2e8b57, // Verde esmeralda vibrante
+    slotColor: 0x228b22, // Verde bosque brillante
+    slotBorderColor: 0x1a6b3a, // Borde verde oscuro
   },
 
   // Game rules
@@ -122,15 +122,15 @@ export const GameSettings = {
       button: 18,
     },
     colors: {
-      background: 0xd4c4a8, // Beige cálido
-      primary: 0x2d5a27, // Verde bosque
-      secondary: 0x3d7a3d, // Verde claro
+      background: 0xfaf3e0, // Crema claro
+      primary: 0x2e8b57, // Verde esmeralda
+      secondary: 0x3cb371, // Verde medio
       accent: 0xffd700, // Dorado
       text: 0xfff8dc, // Crema
       textSecondary: 0xaaaaaa,
       // Badges - mismo color que el acumulador
-      badge: 0x2d5a3d, // Verde oscuro (igual que hand.backgroundColor)
-      badgeBorder: 0x1e4a2d, // Borde verde (igual que hand.slotBorderColor)
+      badge: 0x2e8b57, // Verde esmeralda (igual que hand.backgroundColor)
+      badgeBorder: 0x228b22, // Borde verde (igual que hand.slotColor)
     },
   },
 };

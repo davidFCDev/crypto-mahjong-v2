@@ -159,44 +159,49 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Patrón geométrico sutil
+   * Crea el fondo del juego - Patrón de rombos alternados
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    // Fondo sólido amarillo crema
+    // Colores para el patrón de rombos
+    const color1 = 0xfaf3e0; // Crema claro
+    const color2 = 0xf0e6c8; // Crema más oscuro
+    
+    // Tamaño de cada rombo
+    const diamondWidth = 80;
+    const diamondHeight = 100;
+    
     const bgGraphics = this.add.graphics();
-    const baseColor = 0xf5e6c8;
-    
-    bgGraphics.fillStyle(baseColor, 1);
-    bgGraphics.fillRect(0, 0, canvas.width, canvas.height);
     bgGraphics.setDepth(-3);
-
-    // Crear patrón de rombos/diamantes sutiles
-    const patternGraphics = this.add.graphics();
-    patternGraphics.setDepth(-2);
     
-    const diamondSize = 60;
-    const spacing = diamondSize * 1.5;
+    // Fondo base
+    bgGraphics.fillStyle(color1, 1);
+    bgGraphics.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Dibujar patrón de diamantes en tono más oscuro
-    patternGraphics.lineStyle(1, 0xd4b896, 0.35);
-    
-    for (let y = -diamondSize; y < canvas.height + diamondSize; y += spacing) {
-      for (let x = -diamondSize; x < canvas.width + diamondSize; x += spacing) {
-        // Offset en filas alternas
-        const offsetX = (Math.floor(y / spacing) % 2) * (spacing / 2);
-        const posX = x + offsetX;
+    // Dibujar rombos alternados
+    let row = 0;
+    for (let y = -diamondHeight / 2; y < canvas.height + diamondHeight; y += diamondHeight / 2) {
+      let col = 0;
+      const offsetX = (row % 2) * (diamondWidth / 2);
+      
+      for (let x = -diamondWidth / 2 + offsetX; x < canvas.width + diamondWidth; x += diamondWidth) {
+        // Alternar color en patrón de tablero
+        const useColor2 = (row + col) % 2 === 0;
         
-        // Dibujar diamante
-        patternGraphics.beginPath();
-        patternGraphics.moveTo(posX, y - diamondSize / 2);
-        patternGraphics.lineTo(posX + diamondSize / 2, y);
-        patternGraphics.lineTo(posX, y + diamondSize / 2);
-        patternGraphics.lineTo(posX - diamondSize / 2, y);
-        patternGraphics.closePath();
-        patternGraphics.strokePath();
+        if (useColor2) {
+          bgGraphics.fillStyle(color2, 1);
+          bgGraphics.beginPath();
+          bgGraphics.moveTo(x, y - diamondHeight / 2);
+          bgGraphics.lineTo(x + diamondWidth / 2, y);
+          bgGraphics.lineTo(x, y + diamondHeight / 2);
+          bgGraphics.lineTo(x - diamondWidth / 2, y);
+          bgGraphics.closePath();
+          bgGraphics.fillPath();
+        }
+        col++;
       }
+      row++;
     }
   }
 
