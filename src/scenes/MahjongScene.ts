@@ -521,6 +521,9 @@ export class MahjongScene extends Phaser.Scene {
       this.gameState.score += levelBonus;
       this.gameUI.updateScore(this.gameState.score);
 
+      // Parar el timer
+      this.gameUI.stopTimer();
+
       // Mostrar mensaje de victoria
       this.time.delayedCall(500, () => {
         this.gameUI.showWinMessage(() => {
@@ -542,6 +545,9 @@ export class MahjongScene extends Phaser.Scene {
    * Maneja la pérdida de una vida
    */
   private handleLoseLife(): void {
+    // Parar el timer inmediatamente
+    this.gameUI.stopTimer();
+
     const hasLivesLeft = this.gameUI.loseLife();
 
     if (hasLivesLeft) {

@@ -1346,9 +1346,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     const borderRadius = 20;
     const depth3D = 16;
 
-    // Colores verde (mismo que badges)
-    const badgeColor = 0x3cb371;
-    const borderColor = 0x2e8b57;
+    // Colores de GameSettings (mismo que badges)
+    const { ui } = GameSettings;
+    const badgeColor = (ui.colors as any).badge || 0x3cb371;
+    const borderColor = (ui.colors as any).badgeBorder || 0x2e8b57;
 
     // Contenedor centrado
     const winContainer = this.scene.add.container(
@@ -1426,9 +1427,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#ffffff",
-        stroke: "#1e6b4a",
-        strokeThickness: 2,
+        color: "#2d2d2d",
       }
     );
     timeText.setOrigin(0.5);
@@ -1442,9 +1441,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#ffffff",
-        stroke: "#1e6b4a",
-        strokeThickness: 2,
+        color: "#2d2d2d",
       }
     );
     scoreText.setOrigin(0.5);
@@ -1457,7 +1454,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     winContainer.add(separator);
 
     // Botón con estilo 3D (blanco como contraste)
-    const continueBtn = this.scene.add.container(0, offsetY + 260);
+    const continueBtn = this.scene.add.container(0, offsetY + 245);
     const btnWidth = 250;
     const btnHeight = 58;
     const btnDepth = 8;
@@ -1477,7 +1474,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const btnText = this.scene.add.text(0, btnHeight / 2, "NEXT LEVEL →", {
       fontSize: "24px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#c0392b",
+      color: "#2d2d2d",
     });
     btnText.setOrigin(0.5);
     continueBtn.add(btnText);
@@ -1541,9 +1538,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     const borderRadius = 20;
     const depth3D = 16;
 
-    // Colores verde (mismo que badges)
-    const badgeColor = 0x3cb371;
-    const borderColor = 0x2e8b57;
+    // Colores de GameSettings (mismo que badges)
+    const { ui } = GameSettings;
+    const badgeColor = (ui.colors as any).badge || 0x3cb371;
+    const borderColor = (ui.colors as any).badgeBorder || 0x2e8b57;
 
     // Contenedor centrado
     const tryAgainContainer = this.scene.add.container(
@@ -1617,7 +1615,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#d4edda",
+        color: "#2d2d2d",
         align: "center",
       }
     );
@@ -1631,7 +1629,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     tryAgainContainer.add(separator);
 
     // Botón con estilo 3D (blanco como contraste)
-    const tryAgainBtn = this.scene.add.container(0, offsetY + 215);
+    const tryAgainBtn = this.scene.add.container(0, offsetY + 200);
     const btnWidth = 250;
     const btnHeight = 58;
     const btnDepth = 8;
@@ -1651,7 +1649,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const btnText = this.scene.add.text(0, btnHeight / 2, "TRY AGAIN", {
       fontSize: "24px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#c0392b",
+      color: "#2d2d2d",
     });
     btnText.setOrigin(0.5);
     tryAgainBtn.add(btnText);
