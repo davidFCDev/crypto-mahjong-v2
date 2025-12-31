@@ -32,18 +32,20 @@ export const GameSettings = {
     // Colores de la ficha - usa tema si existe, sino defaults
     get colors() {
       const theme = getTheme();
-      return theme.tile || {
-        face: 0xffffff,
-        side: 0xd4b896,
-        bottom: 0xc4a878,
-        border: 0xb49868,
-        highlight: 0xffffff,
-        blocked: 0x888888,
-        blockedOverlay: 0x000000,
-        blockedAlpha: 0.45,
-        sideLight: 0xe0c8a8,
-        bottomLight: 0xd0b898,
-      };
+      return (
+        theme.tile || {
+          face: 0xffffff,
+          side: 0xd4b896,
+          bottom: 0xc4a878,
+          border: 0xb49868,
+          highlight: 0xffffff,
+          blocked: 0x888888,
+          blockedOverlay: 0x000000,
+          blockedAlpha: 0.45,
+          sideLight: 0xe0c8a8,
+          bottomLight: 0xd0b898,
+        }
+      );
     },
   } as TileDimensions & {
     cornerRadius: number;

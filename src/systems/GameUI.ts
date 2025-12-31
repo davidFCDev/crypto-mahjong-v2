@@ -1338,7 +1338,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas } = GameSettings;
 
     const overlay = this.scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.6);
+    overlay.fillStyle(0x000000, 0.75);
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     this.add(overlay);
 
@@ -1530,7 +1530,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const { canvas } = GameSettings;
 
     const overlay = this.scene.add.graphics();
-    overlay.fillStyle(0x000000, 0.6);
+    overlay.fillStyle(0x000000, 0.75);
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     this.add(overlay);
 
