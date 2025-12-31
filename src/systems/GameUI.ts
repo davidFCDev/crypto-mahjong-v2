@@ -1187,6 +1187,14 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
+   * Crea la explosión de match (partículas + flash) - usado externamente
+   */
+  public createMatchExplosion(x: number, y: number): void {
+    this.createMatchParticles(x, y);
+    this.createFlashEffect(x, y);
+  }
+
+  /**
    * Actualiza el nivel mostrado
    */
   public updateLevel(level: number): void {

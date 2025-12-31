@@ -839,48 +839,116 @@ export class MahjongScene extends Phaser.Scene {
 
     // Separar fichas del tablero y del acumulador
     const boardTiles = tiles.filter((t) => !t.isInHand);
-    const handTile = tiles.find((t) => t.isInHand);
+    const handTiles = tiles.filter((t) => t.isInHand);
 
     // Marcar todas como matched
     tiles.forEach((tile) => {
       tile.isMatched = true;
     });
 
-    // Si hay ficha del acumulador, quitarla del HandManager
-    if (handTile) {
-      this.handManager.removeMatchedTiles(tiles.filter((t) => t.isInHand));
+    // Si hay fichas del acumulador, quitarlas del HandManager
+    if (handTiles.length > 0) {
+      this.handManager.removeMatchedTiles(handTiles);
       this.gameUI.updateHand(this.handManager.getSlots());
     }
 
-    // Obtener sprites del tablero para animar
-    const spritePositions: { x: number; y: number }[] = [];
+    // Actualizar accesibilidad inmediatamente
+    this.updateBoardAccessibility();
+    this.updateTiles3DEffect();
+
+    // Recopilar sprites del tablero para animar
+    const boardSprites: Phaser.GameObjects.Container[] = [];
     boardTiles.forEach((tile) => {
       const sprite = this.tileSprites.get(tile.id);
       if (sprite) {
-        spritePositions.push({ x: sprite.x, y: sprite.y });
-        sprite.destroy();
+        boardSprites.push(sprite);
         this.tileSprites.delete(tile.id);
       }
     });
 
-    // Actualizar accesibilidad
-    this.updateBoardAccessibility();
-    this.updateTiles3DEffect();
+    // Calcular punto central para la animación (centro de la pantalla, arriba del acumulador)
+    const centerX = 360;
+    const centerY = 900;
 
-    // Actualizar puntuación
-    this.gameState.score += GameSettings.rules.scorePerMatch;
-    this.gameUI.updateScore(this.gameState.score);
+    // Animar fichas del tablero hacia el centro
+    let animationsCompleted = 0;
+    const totalAnimations = boardSprites.length;
 
-    // Reproducir sonido de trio
-    this.time.delayedCall(300, () => {
-      SoundManager.playTrio();
+    boardSprites.forEach((sprite, index) => {
+      const delay = index * 100;
+
+      // Fase 1: Mover hacia el centro con efecto de elevación
+      this.tweens.add({
+        targets: sprite,
+        x: centerX + (index - (boardSprites.length - 1) / 2) * 60,
+        y: centerY,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 350,
+        delay: delay,
+        ease: "Cubic.easeOut",
+        onComplete: () => {
+          // Fase 2: Converger al centro exacto
+          this.tweens.add({
+            targets: sprite,
+            x: centerX,
+            y: centerY - 30,
+            rotation: (index - 1) * 0.2,
+            scaleX: 1.0,
+            scaleY: 1.0,
+            duration: 250,
+            ease: "Sine.easeInOut",
+            onComplete: () => {
+              animationsCompleted++;
+
+              // Cuando todas convergen, hacer explosión
+              if (animationsCompleted === totalAnimations) {
+                // Crear efecto de explosión
+                this.gameUI.createMatchExplosion(centerX, centerY - 30);
+
+                // Desvanecer sprites
+                boardSprites.forEach((s) => {
+                  this.tweens.add({
+                    targets: s,
+                    scaleX: 0,
+                    scaleY: 0,
+                    alpha: 0,
+                    rotation: s.rotation + 0.5,
+                    duration: 200,
+                    ease: "Cubic.easeIn",
+                    onComplete: () => {
+                      s.destroy();
+                    },
+                  });
+                });
+
+                // Actualizar puntuación
+                this.gameState.score += GameSettings.rules.scorePerMatch;
+                this.gameUI.updateScore(this.gameState.score);
+
+                // Reproducir sonido
+                SoundManager.playTrio();
+
+                // Verificar victoria
+                this.time.delayedCall(300, () => {
+                  this.checkWinCondition();
+                  this.isAnimating = false;
+                });
+              }
+            },
+          });
+        },
+      });
     });
 
-    // Verificar victoria
-    this.time.delayedCall(400, () => {
+    // Si no hay sprites del tablero (caso edge), completar inmediatamente
+    if (boardSprites.length === 0) {
+      this.gameState.score += GameSettings.rules.scorePerMatch;
+      this.gameUI.updateScore(this.gameState.score);
+      SoundManager.playTrio();
       this.checkWinCondition();
       this.isAnimating = false;
-    });
+    }
   }
 
   update(): void {
