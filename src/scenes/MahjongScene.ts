@@ -309,34 +309,25 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Patrón de círculos / pétalos (Sakura)
+   * Patrón de círculos grandes tipo bokeh (Atardecer mejorado)
    */
   private drawCirclesPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
     const { canvas } = GameSettings;
+    // Degradado cálido de fondo
+    const gradient = graphics.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, '#ffb347'); // Naranja
+    gradient.addColorStop(1, '#ff5e62'); // Rosado
+    graphics.fillGradientStyle(gradient, 1, 1, 1, 1);
+    graphics.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Círculos concéntricos sutiles
-    graphics.lineStyle(1, color, 0.4);
-    const gridSize = 100;
-
-    for (let y = 0; y < canvas.height + gridSize; y += gridSize) {
-      const offsetX = ((y / gridSize) % 2) * (gridSize / 2);
-      for (let x = offsetX; x < canvas.width + gridSize; x += gridSize) {
-        // Dibujar flor de cerezo estilizada (5 círculos pequeños)
-        const petalSize = 12;
-        const petalDistance = 18;
-
-        for (let i = 0; i < 5; i++) {
-          const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
-          const px = x + Math.cos(angle) * petalDistance;
-          const py = y + Math.sin(angle) * petalDistance;
-          graphics.fillStyle(color, 0.5);
-          graphics.fillCircle(px, py, petalSize);
-        }
-
-        // Centro de la flor
-        graphics.fillStyle(0xffeb3b, 0.6); // Amarillo
-        graphics.fillCircle(x, y, 6);
-      }
+    // Círculos grandes y suaves (bokeh)
+    for (let i = 0; i < 18; i++) {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      const radius = 60 + Math.random() * 80;
+      const alpha = 0.10 + Math.random() * 0.18;
+      graphics.fillStyle(color, alpha);
+      graphics.fillCircle(x, y, radius);
     }
   }
 

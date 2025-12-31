@@ -197,40 +197,40 @@ export const sunsetTheme: GameTheme = {
   displayName: "Atardecer",
 
   background: {
-    main: "#2d1b3d", // Deep purple
-    mainHex: 0x2d1b3d,
+    main: "#ffb347", // Naranja cálido
+    mainHex: 0xffb347,
     pattern: {
-      type: "hexagons",
-      color1: 0x2d1b3d, // Deep purple base
-      color2: 0x1f1229, // Darker purple
+      type: "circles", // Usaremos círculos grandes tipo bokeh
+      color1: 0xffb347, // Naranja base
+      color2: 0xff5e62, // Rosado cálido
     },
   },
 
   badge: {
-    main: 0xff7f50, // Coral
-    border: 0xcd5c3c, // Dark Coral
+    main: 0xff5e62, // Rosado sunset
+    border: 0xff9966, // Naranja coral
     depth3D: 16,
-    textStroke: "#4a1a0a",
+    textStroke: "#7a2e1a",
   },
 
   hand: {
-    background: 0xff7f50, // Coral
-    slot: 0xcd5c3c, // Dark Coral
-    slotBorder: 0xa04830, // Darker
+    background: 0xff5e62, // Rosado sunset
+    slot: 0xff9966, // Naranja coral
+    slotBorder: 0xff7f50, // Coral
   },
 
   modal: {
-    main: 0xff7f50, // Coral
-    border: 0xcd5c3c, // Dark Coral
-    titleColor: "#ffffff",
-    titleStroke: "#4a1a0a",
-    textColor: "#fff0e6", // Light peach
+    main: 0xff5e62, // Rosado sunset
+    border: 0xff9966, // Naranja coral
+    titleColor: "#fffbe6",
+    titleStroke: "#7a2e1a",
+    textColor: "#4a1a0a",
     buttonTextColor: "#4a1a0a",
   },
 
   powerUps: {
-    undo: { main: 0x9370db, border: 0x7b5dc2 }, // Medium Purple
-    clock: { main: 0xffd700, border: 0xb8a000 }, // Gold
+    undo: { main: 0xf7b267, border: 0xff9966 }, // Amarillo sunset
+    clock: { main: 0xffd700, border: 0xffa500 }, // Gold
     key: { main: 0xff4500, border: 0xcc3700 }, // Orange Red
   },
 
@@ -241,11 +241,11 @@ export const sunsetTheme: GameTheme = {
 
   tile: {
     face: 0xfff5ee, // Seashell
-    side: 0xdda0a0, // Rosy
-    bottom: 0xc89090, // Darker Rosy
-    border: 0xb88080,
-    sideLight: 0xedc0c0,
-    bottomLight: 0xddb0b0,
+    side: 0xffcba4, // Naranja claro
+    bottom: 0xffb347, // Naranja base
+    border: 0xff9966,
+    sideLight: 0xffe0b2,
+    bottomLight: 0xffd6a0,
   },
 };
 
