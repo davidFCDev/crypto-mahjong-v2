@@ -4,6 +4,7 @@
  */
 
 import GameSettings from "../config/GameSettings";
+import { getCurrentTheme } from "../config/Themes";
 import { TILE_COLORS, type HandSlot, type TileState } from "../types";
 
 // Callbacks para los power-ups
@@ -240,6 +241,7 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   private createLivesDisplay(): void {
     const { canvas } = GameSettings;
+    const theme = getCurrentTheme();
 
     const heartSpacing = 10;
     const y = 175; // Debajo del score badge y antes del tablero
@@ -251,8 +253,8 @@ export class GameUI extends Phaser.GameObjects.Container {
       const heart = this.scene.add.text(0, 0, "♥", {
         fontFamily: "Arial",
         fontSize: "56px",
-        color: "#e74c3c",
-        stroke: "#8b0000",
+        color: theme.lives.color,
+        stroke: theme.lives.stroke,
         strokeThickness: 5,
         shadow: {
           offsetX: 2,
@@ -315,11 +317,12 @@ export class GameUI extends Phaser.GameObjects.Container {
           ease: "Power2",
           onComplete: () => {
             // Cambiar a corazón vacío
+            const theme = getCurrentTheme();
             heartText.setStyle({
               fontFamily: "Arial",
               fontSize: "56px",
               color: "transparent",
-              stroke: "#8b0000",
+              stroke: theme.lives.stroke,
               strokeThickness: 3,
             });
             heartText.setShadow(0, 0, "#000000", 0, false, false);
@@ -343,6 +346,7 @@ export class GameUI extends Phaser.GameObjects.Container {
    */
   public resetLives(): void {
     this.lives = 2;
+    const theme = getCurrentTheme();
     this.heartContainers.forEach((heart, i) => {
       heart.setScale(1);
       heart.setAlpha(1);
@@ -352,8 +356,8 @@ export class GameUI extends Phaser.GameObjects.Container {
         heartText.setStyle({
           fontFamily: "Arial",
           fontSize: "56px",
-          color: "#e74c3c",
-          stroke: "#8b0000",
+          color: theme.lives.color,
+          stroke: theme.lives.stroke,
           strokeThickness: 5,
         });
         heartText.setShadow(2, 2, "#000000", 4, true, true);
@@ -458,12 +462,9 @@ export class GameUI extends Phaser.GameObjects.Container {
     const buttonSpacing = 100;
     const centerX = canvas.width / 2;
 
-    // Colores diferentes para cada botón (estilo badge) - Tonos más vivos
-    const colors = {
-      undo: { main: 0x3498db, border: 0x2980b9 }, // Azul brillante
-      clock: { main: 0xf1c40f, border: 0xd4a800 }, // Amarillo/Dorado brillante
-      key: { main: 0xe74c3c, border: 0x8b0000 }, // Rojo (mismo que corazones)
-    };
+    // Colores desde el tema
+    const theme = getCurrentTheme();
+    const colors = theme.powerUps;
 
     // Crear los 3 botones
     this.undoButton = this.createPowerUpButton(
@@ -1346,10 +1347,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     const borderRadius = 20;
     const depth3D = 16;
 
-    // Colores de GameSettings (mismo que badges)
-    const { ui } = GameSettings;
-    const badgeColor = (ui.colors as any).badge || 0x3cb371;
-    const borderColor = (ui.colors as any).badgeBorder || 0x2e8b57;
+    // Colores desde el tema
+    const theme = getCurrentTheme();
+    const badgeColor = theme.modal.main;
+    const borderColor = theme.modal.border;
 
     // Contenedor centrado
     const winContainer = this.scene.add.container(
@@ -1407,8 +1408,8 @@ export class GameUI extends Phaser.GameObjects.Container {
     const winText = this.scene.add.text(0, offsetY + 50, "LEVEL COMPLETE!", {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#ffffff",
-      stroke: "#1a3a1a",
+      color: theme.modal.titleColor,
+      stroke: theme.modal.titleStroke,
       strokeThickness: 5,
       align: "center",
     });
@@ -1427,7 +1428,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#1a1a1a",
+        color: theme.modal.textColor,
       }
     );
     timeText.setOrigin(0.5);
@@ -1441,7 +1442,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#1a1a1a",
+        color: theme.modal.textColor,
       }
     );
     scoreText.setOrigin(0.5);
@@ -1474,7 +1475,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const btnText = this.scene.add.text(0, btnHeight / 2, "NEXT LEVEL →", {
       fontSize: "24px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#1a1a1a",
+      color: theme.modal.buttonTextColor,
     });
     btnText.setOrigin(0.5);
     continueBtn.add(btnText);
@@ -1538,10 +1539,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     const borderRadius = 20;
     const depth3D = 16;
 
-    // Colores de GameSettings (mismo que badges)
-    const { ui } = GameSettings;
-    const badgeColor = (ui.colors as any).badge || 0x3cb371;
-    const borderColor = (ui.colors as any).badgeBorder || 0x2e8b57;
+    // Colores desde el tema
+    const theme = getCurrentTheme();
+    const badgeColor = theme.modal.main;
+    const borderColor = theme.modal.border;
 
     // Contenedor centrado
     const tryAgainContainer = this.scene.add.container(
@@ -1599,8 +1600,8 @@ export class GameUI extends Phaser.GameObjects.Container {
     const titleText = this.scene.add.text(0, offsetY + 55, "TIME'S UP!", {
       fontSize: "38px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#ffffff",
-      stroke: "#1a3a1a",
+      color: theme.modal.titleColor,
+      stroke: theme.modal.titleStroke,
       strokeThickness: 5,
       align: "center",
     });
@@ -1615,7 +1616,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
-        color: "#1a1a1a",
+        color: theme.modal.textColor,
         align: "center",
       }
     );
@@ -1649,7 +1650,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const btnText = this.scene.add.text(0, btnHeight / 2, "TRY AGAIN", {
       fontSize: "24px",
       fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#1a1a1a",
+      color: theme.modal.buttonTextColor,
     });
     btnText.setOrigin(0.5);
     tryAgainBtn.add(btnText);

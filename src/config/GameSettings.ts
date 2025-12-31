@@ -4,12 +4,21 @@
  */
 
 import type { LevelConfig, TileDimensions } from "../types";
+import { getCurrentTheme } from "./Themes";
+
+// Helper to get current theme
+const getTheme = () => getCurrentTheme();
 
 export const GameSettings = {
   // Canvas configuration
   canvas: {
     width: 720,
     height: 1280,
+  },
+
+  // Get current theme (for dynamic access)
+  get theme() {
+    return getCurrentTheme();
   },
 
   // Tile dimensions and styling - Forma vertical estilo Mahjong clásico
@@ -20,19 +29,21 @@ export const GameSettings = {
     padding: 2,
     cornerRadius: 11,
     shadowOffset: 16,
-    // Colores de la ficha - Cara blanca con 3D beige intenso
-    colors: {
-      face: 0xffffff, // Blanco - relleno del borde
-      side: 0xd4b896, // Beige más intenso lateral
-      bottom: 0xc4a878, // Beige oscuro base
-      border: 0xb49868, // Borde beige marrón
-      highlight: 0xffffff, // Brillo blanco
-      blocked: 0x888888,
-      blockedOverlay: 0x000000,
-      blockedAlpha: 0.45,
-      // Colores para fichas accesibles
-      sideLight: 0xe0c8a8, // Beige lateral claro
-      bottomLight: 0xd0b898, // Beige base claro
+    // Colores de la ficha - usa tema si existe, sino defaults
+    get colors() {
+      const theme = getTheme();
+      return theme.tile || {
+        face: 0xffffff,
+        side: 0xd4b896,
+        bottom: 0xc4a878,
+        border: 0xb49868,
+        highlight: 0xffffff,
+        blocked: 0x888888,
+        blockedOverlay: 0x000000,
+        blockedAlpha: 0.45,
+        sideLight: 0xe0c8a8,
+        bottomLight: 0xd0b898,
+      };
     },
   } as TileDimensions & {
     cornerRadius: number;
@@ -49,16 +60,22 @@ export const GameSettings = {
     layerOffsetY: 11, // Desplazamiento Y por capa (efecto 3D hacia abajo)
   },
 
-  // Hand configuration - Acumulador estilo minimalista
+  // Hand configuration - usa colores del tema
   hand: {
     maxSlots: 5,
     slotWidth: 108,
     slotHeight: 145,
     slotPadding: 8,
     bottomMargin: 130,
-    backgroundColor: 0x3cb371, // Verde mar medio - cartoon
-    slotColor: 0x2e8b57, // Verde esmeralda
-    slotBorderColor: 0x228b22, // Borde verde bosque
+    get backgroundColor() {
+      return getTheme().hand.background;
+    },
+    get slotColor() {
+      return getTheme().hand.slot;
+    },
+    get slotBorderColor() {
+      return getTheme().hand.slotBorder;
+    },
   },
 
   // Game rules
@@ -112,7 +129,7 @@ export const GameSettings = {
     };
   },
 
-  // UI configuration - Minimalista
+  // UI configuration - usa colores del tema
   ui: {
     headerHeight: 0, // Sin header
     fontSize: {
@@ -121,16 +138,19 @@ export const GameSettings = {
       level: 20,
       button: 18,
     },
-    colors: {
-      background: 0xf5deb3, // Trigo - cartoon
-      primary: 0x3cb371, // Verde mar medio
-      secondary: 0x66cdaa, // Aquamarine
-      accent: 0xffd700, // Dorado
-      text: 0xfff8dc, // Crema
-      textSecondary: 0xaaaaaa,
-      // Badges - mismo color que el acumulador
-      badge: 0x3cb371, // Verde mar medio - cartoon
-      badgeBorder: 0x2e8b57, // Borde verde esmeralda
+    get colors() {
+      const theme = getTheme();
+      return {
+        background: theme.background.mainHex,
+        primary: theme.badge.main,
+        secondary: 0x66cdaa, // Aquamarine
+        accent: 0xffd700, // Dorado
+        text: 0xfff8dc, // Crema
+        textSecondary: 0xaaaaaa,
+        // Badges - desde el tema
+        badge: theme.badge.main,
+        badgeBorder: theme.badge.border,
+      };
     },
   },
 };

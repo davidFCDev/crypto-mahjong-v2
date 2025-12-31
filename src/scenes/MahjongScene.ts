@@ -5,6 +5,7 @@
 
 import type { FarcadeSDK } from "@farcade/game-sdk";
 import GameSettings from "../config/GameSettings";
+import { getCurrentTheme } from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
@@ -163,32 +164,41 @@ export class MahjongScene extends Phaser.Scene {
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
+    const theme = getCurrentTheme();
 
-    // Colores para el patrón de rombos - tonos trigo/arena cartoon
-    const color1 = 0xf5deb3; // Trigo - base
-    const color2 = 0xdeb887; // Burlywood - contraste
-    
+    // Colores para el patrón de rombos - desde el tema
+    const color1 = theme.background.pattern.color1;
+    const color2 = theme.background.pattern.color2;
+
     // Tamaño de cada rombo
     const diamondWidth = 80;
     const diamondHeight = 100;
-    
+
     const bgGraphics = this.add.graphics();
     bgGraphics.setDepth(-3);
-    
+
     // Fondo base
     bgGraphics.fillStyle(color1, 1);
     bgGraphics.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     // Dibujar rombos alternados
     let row = 0;
-    for (let y = -diamondHeight / 2; y < canvas.height + diamondHeight; y += diamondHeight / 2) {
+    for (
+      let y = -diamondHeight / 2;
+      y < canvas.height + diamondHeight;
+      y += diamondHeight / 2
+    ) {
       let col = 0;
       const offsetX = (row % 2) * (diamondWidth / 2);
-      
-      for (let x = -diamondWidth / 2 + offsetX; x < canvas.width + diamondWidth; x += diamondWidth) {
+
+      for (
+        let x = -diamondWidth / 2 + offsetX;
+        x < canvas.width + diamondWidth;
+        x += diamondWidth
+      ) {
         // Alternar color en patrón de tablero
         const useColor2 = (row + col) % 2 === 0;
-        
+
         if (useColor2) {
           bgGraphics.fillStyle(color2, 1);
           bgGraphics.beginPath();
