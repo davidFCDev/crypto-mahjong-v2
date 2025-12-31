@@ -5,7 +5,11 @@
 
 import type { FarcadeSDK } from "@farcade/game-sdk";
 import GameSettings from "../config/GameSettings";
-import { getCurrentTheme, setTheme, getAvailableThemes } from "../config/Themes";
+import {
+  getAvailableThemes,
+  getCurrentTheme,
+  setTheme,
+} from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
@@ -168,53 +172,171 @@ export class MahjongScene extends Phaser.Scene {
   private createBackground(): void {
     const { canvas } = GameSettings;
     const theme = getCurrentTheme();
-
-    // Colores para el patrón de rombos - desde el tema
-    const color1 = theme.background.pattern.color1;
-    const color2 = theme.background.pattern.color2;
-
-    // Tamaño de cada rombo
-    const diamondWidth = 80;
-    const diamondHeight = 100;
+    const pattern = theme.background.pattern;
 
     const bgGraphics = this.add.graphics();
     bgGraphics.setDepth(-3);
 
     // Fondo base
-    bgGraphics.fillStyle(color1, 1);
+    bgGraphics.fillStyle(pattern.color1, 1);
     bgGraphics.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Dibujar rombos alternados
+    // Dibujar patrón según el tipo del tema
+    switch (pattern.type) {
+      case "diamonds":
+        this.drawDiamondsPattern(bgGraphics, pattern.color2);
+        break;
+      case "waves":
+        this.drawWavesPattern(bgGraphics, pattern.color2);
+        break;
+      case "hexagons":
+        this.drawHexagonsPattern(bgGraphics, pattern.color2);
+        break;
+      case "circles":
+        this.drawCirclesPattern(bgGraphics, pattern.color2);
+        break;
+    }
+  }
+
+  /**
+   * Patrón de rombos (Clásico)
+   */
+  private drawDiamondsPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+    const { canvas } = GameSettings;
+    const diamondWidth = 80;
+    const diamondHeight = 100;
+
     let row = 0;
-    for (
-      let y = -diamondHeight / 2;
-      y < canvas.height + diamondHeight;
-      y += diamondHeight / 2
-    ) {
+    for (let y = -diamondHeight / 2; y < canvas.height + diamondHeight; y += diamondHeight / 2) {
       let col = 0;
       const offsetX = (row % 2) * (diamondWidth / 2);
 
-      for (
-        let x = -diamondWidth / 2 + offsetX;
-        x < canvas.width + diamondWidth;
-        x += diamondWidth
-      ) {
-        // Alternar color en patrón de tablero
+      for (let x = -diamondWidth / 2 + offsetX; x < canvas.width + diamondWidth; x += diamondWidth) {
         const useColor2 = (row + col) % 2 === 0;
 
         if (useColor2) {
-          bgGraphics.fillStyle(color2, 1);
-          bgGraphics.beginPath();
-          bgGraphics.moveTo(x, y - diamondHeight / 2);
-          bgGraphics.lineTo(x + diamondWidth / 2, y);
-          bgGraphics.lineTo(x, y + diamondHeight / 2);
-          bgGraphics.lineTo(x - diamondWidth / 2, y);
-          bgGraphics.closePath();
-          bgGraphics.fillPath();
+          graphics.fillStyle(color, 1);
+          graphics.beginPath();
+          graphics.moveTo(x, y - diamondHeight / 2);
+          graphics.lineTo(x + diamondWidth / 2, y);
+          graphics.lineTo(x, y + diamondHeight / 2);
+          graphics.lineTo(x - diamondWidth / 2, y);
+          graphics.closePath();
+          graphics.fillPath();
         }
         col++;
       }
       row++;
+    }
+  }
+
+  /**
+   * Patrón de olas (Océano)
+   */
+  private drawWavesPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+    const { canvas } = GameSettings;
+    const waveHeight = 40;
+    const waveWidth = 120;
+    const amplitude = 20;
+
+    graphics.lineStyle(3, color, 0.6);
+
+    for (let y = 0; y < canvas.height + waveHeight * 2; y += waveHeight) {
+      const offsetX = ((y / waveHeight) % 2) * (waveWidth / 2);
+
+      graphics.beginPath();
+      graphics.moveTo(-waveWidth + offsetX, y);
+
+      for (let x = -waveWidth + offsetX; x < canvas.width + waveWidth; x += waveWidth) {
+        // Dibujar curva de ola
+        graphics.lineTo(x + waveWidth * 0.25, y - amplitude);
+        graphics.lineTo(x + waveWidth * 0.5, y);
+        graphics.lineTo(x + waveWidth * 0.75, y + amplitude);
+        graphics.lineTo(x + waveWidth, y);
+      }
+      graphics.strokePath();
+    }
+
+    // Añadir círculos pequeños como burbujas
+    graphics.fillStyle(color, 0.3);
+    for (let i = 0; i < 30; i++) {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      const radius = 3 + Math.random() * 8;
+      graphics.fillCircle(x, y, radius);
+    }
+  }
+
+  /**
+   * Patrón de hexágonos (Atardecer)
+   */
+  private drawHexagonsPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+    const { canvas } = GameSettings;
+    const hexSize = 50;
+    const hexWidth = hexSize * 2;
+    const hexHeight = Math.sqrt(3) * hexSize;
+
+    graphics.lineStyle(2, color, 0.5);
+
+    let row = 0;
+    for (let y = -hexHeight; y < canvas.height + hexHeight * 2; y += hexHeight * 0.75) {
+      const offsetX = (row % 2) * (hexWidth * 0.75);
+
+      for (let x = -hexWidth + offsetX; x < canvas.width + hexWidth * 2; x += hexWidth * 1.5) {
+        this.drawHexagon(graphics, x, y, hexSize);
+      }
+      row++;
+    }
+  }
+
+  /**
+   * Dibuja un hexágono individual
+   */
+  private drawHexagon(graphics: Phaser.GameObjects.Graphics, cx: number, cy: number, size: number): void {
+    graphics.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = (Math.PI / 3) * i - Math.PI / 6;
+      const x = cx + size * Math.cos(angle);
+      const y = cy + size * Math.sin(angle);
+      if (i === 0) {
+        graphics.moveTo(x, y);
+      } else {
+        graphics.lineTo(x, y);
+      }
+    }
+    graphics.closePath();
+    graphics.strokePath();
+  }
+
+  /**
+   * Patrón de círculos / pétalos (Sakura)
+   */
+  private drawCirclesPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+    const { canvas } = GameSettings;
+
+    // Círculos concéntricos sutiles
+    graphics.lineStyle(1, color, 0.4);
+    const gridSize = 100;
+
+    for (let y = 0; y < canvas.height + gridSize; y += gridSize) {
+      const offsetX = ((y / gridSize) % 2) * (gridSize / 2);
+      for (let x = offsetX; x < canvas.width + gridSize; x += gridSize) {
+        // Dibujar flor de cerezo estilizada (5 círculos pequeños)
+        const petalSize = 12;
+        const petalDistance = 18;
+
+        for (let i = 0; i < 5; i++) {
+          const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+          const px = x + Math.cos(angle) * petalDistance;
+          const py = y + Math.sin(angle) * petalDistance;
+          graphics.fillStyle(color, 0.5);
+          graphics.fillCircle(px, py, petalSize);
+        }
+
+        // Centro de la flor
+        graphics.fillStyle(0xffeb3b, 0.6); // Amarillo
+        graphics.fillCircle(x, y, 6);
+      }
     }
   }
 
@@ -261,7 +383,7 @@ export class MahjongScene extends Phaser.Scene {
   private clearLevel(): void {
     // Resetear estado de animación
     this.isAnimating = false;
-    
+
     // Destruir todos los sprites de fichas
     this.tileSprites.forEach((sprite) => sprite.destroy());
     this.tileSprites.clear();
@@ -974,9 +1096,21 @@ export class MahjongScene extends Phaser.Scene {
     // Fondo del botón
     const bg = this.add.graphics();
     bg.fillStyle(0x333333, 0.9);
-    bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+    bg.fillRoundedRect(
+      -buttonWidth / 2,
+      -buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      8
+    );
     bg.lineStyle(2, 0x666666);
-    bg.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+    bg.strokeRoundedRect(
+      -buttonWidth / 2,
+      -buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      8
+    );
     container.add(bg);
 
     // Texto del tema actual
@@ -995,17 +1129,41 @@ export class MahjongScene extends Phaser.Scene {
     container.on("pointerover", () => {
       bg.clear();
       bg.fillStyle(0x444444, 0.95);
-      bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+      bg.fillRoundedRect(
+        -buttonWidth / 2,
+        -buttonHeight / 2,
+        buttonWidth,
+        buttonHeight,
+        8
+      );
       bg.lineStyle(2, 0x888888);
-      bg.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+      bg.strokeRoundedRect(
+        -buttonWidth / 2,
+        -buttonHeight / 2,
+        buttonWidth,
+        buttonHeight,
+        8
+      );
     });
 
     container.on("pointerout", () => {
       bg.clear();
       bg.fillStyle(0x333333, 0.9);
-      bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+      bg.fillRoundedRect(
+        -buttonWidth / 2,
+        -buttonHeight / 2,
+        buttonWidth,
+        buttonHeight,
+        8
+      );
       bg.lineStyle(2, 0x666666);
-      bg.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+      bg.strokeRoundedRect(
+        -buttonWidth / 2,
+        -buttonHeight / 2,
+        buttonWidth,
+        buttonHeight,
+        8
+      );
     });
 
     container.on("pointerdown", () => {

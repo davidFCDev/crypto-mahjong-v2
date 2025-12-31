@@ -3,6 +3,8 @@
  * Define visual themes for UI elements
  */
 
+export type PatternType = "diamonds" | "waves" | "hexagons" | "circles";
+
 export interface GameTheme {
   name: string;
   displayName: string;
@@ -12,6 +14,7 @@ export interface GameTheme {
     main: string; // Hex string for Phaser config
     mainHex: number; // Hex number for graphics
     pattern: {
+      type: PatternType;
       color1: number;
       color2: number;
     };
@@ -77,6 +80,7 @@ export const classicTheme: GameTheme = {
     main: "#f5deb3", // Wheat
     mainHex: 0xf5deb3,
     pattern: {
+      type: "diamonds",
       color1: 0xf5deb3, // Wheat base
       color2: 0xdeb887, // Burlywood contrast
     },
@@ -136,6 +140,7 @@ export const oceanTheme: GameTheme = {
     main: "#1a3a4a", // Deep ocean blue
     mainHex: 0x1a3a4a,
     pattern: {
+      type: "waves",
       color1: 0x1a3a4a, // Deep blue base
       color2: 0x0f2a38, // Darker contrast
     },
@@ -195,6 +200,7 @@ export const sunsetTheme: GameTheme = {
     main: "#2d1b3d", // Deep purple
     mainHex: 0x2d1b3d,
     pattern: {
+      type: "hexagons",
       color1: 0x2d1b3d, // Deep purple base
       color2: 0x1f1229, // Darker purple
     },
@@ -254,6 +260,7 @@ export const sakuraTheme: GameTheme = {
     main: "#fce4ec", // Pale pink
     mainHex: 0xfce4ec,
     pattern: {
+      type: "circles",
       color1: 0xfce4ec, // Pale pink base
       color2: 0xf8bbd9, // Slightly darker pink
     },
