@@ -256,6 +256,9 @@ export class MahjongScene extends Phaser.Scene {
    * Limpia el nivel actual
    */
   private clearLevel(): void {
+    // Resetear estado de animación
+    this.isAnimating = false;
+    
     // Destruir todos los sprites de fichas
     this.tileSprites.forEach((sprite) => sprite.destroy());
     this.tileSprites.clear();
@@ -709,15 +712,20 @@ export class MahjongScene extends Phaser.Scene {
    * Prioriza completar tríos con fichas que ya están en el acumulador
    */
   private handleHint(): boolean {
-    if (!this.gameState.isPlaying || this.isAnimating) return false;
+    if (!this.gameState.isPlaying || this.isAnimating) {
+      return false;
+    }
 
     // Obtener fichas en el acumulador
     const handTiles = this.handManager.getTilesInHand();
+    const slotsAvailable = 5 - handTiles.length;
 
     // Contar fichas por tipo en el acumulador
-    const handTypeCounts = new Map<number, number>();
+    const handTypeCounts = new Map<number, TileState[]>();
     for (const tile of handTiles) {
-      handTypeCounts.set(tile.type, (handTypeCounts.get(tile.type) || 0) + 1);
+      const existing = handTypeCounts.get(tile.type) || [];
+      existing.push(tile);
+      handTypeCounts.set(tile.type, existing);
     }
 
     // Buscar fichas accesibles en el tablero
@@ -739,25 +747,39 @@ export class MahjongScene extends Phaser.Scene {
     // Prioridad 3: Trío completo en el tablero (necesita 3 del tablero)
 
     let tilesToClick: TileState[] = [];
+    let directMatchTiles: TileState[] | null = null; // Para match directo sin pasar por acumulador
 
-    // Prioridad 1: 2 en mano, 1 en tablero
-    for (const [type, countInHand] of handTypeCounts) {
-      if (countInHand >= 2) {
+    // Prioridad 1: 2 en mano, 1 en tablero (solo necesita 1 espacio)
+    for (const [type, tilesInHand] of handTypeCounts) {
+      if (tilesInHand.length >= 2) {
         const boardTiles = boardTypeCounts.get(type) || [];
         if (boardTiles.length >= 1) {
-          tilesToClick = [boardTiles[0]];
+          if (slotsAvailable >= 1) {
+            tilesToClick = [boardTiles[0]];
+          } else {
+            // No hay espacio pero podemos hacer match directo
+            // Tomar 2 del acumulador + 1 del tablero
+            directMatchTiles = [...tilesInHand.slice(0, 2), boardTiles[0]];
+          }
           break;
         }
       }
     }
 
     // Prioridad 2: 1 en mano, 2 en tablero
-    if (tilesToClick.length === 0) {
-      for (const [type, countInHand] of handTypeCounts) {
-        if (countInHand >= 1) {
+    if (tilesToClick.length === 0 && !directMatchTiles) {
+      for (const [type, tilesInHand] of handTypeCounts) {
+        if (tilesInHand.length >= 1) {
           const boardTiles = boardTypeCounts.get(type) || [];
           if (boardTiles.length >= 2) {
-            tilesToClick = [boardTiles[0], boardTiles[1]];
+            if (slotsAvailable >= 2) {
+              // Hay espacio para 2 fichas
+              tilesToClick = [boardTiles[0], boardTiles[1]];
+            } else {
+              // No hay espacio suficiente - hacer match directo
+              // Tomar 1 del acumulador + 2 del tablero
+              directMatchTiles = [tilesInHand[0], boardTiles[0], boardTiles[1]];
+            }
             break;
           }
         }
@@ -765,8 +787,7 @@ export class MahjongScene extends Phaser.Scene {
     }
 
     // Prioridad 3: 0 en mano, 3 en tablero (solo si hay espacio en el acumulador)
-    if (tilesToClick.length === 0) {
-      const slotsAvailable = 5 - handTiles.length;
+    if (tilesToClick.length === 0 && !directMatchTiles) {
       if (slotsAvailable >= 3) {
         for (const [_type, boardTiles] of boardTypeCounts) {
           if (boardTiles.length >= 3) {
@@ -777,9 +798,18 @@ export class MahjongScene extends Phaser.Scene {
       }
     }
 
-    if (tilesToClick.length === 0) return false;
+    // Caso especial: Match directo (sin pasar por acumulador)
+    if (directMatchTiles && directMatchTiles.length === 3) {
+      this.performDirectMatch(directMatchTiles);
+      SoundManager.playCardToHand();
+      return true;
+    }
 
-    // Hacer click en las fichas con delay
+    if (tilesToClick.length === 0) {
+      return false;
+    }
+
+    // Hacer click en las fichas con delay (caso normal, hay espacio)
     let delay = 0;
     const totalTiles = tilesToClick.length;
 
@@ -796,6 +826,61 @@ export class MahjongScene extends Phaser.Scene {
 
     SoundManager.playCardToHand();
     return true;
+  }
+
+  /**
+   * Realiza un match directo sin pasar las fichas por el acumulador
+   * Usado cuando no hay espacio en el acumulador pero se puede completar un trío
+   */
+  private performDirectMatch(tiles: TileState[]): void {
+    if (tiles.length !== 3) return;
+
+    this.isAnimating = true;
+
+    // Separar fichas del tablero y del acumulador
+    const boardTiles = tiles.filter((t) => !t.isInHand);
+    const handTile = tiles.find((t) => t.isInHand);
+
+    // Marcar todas como matched
+    tiles.forEach((tile) => {
+      tile.isMatched = true;
+    });
+
+    // Si hay ficha del acumulador, quitarla del HandManager
+    if (handTile) {
+      this.handManager.removeMatchedTiles(tiles.filter((t) => t.isInHand));
+      this.gameUI.updateHand(this.handManager.getSlots());
+    }
+
+    // Obtener sprites del tablero para animar
+    const spritePositions: { x: number; y: number }[] = [];
+    boardTiles.forEach((tile) => {
+      const sprite = this.tileSprites.get(tile.id);
+      if (sprite) {
+        spritePositions.push({ x: sprite.x, y: sprite.y });
+        sprite.destroy();
+        this.tileSprites.delete(tile.id);
+      }
+    });
+
+    // Actualizar accesibilidad
+    this.updateBoardAccessibility();
+    this.updateTiles3DEffect();
+
+    // Actualizar puntuación
+    this.gameState.score += GameSettings.rules.scorePerMatch;
+    this.gameUI.updateScore(this.gameState.score);
+
+    // Reproducir sonido de trio
+    this.time.delayedCall(300, () => {
+      SoundManager.playTrio();
+    });
+
+    // Verificar victoria
+    this.time.delayedCall(400, () => {
+      this.checkWinCondition();
+      this.isAnimating = false;
+    });
   }
 
   update(): void {
