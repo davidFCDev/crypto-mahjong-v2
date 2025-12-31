@@ -5,7 +5,7 @@
 
 import type { FarcadeSDK } from "@farcade/game-sdk";
 import GameSettings from "../config/GameSettings";
-import { getCurrentTheme } from "../config/Themes";
+import { getCurrentTheme, setTheme, getAvailableThemes } from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
@@ -106,6 +106,9 @@ export class MahjongScene extends Phaser.Scene {
 
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
+
+    // [DEV] Botón para cambiar de tema
+    this.createDevThemeButton();
 
     // Iniciar nivel 1
     this.startLevel(1);
@@ -949,6 +952,74 @@ export class MahjongScene extends Phaser.Scene {
       this.checkWinCondition();
       this.isAnimating = false;
     }
+  }
+
+  /**
+   * [DEV] Crea un botón para cambiar de tema durante desarrollo
+   * TODO: Eliminar en producción
+   */
+  private createDevThemeButton(): void {
+    const themes = getAvailableThemes();
+    let currentIndex = themes.indexOf(getCurrentTheme().name);
+
+    // Contenedor para el botón
+    const buttonWidth = 120;
+    const buttonHeight = 36;
+    const buttonX = 360;
+    const buttonY = 50;
+
+    const container = this.add.container(buttonX, buttonY);
+    container.setDepth(2000);
+
+    // Fondo del botón
+    const bg = this.add.graphics();
+    bg.fillStyle(0x333333, 0.9);
+    bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+    bg.lineStyle(2, 0x666666);
+    bg.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+    container.add(bg);
+
+    // Texto del tema actual
+    const themeText = this.add.text(0, 0, getCurrentTheme().displayName, {
+      fontSize: "14px",
+      fontFamily: "Arial Black",
+      color: "#ffffff",
+    });
+    themeText.setOrigin(0.5);
+    container.add(themeText);
+
+    // Hacer interactivo
+    container.setSize(buttonWidth, buttonHeight);
+    container.setInteractive({ useHandCursor: true });
+
+    container.on("pointerover", () => {
+      bg.clear();
+      bg.fillStyle(0x444444, 0.95);
+      bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+      bg.lineStyle(2, 0x888888);
+      bg.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+    });
+
+    container.on("pointerout", () => {
+      bg.clear();
+      bg.fillStyle(0x333333, 0.9);
+      bg.fillRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+      bg.lineStyle(2, 0x666666);
+      bg.strokeRoundedRect(-buttonWidth / 2, -buttonHeight / 2, buttonWidth, buttonHeight, 8);
+    });
+
+    container.on("pointerdown", () => {
+      // Cambiar al siguiente tema
+      currentIndex = (currentIndex + 1) % themes.length;
+      const newThemeName = themes[currentIndex];
+      setTheme(newThemeName);
+
+      // Actualizar texto
+      themeText.setText(getCurrentTheme().displayName);
+
+      // Reiniciar la escena para aplicar el tema
+      this.scene.restart();
+    });
   }
 
   update(): void {
