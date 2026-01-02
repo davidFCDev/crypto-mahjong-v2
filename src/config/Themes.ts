@@ -3,7 +3,7 @@
  * Define visual themes for UI elements
  */
 
-export type PatternType = "diamonds" | "waves" | "hexagons" | "circles";
+export type PatternType = "diamonds" | "waves" | "hexagons" | "circles" | "polkadots";
 
 export interface GameTheme {
   name: string;
@@ -200,9 +200,9 @@ export const sunsetTheme: GameTheme = {
     main: "#ffb347", // Naranja cálido
     mainHex: 0xffb347,
     pattern: {
-      type: "circles", // Usaremos círculos grandes tipo bokeh
+      type: "polkadots", // Lunares
       color1: 0xffb347, // Naranja base
-      color2: 0xff5e62, // Rosado cálido
+      color2: 0xffffff, // Blanco para los lunares
     },
   },
 

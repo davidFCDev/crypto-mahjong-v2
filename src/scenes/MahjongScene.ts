@@ -195,6 +195,9 @@ export class MahjongScene extends Phaser.Scene {
       case "circles":
         this.drawCirclesPattern(bgGraphics, pattern.color2);
         break;
+      case "polkadots":
+        this.drawPolkadotsPattern(bgGraphics, pattern.color1, pattern.color2);
+        break;
     }
   }
 
@@ -374,6 +377,46 @@ export class MahjongScene extends Phaser.Scene {
         // Centro de la flor
         graphics.fillStyle(0xffeb3b, 0.6); // Amarillo
         graphics.fillCircle(x, y, 6);
+      }
+    }
+  }
+
+  /**
+   * Patrón de lunares (Polka dots) para Atardecer
+   */
+  private drawPolkadotsPattern(graphics: Phaser.GameObjects.Graphics, bgColor: number, dotColor: number): void {
+    const { canvas } = GameSettings;
+
+    // Crear degradado de fondo (naranja a rosado)
+    const steps = 20;
+    const stepHeight = canvas.height / steps;
+
+    for (let i = 0; i < steps; i++) {
+      // Interpolar entre naranja (0xffb347) y rosado (0xff5e62)
+      const t = i / (steps - 1);
+      const r = Math.round(0xff + (0xff - 0xff) * t);
+      const g = Math.round(0xb3 + (0x5e - 0xb3) * t);
+      const b = Math.round(0x47 + (0x62 - 0x47) * t);
+      const gradientColor = (r << 16) | (g << 8) | b;
+
+      graphics.fillStyle(gradientColor, 1);
+      graphics.fillRect(0, i * stepHeight, canvas.width, stepHeight + 1);
+    }
+
+    // Dibujar lunares en cuadrícula ordenada
+    const dotRadius = 18;
+    const spacingX = 80;
+    const spacingY = 80;
+
+    for (let row = 0; row < Math.ceil(canvas.height / spacingY) + 1; row++) {
+      const offsetX = (row % 2) * (spacingX / 2); // Alternar offset para patrón escalonado
+      for (let col = 0; col < Math.ceil(canvas.width / spacingX) + 1; col++) {
+        const x = col * spacingX + offsetX;
+        const y = row * spacingY;
+
+        // Lunares blancos semitransparentes
+        graphics.fillStyle(dotColor, 0.25);
+        graphics.fillCircle(x, y, dotRadius);
       }
     }
   }
@@ -949,14 +992,18 @@ export class MahjongScene extends Phaser.Scene {
       }
     }
 
-    // Prioridad 3: 0 en mano, 3 en tablero (solo si hay espacio en el acumulador)
+    // Prioridad 3: 0 en mano, 3 en tablero
     if (tilesToClick.length === 0 && !directMatchTiles) {
-      if (slotsAvailable >= 3) {
-        for (const [_type, boardTiles] of boardTypeCounts) {
-          if (boardTiles.length >= 3) {
+      for (const [_type, boardTiles] of boardTypeCounts) {
+        if (boardTiles.length >= 3) {
+          if (slotsAvailable >= 3) {
+            // Hay espacio para 3 fichas
             tilesToClick = [boardTiles[0], boardTiles[1], boardTiles[2]];
-            break;
+          } else {
+            // No hay espacio - hacer match directo con 3 del tablero
+            directMatchTiles = [boardTiles[0], boardTiles[1], boardTiles[2]];
           }
+          break;
         }
       }
     }
