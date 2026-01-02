@@ -309,25 +309,72 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Patrón de círculos grandes tipo bokeh (Atardecer mejorado)
+   * Patrón de círculos grandes tipo bokeh (Atardecer y Sakura)
    */
   private drawCirclesPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
     const { canvas } = GameSettings;
-    // Degradado cálido de fondo
-    const gradient = graphics.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, '#ffb347'); // Naranja
-    gradient.addColorStop(1, '#ff5e62'); // Rosado
-    graphics.fillGradientStyle(gradient, 1, 1, 1, 1);
-    graphics.fillRect(0, 0, canvas.width, canvas.height);
+    const theme = getCurrentTheme();
+
+    // Para el tema sunset, crear degradado con franjas horizontales
+    if (theme.name === "sunset") {
+      const steps = 20;
+      const stepHeight = canvas.height / steps;
+      
+      for (let i = 0; i < steps; i++) {
+        // Interpolar entre naranja (0xffb347) y rosado (0xff5e62)
+        const t = i / (steps - 1);
+        const r = Math.round(0xff + (0xff - 0xff) * t);
+        const g = Math.round(0xb3 + (0x5e - 0xb3) * t);
+        const b = Math.round(0x47 + (0x62 - 0x47) * t);
+        const gradientColor = (r << 16) | (g << 8) | b;
+        
+        graphics.fillStyle(gradientColor, 1);
+        graphics.fillRect(0, i * stepHeight, canvas.width, stepHeight + 1);
+      }
+    }
 
     // Círculos grandes y suaves (bokeh)
     for (let i = 0; i < 18; i++) {
       const x = Math.random() * canvas.width;
       const y = Math.random() * canvas.height;
       const radius = 60 + Math.random() * 80;
-      const alpha = 0.10 + Math.random() * 0.18;
+      const alpha = 0.12 + Math.random() * 0.15;
       graphics.fillStyle(color, alpha);
       graphics.fillCircle(x, y, radius);
+    }
+
+    // Para Sakura, añadir flores de cerezo
+    if (theme.name === "sakura") {
+      this.drawSakuraFlowers(graphics, color);
+    }
+  }
+
+  /**
+   * Dibuja flores de cerezo para el tema Sakura
+   */
+  private drawSakuraFlowers(graphics: Phaser.GameObjects.Graphics, color: number): void {
+    const { canvas } = GameSettings;
+    const gridSize = 100;
+
+    for (let y = 0; y < canvas.height + gridSize; y += gridSize) {
+      const offsetX = ((y / gridSize) % 2) * (gridSize / 2);
+      for (let x = offsetX; x < canvas.width + gridSize; x += gridSize) {
+        // Dibujar flor de cerezo estilizada (5 pétalos)
+        const petalSize = 12;
+        const petalDistance = 18;
+
+        for (let i = 0; i < 5; i++) {
+          const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+          const px = x + Math.cos(angle) * petalDistance;
+          const py = y + Math.sin(angle) * petalDistance;
+          graphics.fillStyle(color, 0.5);
+          graphics.fillCircle(px, py, petalSize);
+        }
+
+        // Centro de la flor
+        graphics.fillStyle(0xffeb3b, 0.6); // Amarillo
+        graphics.fillCircle(x, y, 6);
+      }
     }
   }
 
