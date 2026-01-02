@@ -1,7 +1,8 @@
 import { initRemix } from "@insidethesim/remix-dev";
 import GameSettings from "./config/GameSettings";
 import { getCurrentTheme } from "./config/Themes";
-import { GameScene } from "./scenes/GameScene";
+import { MainMenuScene } from "./scenes/MainMenuScene";
+import { MahjongScene } from "./scenes/MahjongScene";
 
 // SDK mock is automatically initialized by the framework (dev-init.ts)
 
@@ -18,7 +19,7 @@ const config: Phaser.Types.Core.GameConfig = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   backgroundColor: getCurrentTheme().background.main,
-  scene: [GameScene],
+  scene: [MainMenuScene, MahjongScene],
   physics: {
     default: "arcade",
   },
