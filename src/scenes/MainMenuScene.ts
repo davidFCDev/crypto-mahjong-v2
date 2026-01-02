@@ -1,6 +1,6 @@
 /**
  * MainMenuScene - Pantalla principal del juego
- * Muestra el título, botón de Start y botón de Style
+ * Muestra el título estilo cartoon, botón de Start y botón de Style
  */
 
 import GameSettings from "../config/GameSettings";
@@ -17,17 +17,16 @@ export class MainMenuScene extends Phaser.Scene {
 
   create(): void {
     const { canvas } = GameSettings;
-    const theme = getCurrentTheme();
     const centerX = canvas.width / 2;
 
     // Fondo temporal (será reemplazado por imagen)
     this.createBackground();
 
-    // Título del juego
-    this.createTitle(centerX);
+    // Título del juego estilo cartoon
+    this.createCartoonTitle(centerX);
 
-    // Botones
-    this.createButtons(centerX);
+    // Botones estilo badge 3D
+    this.createMenuButtons(centerX);
   }
 
   /**
@@ -43,34 +42,59 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el título del juego
+   * Crea el título del juego con estilo cartoon
    */
-  private createTitle(centerX: number): void {
-    // Título principal "Crypto"
-    const cryptoText = this.add.text(centerX, 280, "Crypto", {
-      fontSize: "72px",
-      fontFamily: "Arial Black, Arial",
+  private createCartoonTitle(centerX: number): void {
+    const theme = getCurrentTheme();
+
+    // Contenedor para el título completo
+    const titleContainer = this.add.container(centerX, 320);
+
+    // "CRYPTO" - Título superior
+    const cryptoShadow = this.add.text(4, 4, "CRYPTO", {
+      fontSize: "78px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+      color: "#000000",
+    });
+    cryptoShadow.setOrigin(0.5);
+    cryptoShadow.setAlpha(0.3);
+    titleContainer.add(cryptoShadow);
+
+    const cryptoText = this.add.text(0, 0, "CRYPTO", {
+      fontSize: "78px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: "#1a3a1a",
-      strokeThickness: 8,
+      stroke: "#2e8b57",
+      strokeThickness: 10,
     });
     cryptoText.setOrigin(0.5);
+    titleContainer.add(cryptoText);
 
-    // Título secundario "Mahjong"
-    const mahjongText = this.add.text(centerX, 370, "Mahjong", {
-      fontSize: "84px",
-      fontFamily: "Arial Black, Arial",
+    // "MAHJONG" - Título inferior más grande
+    const mahjongShadow = this.add.text(4, 104, "MAHJONG", {
+      fontSize: "88px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+      color: "#000000",
+    });
+    mahjongShadow.setOrigin(0.5);
+    mahjongShadow.setAlpha(0.3);
+    titleContainer.add(mahjongShadow);
+
+    const mahjongText = this.add.text(0, 100, "MAHJONG", {
+      fontSize: "88px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffd700",
-      stroke: "#8b6914",
-      strokeThickness: 8,
+      stroke: "#b8860b",
+      strokeThickness: 10,
     });
     mahjongText.setOrigin(0.5);
+    titleContainer.add(mahjongText);
 
-    // Añadir efecto de sombra al título
+    // Animación suave de flotación
     this.tweens.add({
-      targets: [cryptoText, mahjongText],
-      y: "+=5",
-      duration: 1500,
+      targets: titleContainer,
+      y: 315,
+      duration: 2000,
       yoyo: true,
       repeat: -1,
       ease: "Sine.easeInOut",
@@ -78,25 +102,25 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Crea los botones del menú
+   * Crea los botones del menú con estilo badge 3D
    */
-  private createButtons(centerX: number): void {
+  private createMenuButtons(centerX: number): void {
     // Botón START
-    this.createButton(centerX, 600, "START", () => {
+    this.createBadgeButton(centerX, 620, "START", () => {
       this.scene.start("MahjongScene");
     });
 
     // Botón STYLE (sin funcionalidad por ahora)
-    this.createButton(centerX, 720, "STYLE", () => {
+    this.createBadgeButton(centerX, 750, "STYLE", () => {
       // TODO: Implementar selector de temas
       console.log("Style button clicked - functionality coming soon");
     });
   }
 
   /**
-   * Crea un botón estilizado
+   * Crea un botón con el mismo estilo que los badges del juego
    */
-  private createButton(
+  private createBadgeButton(
     x: number,
     y: number,
     text: string,
@@ -104,59 +128,60 @@ export class MainMenuScene extends Phaser.Scene {
   ): Phaser.GameObjects.Container {
     const theme = getCurrentTheme();
     const buttonWidth = 280;
-    const buttonHeight = 70;
-    const cornerRadius = 20;
+    const buttonHeight = 75;
+    const badgeDepth = 16;
+    const borderRadius = 12;
 
     const container = this.add.container(x, y);
 
-    // Sombra del botón
-    const shadow = this.add.graphics();
-    shadow.fillStyle(0x000000, 0.3);
-    shadow.fillRoundedRect(
-      -buttonWidth / 2 + 4,
-      -buttonHeight / 2 + 6,
-      buttonWidth,
-      buttonHeight,
-      cornerRadius
-    );
-    container.add(shadow);
-
-    // Fondo del botón (profundidad 3D)
-    const depth = this.add.graphics();
-    depth.fillStyle(theme.badge.border, 1);
-    depth.fillRoundedRect(
-      -buttonWidth / 2,
-      -buttonHeight / 2 + 6,
-      buttonWidth,
-      buttonHeight,
-      cornerRadius
-    );
-    container.add(depth);
-
-    // Fondo principal del botón
     const bg = this.add.graphics();
+
+    // Cara inferior (volumen 3D) - igual que los badges
+    bg.fillStyle(theme.badge.border, 1);
+    bg.fillRoundedRect(
+      -buttonWidth / 2,
+      badgeDepth,
+      buttonWidth,
+      buttonHeight,
+      borderRadius
+    );
+
+    // Borde de la cara 3D
+    bg.lineStyle(2, this.darkenColor(theme.badge.border, 0.3), 1);
+    bg.strokeRoundedRect(
+      -buttonWidth / 2,
+      badgeDepth,
+      buttonWidth,
+      buttonHeight,
+      borderRadius
+    );
+
+    // Fondo del botón (cara principal)
     bg.fillStyle(theme.badge.main, 1);
     bg.fillRoundedRect(
       -buttonWidth / 2,
-      -buttonHeight / 2,
+      0,
       buttonWidth,
       buttonHeight,
-      cornerRadius
+      borderRadius
     );
-    bg.lineStyle(3, theme.badge.border, 1);
+
+    // Borde de la cara principal
+    bg.lineStyle(2, theme.badge.border, 1);
     bg.strokeRoundedRect(
       -buttonWidth / 2,
-      -buttonHeight / 2,
+      0,
       buttonWidth,
       buttonHeight,
-      cornerRadius
+      borderRadius
     );
+
     container.add(bg);
 
-    // Texto del botón
-    const buttonText = this.add.text(0, 0, text, {
-      fontSize: "32px",
-      fontFamily: "Arial Black, Arial",
+    // Texto del botón - mismo estilo que el score
+    const buttonText = this.add.text(0, buttonHeight / 2, text, {
+      fontSize: "38px",
+      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
       stroke: theme.badge.textStroke,
       strokeThickness: 4,
@@ -165,10 +190,10 @@ export class MainMenuScene extends Phaser.Scene {
     container.add(buttonText);
 
     // Hacer interactivo
-    container.setSize(buttonWidth, buttonHeight);
+    container.setSize(buttonWidth, buttonHeight + badgeDepth);
     container.setInteractive({ useHandCursor: true });
 
-    // Efectos hover
+    // Efectos hover y click
     container.on("pointerover", () => {
       this.tweens.add({
         targets: container,
@@ -192,8 +217,16 @@ export class MainMenuScene extends Phaser.Scene {
     container.on("pointerdown", () => {
       this.tweens.add({
         targets: container,
-        scaleX: 0.95,
-        scaleY: 0.95,
+        y: y + 4,
+        duration: 50,
+        ease: "Power2",
+      });
+    });
+
+    container.on("pointerup", () => {
+      this.tweens.add({
+        targets: container,
+        y: y,
         duration: 50,
         ease: "Power2",
         onComplete: () => {
@@ -203,5 +236,15 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     return container;
+  }
+
+  /**
+   * Oscurece un color hexadecimal
+   */
+  private darkenColor(color: number, factor: number): number {
+    const r = Math.floor(((color >> 16) & 0xff) * (1 - factor));
+    const g = Math.floor(((color >> 8) & 0xff) * (1 - factor));
+    const b = Math.floor((color & 0xff) * (1 - factor));
+    return (r << 16) | (g << 8) | b;
   }
 }
