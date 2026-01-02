@@ -4,7 +4,6 @@
  */
 
 import GameSettings from "../config/GameSettings";
-import { getCurrentTheme } from "../config/Themes";
 
 export class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -12,14 +11,18 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   preload(): void {
-    // Aquí se cargará la imagen de fondo cuando se proporcione
+    // Cargar imagen de fondo
+    this.load.image(
+      "menu-bg",
+      "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj"
+    );
   }
 
   create(): void {
     const { canvas } = GameSettings;
     const centerX = canvas.width / 2;
 
-    // Fondo temporal (será reemplazado por imagen)
+    // Fondo con imagen
     this.createBackground();
 
     // Título del juego estilo cartoon
@@ -30,27 +33,24 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo de la escena
+   * Crea el fondo de la escena con imagen
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
-    const theme = getCurrentTheme();
 
-    const bg = this.add.graphics();
-    bg.fillStyle(theme.background.mainHex, 1);
-    bg.fillRect(0, 0, canvas.width, canvas.height);
+    // Imagen de fondo
+    const bg = this.add.image(canvas.width / 2, canvas.height / 2, "menu-bg");
+    bg.setDisplaySize(canvas.width, canvas.height);
   }
 
   /**
    * Crea el título del juego con estilo cartoon
    */
   private createCartoonTitle(centerX: number): void {
-    const theme = getCurrentTheme();
-
     // Contenedor para el título completo
     const titleContainer = this.add.container(centerX, 320);
 
-    // "CRYPTO" - Título superior
+    // "CRYPTO" - En ROJO
     const cryptoShadow = this.add.text(4, 4, "CRYPTO", {
       fontSize: "78px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
@@ -63,14 +63,14 @@ export class MainMenuScene extends Phaser.Scene {
     const cryptoText = this.add.text(0, 0, "CRYPTO", {
       fontSize: "78px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
-      color: "#ffffff",
-      stroke: "#2e8b57",
+      color: "#ff3b3b",
+      stroke: "#8b0000",
       strokeThickness: 10,
     });
     cryptoText.setOrigin(0.5);
     titleContainer.add(cryptoText);
 
-    // "MAHJONG" - Título inferior más grande
+    // "MAHJONG" - En VERDE
     const mahjongShadow = this.add.text(4, 104, "MAHJONG", {
       fontSize: "88px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
@@ -83,8 +83,8 @@ export class MainMenuScene extends Phaser.Scene {
     const mahjongText = this.add.text(0, 100, "MAHJONG", {
       fontSize: "88px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
-      color: "#ffd700",
-      stroke: "#b8860b",
+      color: "#3cb371",
+      stroke: "#1a5a1a",
       strokeThickness: 10,
     });
     mahjongText.setOrigin(0.5);
@@ -118,7 +118,7 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Crea un botón con el mismo estilo que los badges del juego
+   * Crea un botón con estilo badge 3D en ROJO
    */
   private createBadgeButton(
     x: number,
@@ -126,18 +126,22 @@ export class MainMenuScene extends Phaser.Scene {
     text: string,
     onClick: () => void
   ): Phaser.GameObjects.Container {
-    const theme = getCurrentTheme();
     const buttonWidth = 280;
     const buttonHeight = 75;
     const badgeDepth = 16;
     const borderRadius = 12;
 
+    // Colores rojos llamativos
+    const mainColor = 0xe74c3c; // Rojo brillante
+    const borderColor = 0xc0392b; // Rojo oscuro
+    const textStroke = "#7b1a1a";
+
     const container = this.add.container(x, y);
 
     const bg = this.add.graphics();
 
-    // Cara inferior (volumen 3D) - igual que los badges
-    bg.fillStyle(theme.badge.border, 1);
+    // Cara inferior (volumen 3D)
+    bg.fillStyle(borderColor, 1);
     bg.fillRoundedRect(
       -buttonWidth / 2,
       badgeDepth,
@@ -147,7 +151,7 @@ export class MainMenuScene extends Phaser.Scene {
     );
 
     // Borde de la cara 3D
-    bg.lineStyle(2, this.darkenColor(theme.badge.border, 0.3), 1);
+    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
     bg.strokeRoundedRect(
       -buttonWidth / 2,
       badgeDepth,
@@ -157,7 +161,7 @@ export class MainMenuScene extends Phaser.Scene {
     );
 
     // Fondo del botón (cara principal)
-    bg.fillStyle(theme.badge.main, 1);
+    bg.fillStyle(mainColor, 1);
     bg.fillRoundedRect(
       -buttonWidth / 2,
       0,
@@ -167,7 +171,7 @@ export class MainMenuScene extends Phaser.Scene {
     );
 
     // Borde de la cara principal
-    bg.lineStyle(2, theme.badge.border, 1);
+    bg.lineStyle(2, borderColor, 1);
     bg.strokeRoundedRect(
       -buttonWidth / 2,
       0,
@@ -178,12 +182,12 @@ export class MainMenuScene extends Phaser.Scene {
 
     container.add(bg);
 
-    // Texto del botón - mismo estilo que el score
+    // Texto del botón
     const buttonText = this.add.text(0, buttonHeight / 2, text, {
       fontSize: "38px",
       fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
       color: "#ffffff",
-      stroke: theme.badge.textStroke,
+      stroke: textStroke,
       strokeThickness: 4,
     });
     buttonText.setOrigin(0.5);
