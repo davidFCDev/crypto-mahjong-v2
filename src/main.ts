@@ -1,8 +1,8 @@
 import { initRemix } from "@insidethesim/remix-dev";
 import GameSettings from "./config/GameSettings";
-import { getCurrentTheme } from "./config/Themes";
 import { MahjongScene } from "./scenes/MahjongScene";
 import { MainMenuScene } from "./scenes/MainMenuScene";
+import { PreloadScene } from "./scenes/PreloadScene";
 
 // SDK mock is automatically initialized by the framework (dev-init.ts)
 
@@ -18,8 +18,8 @@ const config: Phaser.Types.Core.GameConfig = {
     height: GameSettings.canvas.height,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  backgroundColor: getCurrentTheme().background.main,
-  scene: [MainMenuScene, MahjongScene],
+  backgroundColor: "#000000", // Negro para el preload
+  scene: [PreloadScene, MainMenuScene, MahjongScene],
   physics: {
     default: "arcade",
   },

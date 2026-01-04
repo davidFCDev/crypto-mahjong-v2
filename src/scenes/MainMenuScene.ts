@@ -21,14 +21,6 @@ export class MainMenuScene extends Phaser.Scene {
     super({ key: "MainMenuScene" });
   }
 
-  preload(): void {
-    // Cargar imagen de fondo
-    this.load.image(
-      "menu-bg",
-      "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj"
-    );
-  }
-
   create(): void {
     const { canvas } = GameSettings;
     const centerX = canvas.width / 2;
