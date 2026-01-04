@@ -41,10 +41,18 @@ export abstract class PreloadSceneBase extends Phaser.Scene {
       repeat: 0, // Una sola vez, se queda en último frame
     });
 
-    // Mostrar sprite centrado
+    // Mostrar sprite centrado con proporción correcta
     const { width, height } = this.scale;
     this.bootSprite = this.add.sprite(width / 2, height / 2, "bootSprite");
-    const scale = Math.min(width / 300, height / 400, 1.5);
+    
+    // Calcular escala manteniendo proporción (241x345 es el tamaño del frame)
+    const spriteWidth = 241;
+    const spriteHeight = 345;
+    const maxWidth = width * 0.6; // 60% del ancho de pantalla
+    const maxHeight = height * 0.6; // 60% del alto de pantalla
+    const scaleX = maxWidth / spriteWidth;
+    const scaleY = maxHeight / spriteHeight;
+    const scale = Math.min(scaleX, scaleY, 1.5); // Usar la escala más pequeña para no distorsionar
     this.bootSprite.setScale(scale);
     this.bootSprite.play("boot");
 
