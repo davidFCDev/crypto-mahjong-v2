@@ -5,10 +5,7 @@
 
 import type { FarcadeSDK } from "@farcade/game-sdk";
 import GameSettings from "../config/GameSettings";
-import {
-  getCurrentTheme,
-  themes,
-} from "../config/Themes";
+import { getCurrentTheme, themes } from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";

@@ -230,16 +230,11 @@ export class MainMenuScene extends Phaser.Scene {
   private createJustATipButton(centerX: number, y: number): void {
     if (this.hasJustATip) {
       // Mostrar mensaje de agradecimiento con corazón
-      const thanksText = this.add.text(
-        centerX,
-        y + 45,
-        "Thank you ❤️",
-        {
-          fontSize: "36px",
-          fontFamily: "'Fredoka One', Arial Black, sans-serif",
-          color: "#000000",
-        }
-      );
+      const thanksText = this.add.text(centerX, y + 45, "Thank you ❤️", {
+        fontSize: "36px",
+        fontFamily: "'Fredoka One', Arial Black, sans-serif",
+        color: "#000000",
+      });
       thanksText.setOrigin(0.5);
     } else {
       // Botón JUST A TIP - Tonos MORADOS
