@@ -241,13 +241,11 @@ export class MainMenuScene extends Phaser.Scene {
       const thanksText = this.add.text(
         centerX,
         y + 45,
-        "Thanks for your support ❤️",
+        "Thank you ❤️",
         {
-          fontSize: "32px",
+          fontSize: "36px",
           fontFamily: "'Fredoka One', Arial Black, sans-serif",
-          color: "#e74c3c",
-          stroke: "#8b0000",
-          strokeThickness: 4,
+          color: "#000000",
         }
       );
       thanksText.setOrigin(0.5);

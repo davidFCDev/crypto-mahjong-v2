@@ -6,9 +6,7 @@
 import type { FarcadeSDK } from "@farcade/game-sdk";
 import GameSettings from "../config/GameSettings";
 import {
-  getAvailableThemes,
   getCurrentTheme,
-  setTheme,
   themes,
 } from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
@@ -119,76 +117,8 @@ export class MahjongScene extends Phaser.Scene {
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
-    // Crear botón de desarrollo para cambiar temas
-    this.createDevThemeButton();
-
     // Iniciar nivel 1
     this.startLevel(1);
-  }
-
-  /**
-   * Crea un botón de desarrollo para cambiar temas (esquina superior derecha)
-   */
-  private createDevThemeButton(): void {
-    const { canvas } = GameSettings;
-    const theme = getCurrentTheme();
-
-    // Botón pequeño en esquina superior derecha
-    const button = this.add.container(canvas.width - 40, 40);
-    button.setDepth(2000);
-
-    // Fondo del botón
-    const bg = this.add.graphics();
-    bg.fillStyle(0x333333, 0.8);
-    bg.fillRoundedRect(-30, -18, 60, 36, 8);
-    bg.lineStyle(2, 0x666666, 1);
-    bg.strokeRoundedRect(-30, -18, 60, 36, 8);
-    button.add(bg);
-
-    // Texto con el nombre del tema
-    const text = this.add.text(0, 0, "🎨", {
-      fontSize: "20px",
-    });
-    text.setOrigin(0.5);
-    button.add(text);
-
-    // Hacer interactivo
-    const hitArea = this.add.rectangle(0, 0, 60, 36);
-    hitArea.setInteractive({ useHandCursor: true });
-    button.add(hitArea);
-
-    hitArea.on("pointerdown", () => {
-      // Ciclar al siguiente tema
-      const availableThemes = getAvailableThemes();
-      const currentIndex = availableThemes.indexOf(theme.name);
-      const nextIndex = (currentIndex + 1) % availableThemes.length;
-      const nextThemeName = availableThemes[nextIndex];
-
-      setTheme(nextThemeName);
-
-      // Reiniciar la escena para aplicar el nuevo tema
-      this.scene.restart();
-    });
-
-    hitArea.on("pointerover", () => {
-      this.tweens.add({
-        targets: button,
-        scaleX: 1.1,
-        scaleY: 1.1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    hitArea.on("pointerout", () => {
-      this.tweens.add({
-        targets: button,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
   }
 
   /**
