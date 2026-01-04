@@ -668,6 +668,9 @@ export class MahjongScene extends Phaser.Scene {
       return;
     }
 
+    // Haptic feedback al seleccionar ficha
+    this.triggerHapticFeedback();
+
     this.isAnimating = true;
 
     // IMPORTANTE: Buscar la ficha en gameState.tiles para modificar el original
@@ -733,6 +736,9 @@ export class MahjongScene extends Phaser.Scene {
     if (matchResult.matched) {
       // Delay breve para que se vea la tercera ficha antes del match
       this.time.delayedCall(100, () => {
+        // Haptic feedback al hacer trio
+        this.triggerHapticFeedback();
+
         // Animar match
         const matchedIds = matchResult.tiles.map((t) => t.id);
         this.gameUI.animateMatch(matchedIds, () => {
@@ -829,6 +835,9 @@ export class MahjongScene extends Phaser.Scene {
    * Maneja la pérdida de una vida
    */
   private handleLoseLife(): void {
+    // Haptic feedback al perder vida
+    this.triggerHapticFeedback();
+
     // Parar el timer inmediatamente
     this.gameUI.stopTimer();
 
@@ -871,6 +880,22 @@ export class MahjongScene extends Phaser.Scene {
     this.gameUI.showGameOverMessage(() => {
       this.restartGame();
     });
+  }
+
+  /**
+   * Dispara haptic feedback si el SDK está disponible
+   */
+  private triggerHapticFeedback(): void {
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.singlePlayer?.actions?.hapticFeedback) {
+        sdk.singlePlayer.actions.hapticFeedback();
+      } else if (sdk?.hapticFeedback) {
+        sdk.hapticFeedback();
+      }
+    } catch {
+      // SDK no disponible, ignorar
+    }
   }
 
   /**
