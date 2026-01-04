@@ -1,5 +1,3 @@
-import Phaser from "phaser";
-
 export abstract class PreloadSceneBase extends Phaser.Scene {
   protected assetsLoaded: boolean = false;
   protected animationComplete: boolean = false;
