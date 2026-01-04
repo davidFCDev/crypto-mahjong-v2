@@ -14,6 +14,7 @@ import {
 export class MainMenuScene extends Phaser.Scene {
   private styleModal: Phaser.GameObjects.Container | null = null;
   private hasExclusiveThemes: boolean = false;
+  private hasJustATip: boolean = false;
   private styleButton: Phaser.GameObjects.Container | null = null;
 
   constructor() {
@@ -163,7 +164,7 @@ export class MainMenuScene extends Phaser.Scene {
     // Botón START - Tonos ROJOS
     this.createBadgeButton(
       centerX,
-      660,
+      640,
       "START",
       0xff3b3b,
       0x8b0000,
@@ -174,7 +175,7 @@ export class MainMenuScene extends Phaser.Scene {
     );
 
     // Botón STYLE - Tonos VERDES (puede estar bloqueado)
-    this.createStyleButton(centerX, 810);
+    this.createStyleButton(centerX, 800);
   }
 
   /**
@@ -189,15 +190,17 @@ export class MainMenuScene extends Phaser.Scene {
       ).FarcadeSDK;
       if (sdk?.hasItem) {
         this.hasExclusiveThemes = sdk.hasItem("exclusive-themes");
+        this.hasJustATip = sdk.hasItem("just-a-tip");
       }
     } catch {
       // SDK no disponible, mantener como false
       this.hasExclusiveThemes = false;
+      this.hasJustATip = false;
     }
   }
 
   /**
-   * Crea el botón STYLE con badge de créditos si no está desbloqueado
+   * Crea el botón THEME con badge de créditos si no está desbloqueado
    */
   private createStyleButton(centerX: number, y: number): void {
     const mainColor = this.hasExclusiveThemes ? 0x3cb371 : 0x666666;
@@ -207,7 +210,7 @@ export class MainMenuScene extends Phaser.Scene {
     this.styleButton = this.createBadgeButton(
       centerX,
       y,
-      "STYLE",
+      "THEME",
       mainColor,
       borderColor,
       textStroke,
@@ -223,6 +226,75 @@ export class MainMenuScene extends Phaser.Scene {
     // Si no tiene temas exclusivos, añadir badge de créditos
     if (!this.hasExclusiveThemes) {
       this.addCreditsBadge(this.styleButton, 100);
+    }
+
+    // Crear botón JUST A TIP debajo
+    this.createJustATipButton(centerX, y + 180);
+  }
+
+  /**
+   * Crea el botón JUST A TIP o muestra mensaje de agradecimiento
+   */
+  private createJustATipButton(centerX: number, y: number): void {
+    if (this.hasJustATip) {
+      // Mostrar mensaje de agradecimiento con corazón
+      const thanksText = this.add.text(
+        centerX,
+        y + 45,
+        "Thanks for your support ❤️",
+        {
+          fontSize: "32px",
+          fontFamily: "'Fredoka One', Arial Black, sans-serif",
+          color: "#e74c3c",
+          stroke: "#8b0000",
+          strokeThickness: 4,
+        }
+      );
+      thanksText.setOrigin(0.5);
+    } else {
+      // Botón JUST A TIP - Tonos MORADOS
+      const tipButton = this.createBadgeButton(
+        centerX,
+        y,
+        "JUST A TIP",
+        0x9b59b6,
+        0x6c3483,
+        "#4a235a",
+        () => {
+          this.purchaseJustATip();
+        }
+      );
+
+      // Añadir badge de 500 créditos
+      this.addCreditsBadge(tipButton, 500);
+    }
+  }
+
+  /**
+   * Inicia el proceso de compra de just-a-tip
+   */
+  private async purchaseJustATip(): Promise<void> {
+    try {
+      const sdk = (
+        window as unknown as {
+          FarcadeSDK?: {
+            purchase: (data: { item: string }) => Promise<{ success: boolean }>;
+          };
+        }
+      ).FarcadeSDK;
+
+      if (sdk?.purchase) {
+        const result = await sdk.purchase({ item: "just-a-tip" });
+        if (result.success) {
+          this.hasJustATip = true;
+          // Recrear la escena para mostrar el mensaje de agradecimiento
+          this.scene.restart();
+        }
+      } else {
+        console.log("Purchase not available - SDK not loaded");
+      }
+    } catch (error) {
+      console.error("Purchase error:", error);
     }
   }
 
