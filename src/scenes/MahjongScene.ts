@@ -865,10 +865,12 @@ export class MahjongScene extends Phaser.Scene {
     // Parar música
     SoundManager.stopMusic();
 
-    // Enviar puntuación a Farcade (usando any para evitar errores de tipo)
+    // Enviar puntuación a Farcade - el SDK gestiona el modal de game over
     try {
       const sdk = window.FarcadeSDK as any;
-      if (sdk?.gameOver) {
+      if (sdk?.singlePlayer?.actions?.gameOver) {
+        sdk.singlePlayer.actions.gameOver({ score: this.gameState.score });
+      } else if (sdk?.gameOver) {
         sdk.gameOver({ score: this.gameState.score });
       } else if (sdk?.actions?.gameOver) {
         sdk.actions.gameOver({ score: this.gameState.score });
@@ -876,10 +878,6 @@ export class MahjongScene extends Phaser.Scene {
     } catch (e) {
       console.log("Farcade SDK not available");
     }
-
-    this.gameUI.showGameOverMessage(() => {
-      this.restartGame();
-    });
   }
 
   /**
