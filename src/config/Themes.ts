@@ -3,7 +3,12 @@
  * Define visual themes for UI elements
  */
 
-export type PatternType = "diamonds" | "waves" | "hexagons" | "circles" | "polkadots";
+export type PatternType =
+  | "diamonds"
+  | "waves"
+  | "hexagons"
+  | "circles"
+  | "polkadots";
 
 export interface GameTheme {
   name: string;
@@ -13,6 +18,7 @@ export interface GameTheme {
   background: {
     main: string; // Hex string for Phaser config
     mainHex: number; // Hex number for graphics
+    backgroundImage?: string; // URL de imagen de fondo (opcional)
     pattern: {
       type: PatternType;
       color1: number;
@@ -79,6 +85,8 @@ export const classicTheme: GameTheme = {
   background: {
     main: "#f5deb3", // Wheat
     mainHex: 0xf5deb3,
+    backgroundImage:
+      "https://remix.gg/blob/zS0QCi0PfUjO/11%20%281%29-5rWcZQAXCAHAxPIlyY1z0F0WTVTLxD.webp?G141",
     pattern: {
       type: "diamonds",
       color1: 0xf5deb3, // Wheat base
@@ -139,6 +147,8 @@ export const oceanTheme: GameTheme = {
   background: {
     main: "#1a3a4a", // Deep ocean blue
     mainHex: 0x1a3a4a,
+    backgroundImage:
+      "https://remix.gg/blob/zS0QCi0PfUjO/ocean-gFx3EBS1vC6C2L6tsUBmPi26t4oL9C.webp?Cc2P",
     pattern: {
       type: "waves",
       color1: 0x1a3a4a, // Deep blue base
@@ -199,6 +209,8 @@ export const sunsetTheme: GameTheme = {
   background: {
     main: "#ffb347", // Naranja cálido
     mainHex: 0xffb347,
+    backgroundImage:
+      "https://remix.gg/blob/zS0QCi0PfUjO/atardecer-5hf7bIPQYd72dNAL5etCf8ztM7XqgP.webp?FPWJ",
     pattern: {
       type: "polkadots", // Lunares
       color1: 0xffb347, // Naranja base
@@ -207,45 +219,45 @@ export const sunsetTheme: GameTheme = {
   },
 
   badge: {
-    main: 0xff5e62, // Rosado sunset
-    border: 0xff9966, // Naranja coral
+    main: 0xffe066, // Amarillo crema brillante
+    border: 0xe6c84a, // Amarillo mostaza suave
     depth3D: 16,
-    textStroke: "#7a2e1a",
+    textStroke: "#8b6914",
   },
 
   hand: {
-    background: 0xff5e62, // Rosado sunset
-    slot: 0xff9966, // Naranja coral
-    slotBorder: 0xff7f50, // Coral
+    background: 0xffe066, // Amarillo crema brillante
+    slot: 0xe6c84a, // Amarillo mostaza suave
+    slotBorder: 0xd4b23a, // Amarillo dorado
   },
 
   modal: {
-    main: 0xff5e62, // Rosado sunset
-    border: 0xff9966, // Naranja coral
-    titleColor: "#fffbe6",
-    titleStroke: "#7a2e1a",
-    textColor: "#4a1a0a",
-    buttonTextColor: "#4a1a0a",
+    main: 0xffe066, // Amarillo crema brillante
+    border: 0xe6c84a, // Amarillo mostaza suave
+    titleColor: "#6b4c00",
+    titleStroke: "#ffe066",
+    textColor: "#5d4500",
+    buttonTextColor: "#5d4500",
   },
 
   powerUps: {
-    undo: { main: 0xf7b267, border: 0xff9966 }, // Amarillo sunset
-    clock: { main: 0xffd700, border: 0xffa500 }, // Gold
-    key: { main: 0xff4500, border: 0xcc3700 }, // Orange Red
+    undo: { main: 0xfff176, border: 0xe6c84a }, // Amarillo limón
+    clock: { main: 0xffd700, border: 0xdaa520 }, // Gold
+    key: { main: 0xffb347, border: 0xe6a030 }, // Naranja suave
   },
 
   lives: {
-    color: "#ff4500",
-    stroke: "#cc3700",
+    color: "#e74c3c",
+    stroke: "#8b0000",
   },
 
   tile: {
-    face: 0xfff5ee, // Seashell
-    side: 0xffcba4, // Naranja claro
-    bottom: 0xffb347, // Naranja base
-    border: 0xff9966,
-    sideLight: 0xffe0b2,
-    bottomLight: 0xffd6a0,
+    face: 0xfffff0, // Ivory
+    side: 0xfff59d, // Amarillo claro
+    bottom: 0xffe082, // Amarillo ámbar claro
+    border: 0xe6c84a,
+    sideLight: 0xfffde7,
+    bottomLight: 0xfff59d,
   },
 };
 
@@ -259,6 +271,8 @@ export const sakuraTheme: GameTheme = {
   background: {
     main: "#fce4ec", // Pale pink
     mainHex: 0xfce4ec,
+    backgroundImage:
+      "https://remix.gg/blob/zS0QCi0PfUjO/sakura-ATSX9unarKHj5GvQP94CVzXvEjF4HZ.webp?f9jk",
     pattern: {
       type: "circles",
       color1: 0xfce4ec, // Pale pink base
@@ -267,43 +281,43 @@ export const sakuraTheme: GameTheme = {
   },
 
   badge: {
-    main: 0xe91e63, // Pink
-    border: 0xc2185b, // Dark Pink
+    main: 0xf06292, // Rosa vibrante
+    border: 0xd81b60, // Rosa intenso
     depth3D: 16,
-    textStroke: "#4a0a20",
+    textStroke: "#5a0a25",
   },
 
   hand: {
-    background: 0xe91e63, // Pink
-    slot: 0xc2185b, // Dark Pink
-    slotBorder: 0x9c1450, // Darker
+    background: 0xf06292, // Rosa vibrante
+    slot: 0xd81b60, // Rosa intenso
+    slotBorder: 0xad1457, // Magenta oscuro
   },
 
   modal: {
-    main: 0xe91e63, // Pink
-    border: 0xc2185b, // Dark Pink
+    main: 0xf06292, // Rosa vibrante
+    border: 0xd81b60, // Rosa intenso
     titleColor: "#ffffff",
-    titleStroke: "#4a0a20",
-    textColor: "#3a1a25", // Dark text for readability
+    titleStroke: "#5a0a25",
+    textColor: "#3a1a25",
     buttonTextColor: "#3a1a25",
   },
 
   powerUps: {
-    undo: { main: 0x8bc34a, border: 0x689f38 }, // Light Green (leaf)
-    clock: { main: 0xffeb3b, border: 0xc8b900 }, // Yellow
-    key: { main: 0xff5722, border: 0xc43c00 }, // Deep Orange
+    undo: { main: 0x81c784, border: 0x66bb6a }, // Verde hoja
+    clock: { main: 0xffb74d, border: 0xffa726 }, // Naranja suave
+    key: { main: 0xf06292, border: 0xd81b60 }, // Rosa
   },
 
   lives: {
-    color: "#ff5722",
-    stroke: "#c43c00",
+    color: "#e74c3c",
+    stroke: "#8b0000",
   },
 
   tile: {
     face: 0xffffff,
-    side: 0xf8bbd0, // Light pink
-    bottom: 0xf48fb1, // Medium pink
-    border: 0xe57399,
+    side: 0xf8bbd0, // Rosa claro
+    bottom: 0xf48fb1, // Rosa medio
+    border: 0xec407a,
     sideLight: 0xfce4ec,
     bottomLight: 0xf8bbd0,
   },

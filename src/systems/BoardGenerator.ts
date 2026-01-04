@@ -50,98 +50,42 @@ export class BoardGenerator {
 
   /**
    * Genera posiciones para las fichas en múltiples capas
-   * Capas superiores requieren mínimo 2 apoyos en la capa inferior
+   * Las fichas solo se apilan en columnas verticales exactas (sin offset)
+   * Distribución muy equilibrada: todas las columnas crecen uniformemente
    */
   private static generatePositions(config: LevelConfig): TilePosition[] {
     const allPositions: TilePosition[] = [];
+    const totalColumns = config.rows * config.cols;
 
-    // Capa base (z=0): grid completo - esta define el área máxima
+    // Calcular altura objetivo para cada columna (distribución uniforme)
+    // Todas las columnas tendrán la misma altura o diferirán en máximo 1
+    const targetHeight = config.layers;
+
+    // Crear todas las posiciones columna por columna
     for (let row = 0; row < config.rows; row++) {
       for (let col = 0; col < config.cols; col++) {
-        allPositions.push({
-          x: col,
-          y: row,
-          z: 0,
-        });
-      }
-    }
-
-    // Capas superiores: solo donde hay mínimo 2 apoyos
-    for (let z = 1; z < config.layers; z++) {
-      // Generar todas las posiciones posibles para esta capa
-      // Incluye tanto posiciones directas (offset 0) como desplazadas (offset 0.5)
-      const possiblePositions: TilePosition[] = [];
-
-      const maxRow = config.rows - 1;
-      const maxCol = config.cols - 1;
-
-      // Generar posiciones con ambos offsets (0 y 0.5)
-      const offsets = [0, 0.5];
-
-      for (const offset of offsets) {
-        for (let row = 0; row <= maxRow; row++) {
-          for (let col = 0; col <= maxCol; col++) {
-            const posX = col + offset;
-            const posY = row + offset;
-
-            // Verificar que la posición no se salga del tablero base
-            if (posX > maxCol || posY > maxRow) continue;
-
-            // Calcular cobertura de soporte (% del área soportada)
-            const coverage = this.calculateSupportCoverage(
-              posX,
-              posY,
-              z,
-              allPositions
-            );
-
-            // Solo añadir si tiene más del 50% de cobertura
-            if (coverage > 0.5) {
-              possiblePositions.push({
-                x: posX,
-                y: posY,
-                z: z,
-              });
-            }
-          }
+        // Cada columna tiene fichas desde z=0 hasta z=targetHeight-1
+        for (let z = 0; z < targetHeight; z++) {
+          allPositions.push({
+            x: col,
+            y: row,
+            z: z,
+          });
         }
       }
-
-      // Mezclar para selección aleatoria de cuáles usar
-      this.shuffleArray(possiblePositions);
-
-      // Usar coverageRate del nivel para determinar densidad de capas
-      // A mayor nivel, más fichas en capas superiores
-      const layerReduction = z * 0.02; // Reducción pequeña por altura
-      const effectiveRate = Math.max(0.5, config.coverageRate - layerReduction);
-      const maxTiles = Math.max(
-        4,
-        Math.floor(possiblePositions.length * effectiveRate)
-      );
-      const selectedPositions: TilePosition[] = [];
-
-      for (const pos of possiblePositions) {
-        if (selectedPositions.length >= maxTiles) break;
-
-        // Verificar que no esté demasiado cerca de otra ficha seleccionada en la misma capa
-        const tooClose = selectedPositions.some((existing) => {
-          const dx = Math.abs(existing.x - pos.x);
-          const dy = Math.abs(existing.y - pos.y);
-          return dx < 0.9 && dy < 0.9; // Distancia mínima (casi 1 ficha)
-        });
-
-        if (!tooClose) {
-          selectedPositions.push(pos);
-        }
-      }
-
-      // Añadir las posiciones seleccionadas al total
-      allPositions.push(...selectedPositions);
     }
 
     // Asegurar que el número de posiciones sea múltiplo de 3
+    // Quitar fichas de las capas superiores si es necesario
     while (allPositions.length % 3 !== 0) {
-      allPositions.pop();
+      // Buscar y quitar una ficha de la capa más alta
+      const maxZ = Math.max(...allPositions.map((p) => p.z));
+      const indexToRemove = allPositions.findIndex((p) => p.z === maxZ);
+      if (indexToRemove !== -1) {
+        allPositions.splice(indexToRemove, 1);
+      } else {
+        break;
+      }
     }
 
     return allPositions;

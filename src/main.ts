@@ -1,8 +1,8 @@
 import { initRemix } from "@insidethesim/remix-dev";
 import GameSettings from "./config/GameSettings";
 import { getCurrentTheme } from "./config/Themes";
-import { MainMenuScene } from "./scenes/MainMenuScene";
 import { MahjongScene } from "./scenes/MahjongScene";
+import { MainMenuScene } from "./scenes/MainMenuScene";
 
 // SDK mock is automatically initialized by the framework (dev-init.ts)
 

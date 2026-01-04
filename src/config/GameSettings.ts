@@ -83,51 +83,60 @@ export const GameSettings = {
   // Game rules
   rules: {
     matchCount: 3, // Fichas necesarias para hacer match
-    scorePerMatch: 100,
-    bonusPerLevel: 50,
+    scorePerMatch: 1000,
+    bonusPerLevel: 500,
     animationSpeed: 150, // ms para animaciones (muy rápido)
   },
 
   // Level progression - generates config based on level
-  // Máximo 4x4 grid, aumentan capas, tipos y densidad para dificultad
-  // A partir del nivel 3 la dificultad sube significativamente
+  // Máximo 4x4 grid, aumentan capas y tipos de forma infinita
+  // Las columnas siempre están llenas uniformemente
   getLevelConfig: (level: number): LevelConfig => {
-    const MAX_ROWS = 4;
-    const MAX_COLS = 4;
+    const ROWS = 4;
+    const COLS = 4;
+    const MAX_TILE_TYPES = 12; // Máximo de tipos de fichas disponibles
 
-    // Configuración: más tileTypes = menos tríos repetidos = más difícil
-    // Más capas = fichas más dispersas verticalmente = más difícil
-    const configs = [
-      // Niveles introductorios (1-2): más tipos para mayor variedad
-      { rows: 4, cols: 4, layers: 3, tileTypes: 5, coverageRate: 0.55 }, // Nivel 1: Introducción
-      { rows: 4, cols: 4, layers: 3, tileTypes: 6, coverageRate: 0.6 }, // Nivel 2: Fácil
+    // Fórmula progresiva:
+    // - Capas: empieza en 2, aumenta cada nivel (sin límite)
+    // - Tipos: empieza en 4, aumenta gradualmente hasta 12
+    const layers = Math.min(2 + Math.floor(level / 2), 2 + level); // 2, 2, 3, 3, 4, 4, 5...
+    const tileTypes = Math.min(MAX_TILE_TYPES, 4 + Math.floor(level / 2)); // 4, 4, 5, 5, 6, 6...
 
-      // Niveles intermedios (3-5): dificultad creciente
-      { rows: 4, cols: 4, layers: 4, tileTypes: 7, coverageRate: 0.7 }, // Nivel 3: Salto de dificultad
-      { rows: 4, cols: 4, layers: 5, tileTypes: 8, coverageRate: 0.75 }, // Nivel 4
-      { rows: 4, cols: 4, layers: 5, tileTypes: 9, coverageRate: 0.78 }, // Nivel 5
+    // Niveles 1-5: más fáciles con menos capas
+    // Niveles 6+: dificultad real que escala infinitamente
+    let finalLayers: number;
+    let finalTypes: number;
 
-      // Niveles avanzados (6-8): alta dificultad
-      { rows: 4, cols: 4, layers: 6, tileTypes: 10, coverageRate: 0.8 }, // Nivel 6
-      { rows: 4, cols: 4, layers: 6, tileTypes: 11, coverageRate: 0.82 }, // Nivel 7
-      { rows: 4, cols: 4, layers: 7, tileTypes: 12, coverageRate: 0.85 }, // Nivel 8
-
-      // Niveles experto (9-10+): máxima dificultad
-      { rows: 4, cols: 4, layers: 8, tileTypes: 12, coverageRate: 0.88 }, // Nivel 9
-      { rows: 4, cols: 4, layers: 9, tileTypes: 12, coverageRate: 0.9 }, // Nivel 10+: Máxima dificultad
-    ];
-
-    const configIndex = Math.min(level - 1, configs.length - 1);
-    const config = configs[configIndex];
+    if (level <= 2) {
+      // Tutorial: 2 capas, 4 tipos
+      finalLayers = 2;
+      finalTypes = 4;
+    } else if (level <= 4) {
+      // Fácil: 3 capas, 5 tipos
+      finalLayers = 3;
+      finalTypes = 5;
+    } else if (level <= 6) {
+      // Transición: 4 capas, 6-7 tipos
+      finalLayers = 4;
+      finalTypes = 5 + Math.floor((level - 4) / 2);
+    } else if (level <= 10) {
+      // Intermedio: 5-6 capas, 7-9 tipos
+      finalLayers = 4 + Math.floor((level - 6) / 2);
+      finalTypes = 7 + Math.floor((level - 6) / 2);
+    } else {
+      // Infinito: capas crecen sin límite, tipos hasta 12
+      finalLayers = 6 + Math.floor((level - 10) / 2);
+      finalTypes = Math.min(MAX_TILE_TYPES, 9 + Math.floor((level - 10) / 3));
+    }
 
     return {
       level,
-      rows: config.rows,
-      cols: config.cols,
-      layers: config.layers,
-      tileTypes: config.tileTypes,
+      rows: ROWS,
+      cols: COLS,
+      layers: finalLayers,
+      tileTypes: finalTypes,
       tilesPerType: 3,
-      coverageRate: config.coverageRate,
+      coverageRate: 1.0, // Siempre columnas llenas
     };
   },
 

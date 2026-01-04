@@ -9,6 +9,7 @@ import {
   getAvailableThemes,
   getCurrentTheme,
   setTheme,
+  themes,
 } from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
 import { BoardGenerator } from "../systems/BoardGenerator";
@@ -83,6 +84,13 @@ export class MahjongScene extends Phaser.Scene {
         }
       }
     });
+
+    // Cargar imágenes de fondo de todos los temas
+    Object.values(themes).forEach((theme) => {
+      if (theme.background.backgroundImage) {
+        this.load.image(`bg-${theme.name}`, theme.background.backgroundImage);
+      }
+    });
   }
 
   create(): void {
@@ -111,11 +119,76 @@ export class MahjongScene extends Phaser.Scene {
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
-    // [DEV] Botón para cambiar de tema
+    // Crear botón de desarrollo para cambiar temas
     this.createDevThemeButton();
 
     // Iniciar nivel 1
     this.startLevel(1);
+  }
+
+  /**
+   * Crea un botón de desarrollo para cambiar temas (esquina superior derecha)
+   */
+  private createDevThemeButton(): void {
+    const { canvas } = GameSettings;
+    const theme = getCurrentTheme();
+
+    // Botón pequeño en esquina superior derecha
+    const button = this.add.container(canvas.width - 40, 40);
+    button.setDepth(2000);
+
+    // Fondo del botón
+    const bg = this.add.graphics();
+    bg.fillStyle(0x333333, 0.8);
+    bg.fillRoundedRect(-30, -18, 60, 36, 8);
+    bg.lineStyle(2, 0x666666, 1);
+    bg.strokeRoundedRect(-30, -18, 60, 36, 8);
+    button.add(bg);
+
+    // Texto con el nombre del tema
+    const text = this.add.text(0, 0, "🎨", {
+      fontSize: "20px",
+    });
+    text.setOrigin(0.5);
+    button.add(text);
+
+    // Hacer interactivo
+    const hitArea = this.add.rectangle(0, 0, 60, 36);
+    hitArea.setInteractive({ useHandCursor: true });
+    button.add(hitArea);
+
+    hitArea.on("pointerdown", () => {
+      // Ciclar al siguiente tema
+      const availableThemes = getAvailableThemes();
+      const currentIndex = availableThemes.indexOf(theme.name);
+      const nextIndex = (currentIndex + 1) % availableThemes.length;
+      const nextThemeName = availableThemes[nextIndex];
+
+      setTheme(nextThemeName);
+
+      // Reiniciar la escena para aplicar el nuevo tema
+      this.scene.restart();
+    });
+
+    hitArea.on("pointerover", () => {
+      this.tweens.add({
+        targets: button,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    hitArea.on("pointerout", () => {
+      this.tweens.add({
+        targets: button,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
   }
 
   /**
@@ -167,11 +240,26 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el fondo del juego - Patrón de rombos alternados estilo cartoon
+   * Crea el fondo del juego - Imagen o patrón según el tema
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
     const theme = getCurrentTheme();
+
+    // Si el tema tiene imagen de fondo, usarla
+    const bgImageKey = `bg-${theme.name}`;
+    if (theme.background.backgroundImage && this.textures.exists(bgImageKey)) {
+      const bgImage = this.add.image(
+        canvas.width / 2,
+        canvas.height / 2,
+        bgImageKey
+      );
+      bgImage.setDisplaySize(canvas.width, canvas.height);
+      bgImage.setDepth(-3);
+      return;
+    }
+
+    // Fallback: usar patrón de colores
     const pattern = theme.background.pattern;
 
     const bgGraphics = this.add.graphics();
@@ -204,17 +292,28 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Patrón de rombos (Clásico)
    */
-  private drawDiamondsPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+  private drawDiamondsPattern(
+    graphics: Phaser.GameObjects.Graphics,
+    color: number
+  ): void {
     const { canvas } = GameSettings;
     const diamondWidth = 80;
     const diamondHeight = 100;
 
     let row = 0;
-    for (let y = -diamondHeight / 2; y < canvas.height + diamondHeight; y += diamondHeight / 2) {
+    for (
+      let y = -diamondHeight / 2;
+      y < canvas.height + diamondHeight;
+      y += diamondHeight / 2
+    ) {
       let col = 0;
       const offsetX = (row % 2) * (diamondWidth / 2);
 
-      for (let x = -diamondWidth / 2 + offsetX; x < canvas.width + diamondWidth; x += diamondWidth) {
+      for (
+        let x = -diamondWidth / 2 + offsetX;
+        x < canvas.width + diamondWidth;
+        x += diamondWidth
+      ) {
         const useColor2 = (row + col) % 2 === 0;
 
         if (useColor2) {
@@ -236,7 +335,10 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Patrón de olas (Océano)
    */
-  private drawWavesPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+  private drawWavesPattern(
+    graphics: Phaser.GameObjects.Graphics,
+    color: number
+  ): void {
     const { canvas } = GameSettings;
     const waveHeight = 40;
     const waveWidth = 120;
@@ -250,7 +352,11 @@ export class MahjongScene extends Phaser.Scene {
       graphics.beginPath();
       graphics.moveTo(-waveWidth + offsetX, y);
 
-      for (let x = -waveWidth + offsetX; x < canvas.width + waveWidth; x += waveWidth) {
+      for (
+        let x = -waveWidth + offsetX;
+        x < canvas.width + waveWidth;
+        x += waveWidth
+      ) {
         // Dibujar curva de ola
         graphics.lineTo(x + waveWidth * 0.25, y - amplitude);
         graphics.lineTo(x + waveWidth * 0.5, y);
@@ -273,7 +379,10 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Patrón de hexágonos (Atardecer)
    */
-  private drawHexagonsPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+  private drawHexagonsPattern(
+    graphics: Phaser.GameObjects.Graphics,
+    color: number
+  ): void {
     const { canvas } = GameSettings;
     const hexSize = 50;
     const hexWidth = hexSize * 2;
@@ -282,10 +391,18 @@ export class MahjongScene extends Phaser.Scene {
     graphics.lineStyle(2, color, 0.5);
 
     let row = 0;
-    for (let y = -hexHeight; y < canvas.height + hexHeight * 2; y += hexHeight * 0.75) {
+    for (
+      let y = -hexHeight;
+      y < canvas.height + hexHeight * 2;
+      y += hexHeight * 0.75
+    ) {
       const offsetX = (row % 2) * (hexWidth * 0.75);
 
-      for (let x = -hexWidth + offsetX; x < canvas.width + hexWidth * 2; x += hexWidth * 1.5) {
+      for (
+        let x = -hexWidth + offsetX;
+        x < canvas.width + hexWidth * 2;
+        x += hexWidth * 1.5
+      ) {
         this.drawHexagon(graphics, x, y, hexSize);
       }
       row++;
@@ -295,7 +412,12 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Dibuja un hexágono individual
    */
-  private drawHexagon(graphics: Phaser.GameObjects.Graphics, cx: number, cy: number, size: number): void {
+  private drawHexagon(
+    graphics: Phaser.GameObjects.Graphics,
+    cx: number,
+    cy: number,
+    size: number
+  ): void {
     graphics.beginPath();
     for (let i = 0; i < 6; i++) {
       const angle = (Math.PI / 3) * i - Math.PI / 6;
@@ -314,7 +436,10 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Patrón de círculos grandes tipo bokeh (Atardecer y Sakura)
    */
-  private drawCirclesPattern(graphics: Phaser.GameObjects.Graphics, color: number): void {
+  private drawCirclesPattern(
+    graphics: Phaser.GameObjects.Graphics,
+    color: number
+  ): void {
     const { canvas } = GameSettings;
     const theme = getCurrentTheme();
 
@@ -322,7 +447,7 @@ export class MahjongScene extends Phaser.Scene {
     if (theme.name === "sunset") {
       const steps = 20;
       const stepHeight = canvas.height / steps;
-      
+
       for (let i = 0; i < steps; i++) {
         // Interpolar entre naranja (0xffb347) y rosado (0xff5e62)
         const t = i / (steps - 1);
@@ -330,7 +455,7 @@ export class MahjongScene extends Phaser.Scene {
         const g = Math.round(0xb3 + (0x5e - 0xb3) * t);
         const b = Math.round(0x47 + (0x62 - 0x47) * t);
         const gradientColor = (r << 16) | (g << 8) | b;
-        
+
         graphics.fillStyle(gradientColor, 1);
         graphics.fillRect(0, i * stepHeight, canvas.width, stepHeight + 1);
       }
@@ -355,7 +480,10 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Dibuja flores de cerezo para el tema Sakura
    */
-  private drawSakuraFlowers(graphics: Phaser.GameObjects.Graphics, color: number): void {
+  private drawSakuraFlowers(
+    graphics: Phaser.GameObjects.Graphics,
+    color: number
+  ): void {
     const { canvas } = GameSettings;
     const gridSize = 100;
 
@@ -367,7 +495,7 @@ export class MahjongScene extends Phaser.Scene {
         const petalDistance = 18;
 
         for (let i = 0; i < 5; i++) {
-          const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+          const angle = ((Math.PI * 2) / 5) * i - Math.PI / 2;
           const px = x + Math.cos(angle) * petalDistance;
           const py = y + Math.sin(angle) * petalDistance;
           graphics.fillStyle(color, 0.5);
@@ -384,7 +512,11 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Patrón de lunares (Polka dots) para Atardecer
    */
-  private drawPolkadotsPattern(graphics: Phaser.GameObjects.Graphics, bgColor: number, dotColor: number): void {
+  private drawPolkadotsPattern(
+    graphics: Phaser.GameObjects.Graphics,
+    bgColor: number,
+    dotColor: number
+  ): void {
     const { canvas } = GameSettings;
 
     // Crear degradado de fondo (naranja a rosado)
@@ -446,6 +578,9 @@ export class MahjongScene extends Phaser.Scene {
     if (level === 1) {
       SoundManager.startMusic();
     }
+
+    // Sonido de repartir fichas
+    SoundManager.playShuffle(this.gameState.tiles.length);
 
     // Crear fichas visuales
     this.createTileSprites();
@@ -914,8 +1049,9 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Power-up: Hint - Encuentra y resuelve automáticamente el mejor trío
-   * Prioriza completar tríos con fichas que ya están en el acumulador
+   * Power-up: Hint - Encuentra y resuelve automáticamente un trío
+   * SIEMPRE funciona: busca en TODAS las fichas del tablero (no solo accesibles)
+   * y ejecuta un match directo
    */
   private handleHint(): boolean {
     if (!this.gameState.isPlaying || this.isAnimating) {
@@ -924,7 +1060,6 @@ export class MahjongScene extends Phaser.Scene {
 
     // Obtener fichas en el acumulador
     const handTiles = this.handManager.getTilesInHand();
-    const slotsAvailable = 5 - handTiles.length;
 
     // Contar fichas por tipo en el acumulador
     const handTypeCounts = new Map<number, TileState[]>();
@@ -934,113 +1069,70 @@ export class MahjongScene extends Phaser.Scene {
       handTypeCounts.set(tile.type, existing);
     }
 
-    // Buscar fichas accesibles en el tablero
-    const accessibleTiles = this.gameState.tiles.filter(
-      (t) => !t.isInHand && !t.isMatched && t.isAccessible
+    // Buscar TODAS las fichas del tablero (no solo accesibles)
+    const allBoardTiles = this.gameState.tiles.filter(
+      (t) => !t.isInHand && !t.isMatched
     );
 
     // Agrupar fichas del tablero por tipo
     const boardTypeCounts = new Map<number, TileState[]>();
-    for (const tile of accessibleTiles) {
+    for (const tile of allBoardTiles) {
       const existing = boardTypeCounts.get(tile.type) || [];
       existing.push(tile);
       boardTypeCounts.set(tile.type, existing);
     }
 
-    // Estrategia: Encontrar el trío que mejor convenga
-    // Prioridad 1: Completar un trío con 2 fichas en el acumulador (necesita 1 del tablero)
-    // Prioridad 2: Completar un trío con 1 ficha en el acumulador (necesita 2 del tablero)
-    // Prioridad 3: Trío completo en el tablero (necesita 3 del tablero)
+    let matchTiles: TileState[] | null = null;
 
-    let tilesToClick: TileState[] = [];
-    let directMatchTiles: TileState[] | null = null; // Para match directo sin pasar por acumulador
-
-    // Prioridad 1: 2 en mano, 1 en tablero (solo necesita 1 espacio)
+    // Prioridad 1: 2 en mano + 1 del tablero
     for (const [type, tilesInHand] of handTypeCounts) {
       if (tilesInHand.length >= 2) {
         const boardTiles = boardTypeCounts.get(type) || [];
         if (boardTiles.length >= 1) {
-          if (slotsAvailable >= 1) {
-            tilesToClick = [boardTiles[0]];
-          } else {
-            // No hay espacio pero podemos hacer match directo
-            // Tomar 2 del acumulador + 1 del tablero
-            directMatchTiles = [...tilesInHand.slice(0, 2), boardTiles[0]];
-          }
+          matchTiles = [...tilesInHand.slice(0, 2), boardTiles[0]];
           break;
         }
       }
     }
 
-    // Prioridad 2: 1 en mano, 2 en tablero
-    if (tilesToClick.length === 0 && !directMatchTiles) {
+    // Prioridad 2: 1 en mano + 2 del tablero
+    if (!matchTiles) {
       for (const [type, tilesInHand] of handTypeCounts) {
         if (tilesInHand.length >= 1) {
           const boardTiles = boardTypeCounts.get(type) || [];
           if (boardTiles.length >= 2) {
-            if (slotsAvailable >= 2) {
-              // Hay espacio para 2 fichas
-              tilesToClick = [boardTiles[0], boardTiles[1]];
-            } else {
-              // No hay espacio suficiente - hacer match directo
-              // Tomar 1 del acumulador + 2 del tablero
-              directMatchTiles = [tilesInHand[0], boardTiles[0], boardTiles[1]];
-            }
+            matchTiles = [tilesInHand[0], boardTiles[0], boardTiles[1]];
             break;
           }
         }
       }
     }
 
-    // Prioridad 3: 0 en mano, 3 en tablero
-    if (tilesToClick.length === 0 && !directMatchTiles) {
+    // Prioridad 3: 3 del tablero (cualquier trío disponible)
+    if (!matchTiles) {
       for (const [_type, boardTiles] of boardTypeCounts) {
         if (boardTiles.length >= 3) {
-          if (slotsAvailable >= 3) {
-            // Hay espacio para 3 fichas
-            tilesToClick = [boardTiles[0], boardTiles[1], boardTiles[2]];
-          } else {
-            // No hay espacio - hacer match directo con 3 del tablero
-            directMatchTiles = [boardTiles[0], boardTiles[1], boardTiles[2]];
-          }
+          matchTiles = [boardTiles[0], boardTiles[1], boardTiles[2]];
           break;
         }
       }
     }
 
-    // Caso especial: Match directo (sin pasar por acumulador)
-    if (directMatchTiles && directMatchTiles.length === 3) {
-      this.performDirectMatch(directMatchTiles);
+    // Si encontramos un trío, ejecutarlo directamente
+    if (matchTiles && matchTiles.length === 3) {
+      this.performDirectMatch(matchTiles);
       SoundManager.playCardToHand();
       return true;
     }
 
-    if (tilesToClick.length === 0) {
-      return false;
-    }
-
-    // Hacer click en las fichas con delay (caso normal, hay espacio)
-    let delay = 0;
-    const totalTiles = tilesToClick.length;
-
-    for (let i = 0; i < totalTiles; i++) {
-      const tile = tilesToClick[i];
-      this.time.delayedCall(delay, () => {
-        // Verificar que el juego sigue activo y la ficha sigue accesible
-        if (this.gameState.isPlaying && !tile.isInHand && !tile.isMatched) {
-          this.onTileClicked(tile);
-        }
-      });
-      delay += 250;
-    }
-
-    SoundManager.playCardToHand();
-    return true;
+    // No debería llegar aquí si el juego está bien diseñado
+    // (siempre hay tríos disponibles)
+    return false;
   }
 
   /**
    * Realiza un match directo sin pasar las fichas por el acumulador
-   * Usado cuando no hay espacio en el acumulador pero se puede completar un trío
+   * Usado por el power-up de pista - funciona con CUALQUIER ficha del tablero
    */
   private performDirectMatch(tiles: TileState[]): void {
     if (tiles.length !== 3) return;
@@ -1071,6 +1163,11 @@ export class MahjongScene extends Phaser.Scene {
     boardTiles.forEach((tile) => {
       const sprite = this.tileSprites.get(tile.id);
       if (sprite) {
+        // Sacar el sprite del boardContainer y añadirlo a la escena directamente
+        this.boardContainer.remove(sprite);
+        this.add.existing(sprite);
+        // Ahora sí podemos traerlo al frente
+        sprite.setDepth(5000 + boardSprites.length);
         boardSprites.push(sprite);
         this.tileSprites.delete(tile.id);
       }
@@ -1080,189 +1177,87 @@ export class MahjongScene extends Phaser.Scene {
     const centerX = 360;
     const centerY = 900;
 
-    // Animar fichas del tablero hacia el centro
-    let animationsCompleted = 0;
-    const totalAnimations = boardSprites.length;
+    // Si hay sprites para animar
+    if (boardSprites.length > 0) {
+      let animationsCompleted = 0;
+      const totalAnimations = boardSprites.length;
 
-    boardSprites.forEach((sprite, index) => {
-      const delay = index * 100;
+      boardSprites.forEach((sprite, index) => {
+        const delay = index * 100;
 
-      // Fase 1: Mover hacia el centro con efecto de elevación
-      this.tweens.add({
-        targets: sprite,
-        x: centerX + (index - (boardSprites.length - 1) / 2) * 60,
-        y: centerY,
-        scaleX: 1.1,
-        scaleY: 1.1,
-        duration: 350,
-        delay: delay,
-        ease: "Cubic.easeOut",
-        onComplete: () => {
-          // Fase 2: Converger al centro exacto
-          this.tweens.add({
-            targets: sprite,
-            x: centerX,
-            y: centerY - 30,
-            rotation: (index - 1) * 0.2,
-            scaleX: 1.0,
-            scaleY: 1.0,
-            duration: 250,
-            ease: "Sine.easeInOut",
-            onComplete: () => {
-              animationsCompleted++;
+        // Fase 1: Mover hacia el centro con efecto de elevación
+        this.tweens.add({
+          targets: sprite,
+          x: centerX + (index - (boardSprites.length - 1) / 2) * 60,
+          y: centerY,
+          scaleX: 1.1,
+          scaleY: 1.1,
+          duration: 350,
+          delay: delay,
+          ease: "Cubic.easeOut",
+          onComplete: () => {
+            // Fase 2: Converger al centro exacto
+            this.tweens.add({
+              targets: sprite,
+              x: centerX,
+              y: centerY - 30,
+              rotation: (index - 1) * 0.2,
+              scaleX: 1.0,
+              scaleY: 1.0,
+              duration: 250,
+              ease: "Sine.easeInOut",
+              onComplete: () => {
+                animationsCompleted++;
 
-              // Cuando todas convergen, hacer explosión
-              if (animationsCompleted === totalAnimations) {
-                // Crear efecto de explosión
-                this.gameUI.createMatchExplosion(centerX, centerY - 30);
+                // Cuando todas convergen, hacer explosión
+                if (animationsCompleted === totalAnimations) {
+                  // Crear efecto de explosión
+                  this.gameUI.createMatchExplosion(centerX, centerY - 30);
 
-                // Desvanecer sprites
-                boardSprites.forEach((s) => {
-                  this.tweens.add({
-                    targets: s,
-                    scaleX: 0,
-                    scaleY: 0,
-                    alpha: 0,
-                    rotation: s.rotation + 0.5,
-                    duration: 200,
-                    ease: "Cubic.easeIn",
-                    onComplete: () => {
-                      s.destroy();
-                    },
+                  // Desvanecer sprites
+                  boardSprites.forEach((s) => {
+                    this.tweens.add({
+                      targets: s,
+                      scaleX: 0,
+                      scaleY: 0,
+                      alpha: 0,
+                      rotation: s.rotation + 0.5,
+                      duration: 200,
+                      ease: "Cubic.easeIn",
+                      onComplete: () => {
+                        s.destroy();
+                      },
+                    });
                   });
-                });
 
-                // Actualizar puntuación
-                this.gameState.score += GameSettings.rules.scorePerMatch;
-                this.gameUI.updateScore(this.gameState.score);
+                  // Actualizar puntuación
+                  this.gameState.score += GameSettings.rules.scorePerMatch;
+                  this.gameUI.updateScore(this.gameState.score);
 
-                // Reproducir sonido
-                SoundManager.playTrio();
+                  // Reproducir sonido
+                  SoundManager.playTrio();
 
-                // Verificar victoria
-                this.time.delayedCall(300, () => {
-                  this.checkWinCondition();
-                  this.isAnimating = false;
-                });
-              }
-            },
-          });
-        },
+                  // Verificar victoria
+                  this.time.delayedCall(300, () => {
+                    this.checkWinCondition();
+                    this.isAnimating = false;
+                  });
+                }
+              },
+            });
+          },
+        });
       });
-    });
-
-    // Si no hay sprites del tablero (caso edge), completar inmediatamente
-    if (boardSprites.length === 0) {
+    } else {
+      // No hay sprites del tablero - solo fichas de la mano
+      // Actualizar puntuación y completar
       this.gameState.score += GameSettings.rules.scorePerMatch;
       this.gameUI.updateScore(this.gameState.score);
+      this.gameUI.createMatchExplosion(centerX, centerY - 30);
       SoundManager.playTrio();
       this.checkWinCondition();
       this.isAnimating = false;
     }
-  }
-
-  /**
-   * [DEV] Crea un botón para cambiar de tema durante desarrollo
-   * TODO: Eliminar en producción
-   */
-  private createDevThemeButton(): void {
-    const themes = getAvailableThemes();
-    let currentIndex = themes.indexOf(getCurrentTheme().name);
-
-    // Contenedor para el botón
-    const buttonWidth = 120;
-    const buttonHeight = 36;
-    const buttonX = 360;
-    const buttonY = 50;
-
-    const container = this.add.container(buttonX, buttonY);
-    container.setDepth(2000);
-
-    // Fondo del botón
-    const bg = this.add.graphics();
-    bg.fillStyle(0x333333, 0.9);
-    bg.fillRoundedRect(
-      -buttonWidth / 2,
-      -buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      8
-    );
-    bg.lineStyle(2, 0x666666);
-    bg.strokeRoundedRect(
-      -buttonWidth / 2,
-      -buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      8
-    );
-    container.add(bg);
-
-    // Texto del tema actual
-    const themeText = this.add.text(0, 0, getCurrentTheme().displayName, {
-      fontSize: "14px",
-      fontFamily: "Arial Black",
-      color: "#ffffff",
-    });
-    themeText.setOrigin(0.5);
-    container.add(themeText);
-
-    // Hacer interactivo
-    container.setSize(buttonWidth, buttonHeight);
-    container.setInteractive({ useHandCursor: true });
-
-    container.on("pointerover", () => {
-      bg.clear();
-      bg.fillStyle(0x444444, 0.95);
-      bg.fillRoundedRect(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight,
-        8
-      );
-      bg.lineStyle(2, 0x888888);
-      bg.strokeRoundedRect(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight,
-        8
-      );
-    });
-
-    container.on("pointerout", () => {
-      bg.clear();
-      bg.fillStyle(0x333333, 0.9);
-      bg.fillRoundedRect(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight,
-        8
-      );
-      bg.lineStyle(2, 0x666666);
-      bg.strokeRoundedRect(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight,
-        8
-      );
-    });
-
-    container.on("pointerdown", () => {
-      // Cambiar al siguiente tema
-      currentIndex = (currentIndex + 1) % themes.length;
-      const newThemeName = themes[currentIndex];
-      setTheme(newThemeName);
-
-      // Actualizar texto
-      themeText.setText(getCurrentTheme().displayName);
-
-      // Reiniciar la escena para aplicar el tema
-      this.scene.restart();
-    });
   }
 
   update(): void {
