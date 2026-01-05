@@ -157,6 +157,8 @@ export class MahjongScene extends Phaser.Scene {
     this.tutorialModal.add(overlay);
 
     const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const theme = getCurrentTheme();
+    const powerUpColors = theme.powerUps;
 
     // Título "HOW TO PLAY"
     const title = this.add.text(canvas.width / 2, 120, "HOW TO PLAY", {
@@ -221,37 +223,34 @@ export class MahjongScene extends Phaser.Scene {
     powerupsTitle.setOrigin(0.5);
     this.tutorialModal.add(powerupsTitle);
 
-    // Power-ups con iconos y descripciones
-    const powerups = [
-      { icon: "↩", name: "Undo", desc: "Return last tile", color: "#4ecdc4" },
-      { icon: "⏸", name: "Freeze", desc: "Pause timer", color: "#9b59b6" },
-      { icon: "💡", name: "Hint", desc: "Remove a pair", color: "#f39c12" },
-    ];
+    // Power-ups con iconos idénticos al juego (centrados)
+    const centerX = canvas.width / 2;
+    const buttonSize = 70;
+    const startY = 530;
+    const gap = 100;
 
-    const startY = 520;
-    const gap = 90;
+    const powerups: Array<{
+      type: "undo" | "clock" | "key";
+      name: string;
+      desc: string;
+      colors: { main: number; border: number };
+    }> = [
+      { type: "undo", name: "Undo", desc: "Return last tile", colors: powerUpColors.undo },
+      { type: "clock", name: "Freeze", desc: "Pause timer", colors: powerUpColors.clock },
+      { type: "key", name: "Hint", desc: "Remove a pair", colors: powerUpColors.key },
+    ];
 
     powerups.forEach((powerup, index) => {
       const y = startY + index * gap;
+      const buttonX = centerX - 120;
 
-      // Icono circular
-      const iconBg = this.add.graphics();
-      iconBg.fillStyle(Phaser.Display.Color.HexStringToColor(powerup.color).color, 1);
-      iconBg.fillCircle(150, y, 35);
-      iconBg.lineStyle(4, 0x000000);
-      iconBg.strokeCircle(150, y, 35);
-      this.tutorialModal!.add(iconBg);
+      // Crear botón idéntico al del juego
+      this.createTutorialPowerUpButton(buttonX, y, buttonSize, powerup.colors, powerup.type);
 
-      // Icono
-      const icon = this.add.text(150, y, powerup.icon, {
-        fontSize: "32px",
-        fontFamily: fontFamily,
-      });
-      icon.setOrigin(0.5);
-      this.tutorialModal!.add(icon);
+      // Nombre y descripción a la derecha
+      const textX = centerX - 30;
 
-      // Nombre
-      const name = this.add.text(220, y - 15, powerup.name, {
+      const name = this.add.text(textX, y - 12, powerup.name, {
         fontSize: "28px",
         fontFamily: fontFamily,
         color: "#ffffff",
@@ -261,8 +260,7 @@ export class MahjongScene extends Phaser.Scene {
       name.setOrigin(0, 0.5);
       this.tutorialModal!.add(name);
 
-      // Descripción
-      const desc = this.add.text(220, y + 18, powerup.desc, {
+      const desc = this.add.text(textX, y + 18, powerup.desc, {
         fontSize: "20px",
         fontFamily: fontFamily,
         color: "#aaaaaa",
@@ -271,8 +269,8 @@ export class MahjongScene extends Phaser.Scene {
       this.tutorialModal!.add(desc);
     });
 
-    // Botón de comenzar
-    this.createStartButton(canvas.width / 2, 850);
+    // Botón de comenzar (estilo igual al selector de tema)
+    this.createStartButton(canvas.width / 2, 880);
 
     // Animación de entrada
     this.tutorialModal.setAlpha(0);
@@ -285,56 +283,145 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el botón de comenzar del tutorial
+   * Crea un botón de power-up para el tutorial (idéntico al del juego)
+   */
+  private createTutorialPowerUpButton(
+    x: number,
+    y: number,
+    size: number,
+    colors: { main: number; border: number },
+    type: "undo" | "clock" | "key"
+  ): void {
+    const depth = 10;
+    const radius = size / 2;
+
+    const bg = this.add.graphics();
+
+    // Sombra/profundidad 3D (círculo inferior)
+    bg.fillStyle(this.darkenColor(colors.border, 0.3), 1);
+    bg.fillCircle(x, y + depth, radius);
+
+    // Cara principal (círculo superior)
+    bg.fillStyle(colors.main, 1);
+    bg.fillCircle(x, y, radius);
+
+    // Borde
+    bg.lineStyle(3, colors.border, 1);
+    bg.strokeCircle(x, y, radius);
+
+    this.tutorialModal!.add(bg);
+
+    // Dibujar icono (proporcional al tamaño del botón)
+    const icon = this.add.graphics();
+    icon.lineStyle(4, 0xffffff, 1);
+
+    if (type === "undo") {
+      // Flecha circular hacia atrás
+      const arrowRadius = 18;
+      icon.beginPath();
+      icon.arc(x, y, arrowRadius, Phaser.Math.DegToRad(-45), Phaser.Math.DegToRad(180), false);
+      icon.strokePath();
+      icon.beginPath();
+      icon.moveTo(x - arrowRadius - 6, y - 6);
+      icon.lineTo(x - arrowRadius, y - 16);
+      icon.lineTo(x - arrowRadius + 6, y - 6);
+      icon.strokePath();
+    } else if (type === "clock") {
+      // Reloj simple
+      const clockRadius = 18;
+      icon.strokeCircle(x, y, clockRadius);
+      icon.beginPath();
+      icon.moveTo(x, y);
+      icon.lineTo(x, y - 12);
+      icon.moveTo(x, y);
+      icon.lineTo(x + 9, y);
+      icon.strokePath();
+    } else if (type === "key") {
+      // Llave simple
+      icon.strokeCircle(x - 7, y - 7, 9);
+      icon.beginPath();
+      icon.moveTo(x, y);
+      icon.lineTo(x + 14, y + 14);
+      icon.moveTo(x + 9, y + 9);
+      icon.lineTo(x + 14, y + 9);
+      icon.moveTo(x + 12, y + 12);
+      icon.lineTo(x + 17, y + 12);
+      icon.strokePath();
+    }
+
+    this.tutorialModal!.add(icon);
+  }
+
+  /**
+   * Oscurece un color para efecto 3D
+   */
+  private darkenColor(color: number, amount: number): number {
+    const r = Math.max(0, ((color >> 16) & 0xff) * (1 - amount));
+    const g = Math.max(0, ((color >> 8) & 0xff) * (1 - amount));
+    const b = Math.max(0, (color & 0xff) * (1 - amount));
+    return (Math.floor(r) << 16) | (Math.floor(g) << 8) | Math.floor(b);
+  }
+
+  /**
+   * Crea el botón de comenzar del tutorial (estilo igual al selector de tema)
    */
   private createStartButton(x: number, y: number): void {
     const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const btnWidth = 200;
+    const btnHeight = 55;
+    const depth3D = 8;
 
-    // Botón con estilo
-    const button = this.add.container(x, y);
-
-    // Fondo del botón
+    const container = this.add.container(x, y);
     const bg = this.add.graphics();
-    bg.fillStyle(0x00aa00, 1);
-    bg.fillRoundedRect(-120, -35, 240, 70, 20);
-    bg.lineStyle(4, 0x006600);
-    bg.strokeRoundedRect(-120, -35, 240, 70, 20);
-    button.add(bg);
 
-    // Texto
-    const text = this.add.text(0, 0, "LET'S GO!", {
-      fontSize: "36px",
+    // Cara 3D (verde oscuro)
+    bg.fillStyle(0x2d7d32, 1);
+    bg.fillRoundedRect(-btnWidth / 2, depth3D, btnWidth, btnHeight, 14);
+
+    // Cara principal (verde)
+    bg.fillStyle(0x4caf50, 1);
+    bg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+
+    // Borde
+    bg.lineStyle(3, 0x2d7d32, 1);
+    bg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+
+    container.add(bg);
+
+    const text = this.add.text(0, btnHeight / 2, "LET'S GO!", {
+      fontSize: "26px",
       fontFamily: fontFamily,
       color: "#ffffff",
-      stroke: "#006600",
-      strokeThickness: 4,
+      stroke: "#2d7d32",
+      strokeThickness: 3,
     });
     text.setOrigin(0.5);
-    button.add(text);
+    container.add(text);
 
-    // Interactividad
-    button.setSize(240, 70);
-    button.setInteractive({ useHandCursor: true });
+    container.setSize(btnWidth, btnHeight + depth3D);
+    container.setInteractive({ useHandCursor: true });
 
-    button.on("pointerover", () => {
+    container.on("pointerover", () => {
       this.tweens.add({
-        targets: button,
+        targets: container,
         scaleX: 1.05,
         scaleY: 1.05,
         duration: 100,
+        ease: "Power2",
       });
     });
 
-    button.on("pointerout", () => {
+    container.on("pointerout", () => {
       this.tweens.add({
-        targets: button,
+        targets: container,
         scaleX: 1,
         scaleY: 1,
         duration: 100,
+        ease: "Power2",
       });
     });
 
-    button.on("pointerdown", () => {
+    container.on("pointerdown", () => {
       // Marcar tutorial como visto
       localStorage.setItem("crypto-mahjong-tutorial-seen", "true");
 
@@ -342,7 +429,7 @@ export class MahjongScene extends Phaser.Scene {
       this.closeTutorial();
     });
 
-    this.tutorialModal!.add(button);
+    this.tutorialModal!.add(container);
   }
 
   /**
