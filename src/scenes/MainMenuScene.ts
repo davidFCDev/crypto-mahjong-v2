@@ -315,11 +315,11 @@ export class MainMenuScene extends Phaser.Scene {
 
       // Mostrar nombre del usuario debajo
       const nameText = this.add.text(centerX, y + 75, playerName, {
-        fontSize: "28px",
+        fontSize: "36px",
         fontFamily: "'Fredoka One', Arial Black, sans-serif",
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 3,
+        color: "#000000",
+        stroke: "#ffffff",
+        strokeThickness: 4,
       });
       nameText.setOrigin(0.5);
     } else {
