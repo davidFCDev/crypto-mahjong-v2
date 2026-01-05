@@ -292,13 +292,36 @@ export class MainMenuScene extends Phaser.Scene {
    */
   private createJustATipButton(centerX: number, y: number): void {
     if (this.hasJustATip) {
-      // Mostrar mensaje de agradecimiento con corazón
-      const thanksText = this.add.text(centerX, y + 45, "Thank you ❤️", {
-        fontSize: "36px",
+      // Mostrar mensaje de agradecimiento
+      const thanksText = this.add.text(centerX, y + 35, "Thank you", {
+        fontSize: "32px",
         fontFamily: "'Fredoka One', Arial Black, sans-serif",
-        color: "#000000",
+        color: "#B7FF00",
+        stroke: "#000000",
+        strokeThickness: 4,
       });
       thanksText.setOrigin(0.5);
+
+      // Obtener nombre del usuario del SDK
+      const sdk = (
+        window as unknown as {
+          FarcadeSDK?: {
+            player?: { username?: string; displayName?: string };
+          };
+        }
+      ).FarcadeSDK;
+
+      const playerName = sdk?.player?.displayName || sdk?.player?.username || "Player";
+
+      // Mostrar nombre del usuario debajo
+      const nameText = this.add.text(centerX, y + 75, playerName, {
+        fontSize: "28px",
+        fontFamily: "'Fredoka One', Arial Black, sans-serif",
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 3,
+      });
+      nameText.setOrigin(0.5);
     } else {
       // Botón JUST A TIP - Tonos MORADOS
       const tipButton = this.createBadgeButton(
