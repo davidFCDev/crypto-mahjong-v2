@@ -65,7 +65,7 @@ export class MainMenuScene extends Phaser.Scene {
     this.createComicWord(
       titleContainer,
       "CRYPTO",
-      0,
+      -30,
       0,
       100,
       [
@@ -158,7 +158,7 @@ export class MainMenuScene extends Phaser.Scene {
     y: number,
     fontFamily: string
   ): void {
-    const fontSize = 280;
+    const fontSize = 220;
     const rotation = 12; // Ligera rotación para estilo dinámico
 
     // Sombra profunda 3D para el "2"
