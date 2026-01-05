@@ -58,14 +58,11 @@ export class MainMenuScene extends Phaser.Scene {
 
     const fontFamily = "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive";
 
-    // ========== "2" GRANDE DETRÁS DEL TÍTULO ==========
-    this.createBigTwo(titleContainer, 180, -20, fontFamily);
-
     // ========== CRYPTO con estilo comic ==========
     this.createComicWord(
       titleContainer,
       "CRYPTO",
-      -30,
+      0,
       0,
       100,
       [
@@ -97,6 +94,9 @@ export class MainMenuScene extends Phaser.Scene {
       ],
       fontFamily
     );
+
+    // ========== REMIXED subtítulo ==========
+    this.createRemixedSubtitle(titleContainer, 0, 230, fontFamily);
   }
 
   /**
@@ -150,42 +150,65 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el "2" grande en rojo detrás del título
+   * Crea el subtítulo "REMIXED" en cursiva con estilo comic
    */
-  private createBigTwo(
+  private createRemixedSubtitle(
     container: Phaser.GameObjects.Container,
     x: number,
     y: number,
     fontFamily: string
   ): void {
-    const fontSize = 220;
-    const rotation = 12; // Ligera rotación para estilo dinámico
+    const fontSize = 48;
+    const word = "REMIXED";
+    const letters = word.split("");
+    const letterSpacing = fontSize * 0.65;
+    const totalWidth = (letters.length - 1) * letterSpacing;
+    const offsetX = x - totalWidth / 2;
 
-    // Sombra profunda 3D para el "2"
-    for (let i = 10; i > 0; i--) {
-      const shadow = this.add.text(x + i * 3, y + i * 3, "2", {
+    // Estilos para cada letra (rotaciones sutiles para estilo comic)
+    const letterStyles = [
+      { rotation: -4, scale: 1.0 },
+      { rotation: 3, scale: 1.05 },
+      { rotation: -2, scale: 0.98 },
+      { rotation: 4, scale: 1.02 },
+      { rotation: -3, scale: 1.0 },
+      { rotation: 2, scale: 1.03 },
+      { rotation: -4, scale: 1.0 },
+    ];
+
+    letters.forEach((letter, index) => {
+      const style = letterStyles[index] || { rotation: 0, scale: 1 };
+      const letterX = offsetX + index * letterSpacing;
+
+      // Sombra 3D
+      for (let i = 4; i > 0; i--) {
+        const shadow = this.add.text(letterX + i * 2, y + i * 2, letter, {
+          fontSize: `${fontSize}px`,
+          fontFamily: fontFamily,
+          fontStyle: "italic",
+          color: "#000000",
+        });
+        shadow.setOrigin(0.5);
+        shadow.setRotation(Phaser.Math.DegToRad(style.rotation));
+        shadow.setScale(style.scale);
+        shadow.setAlpha(i === 4 ? 0.6 : 0.3);
+        container.add(shadow);
+      }
+
+      // Letra principal en verde lima
+      const letterText = this.add.text(letterX, y, letter, {
         fontSize: `${fontSize}px`,
         fontFamily: fontFamily,
-        color: "#000000",
+        fontStyle: "italic",
+        color: "#B7FF00",
+        stroke: "#000000",
+        strokeThickness: 6,
       });
-      shadow.setOrigin(0.5);
-      shadow.setRotation(Phaser.Math.DegToRad(rotation));
-      shadow.setAlpha(i === 10 ? 0.6 : 0.25);
-      container.add(shadow);
-    }
-
-    // "2" principal en rojo
-    const twoText = this.add.text(x, y, "2", {
-      fontSize: `${fontSize}px`,
-      fontFamily: fontFamily,
-      color: "#ff3b3b", // Rojo vibrante
-      stroke: "#8b0000", // Borde rojo oscuro
-      strokeThickness: 12,
+      letterText.setOrigin(0.5);
+      letterText.setRotation(Phaser.Math.DegToRad(style.rotation));
+      letterText.setScale(style.scale);
+      container.add(letterText);
     });
-    twoText.setOrigin(0.5);
-    twoText.setRotation(Phaser.Math.DegToRad(rotation));
-    twoText.setAlpha(0.9); // Ligeramente transparente para efecto "detrás"
-    container.add(twoText);
   }
 
   /**
