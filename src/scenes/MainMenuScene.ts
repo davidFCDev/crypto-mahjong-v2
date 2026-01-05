@@ -58,6 +58,9 @@ export class MainMenuScene extends Phaser.Scene {
 
     const fontFamily = "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive";
 
+    // ========== "2" GRANDE DETRÁS DEL TÍTULO ==========
+    this.createBigTwo(titleContainer, 180, -20, fontFamily);
+
     // ========== CRYPTO con estilo comic ==========
     this.createComicWord(
       titleContainer,
@@ -144,6 +147,45 @@ export class MainMenuScene extends Phaser.Scene {
       letterText.setScale(style.scale);
       container.add(letterText);
     });
+  }
+
+  /**
+   * Crea el "2" grande en rojo detrás del título
+   */
+  private createBigTwo(
+    container: Phaser.GameObjects.Container,
+    x: number,
+    y: number,
+    fontFamily: string
+  ): void {
+    const fontSize = 280;
+    const rotation = 12; // Ligera rotación para estilo dinámico
+
+    // Sombra profunda 3D para el "2"
+    for (let i = 10; i > 0; i--) {
+      const shadow = this.add.text(x + i * 3, y + i * 3, "2", {
+        fontSize: `${fontSize}px`,
+        fontFamily: fontFamily,
+        color: "#000000",
+      });
+      shadow.setOrigin(0.5);
+      shadow.setRotation(Phaser.Math.DegToRad(rotation));
+      shadow.setAlpha(i === 10 ? 0.6 : 0.25);
+      container.add(shadow);
+    }
+
+    // "2" principal en rojo
+    const twoText = this.add.text(x, y, "2", {
+      fontSize: `${fontSize}px`,
+      fontFamily: fontFamily,
+      color: "#ff3b3b", // Rojo vibrante
+      stroke: "#8b0000", // Borde rojo oscuro
+      strokeThickness: 12,
+    });
+    twoText.setOrigin(0.5);
+    twoText.setRotation(Phaser.Math.DegToRad(rotation));
+    twoText.setAlpha(0.9); // Ligeramente transparente para efecto "detrás"
+    container.add(twoText);
   }
 
   /**

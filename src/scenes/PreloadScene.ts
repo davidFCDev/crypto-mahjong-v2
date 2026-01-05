@@ -51,16 +51,19 @@ export class PreloadScene extends Phaser.Scene {
     // Mostrar sprite centrado con proporción correcta
     const { width, height } = this.scale;
     this.bootSprite = this.add.sprite(width / 2, height / 2, "bootSprite");
+    this.bootSprite.setOrigin(0.5, 0.5);
 
-    // Calcular escala manteniendo proporción (241x345 es el tamaño del frame)
-    const spriteWidth = 241;
-    const spriteHeight = 345;
-    const maxWidth = width * 0.6;
-    const maxHeight = height * 0.6;
-    const scaleX = maxWidth / spriteWidth;
-    const scaleY = maxHeight / spriteHeight;
-    const scale = Math.min(scaleX, scaleY, 1.5);
-    this.bootSprite.setScale(scale);
+    // Escalar basado en altura manteniendo aspect ratio del frame (241:345)
+    const frameAspectRatio = 241 / 345; // ~0.698
+    const targetHeight = height * 0.42; // 42% del alto de pantalla
+    const targetWidth = targetHeight * frameAspectRatio;
+
+    // Obtener tamaño real del frame desde la textura
+    const frame = this.bootSprite.frame;
+    const scaleX = targetWidth / frame.width;
+    const scaleY = targetHeight / frame.height;
+
+    this.bootSprite.setScale(scaleX, scaleY);
     this.bootSprite.play("boot");
 
     // Cuando termine la animación
