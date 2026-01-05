@@ -185,7 +185,6 @@ export class MainMenuScene extends Phaser.Scene {
         const shadow = this.add.text(letterX + i * 2, y + i * 2, letter, {
           fontSize: `${fontSize}px`,
           fontFamily: fontFamily,
-          fontStyle: "italic",
           color: "#000000",
         });
         shadow.setOrigin(0.5);
@@ -199,7 +198,6 @@ export class MainMenuScene extends Phaser.Scene {
       const letterText = this.add.text(letterX, y, letter, {
         fontSize: `${fontSize}px`,
         fontFamily: fontFamily,
-        fontStyle: "italic",
         color: "#B7FF00",
         stroke: "#000000",
         strokeThickness: 6,
