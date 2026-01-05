@@ -1201,18 +1201,26 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.currentLevel = level;
     this.levelText.setText(`Lv.${level}`);
 
+    // Calcular tiempo para este nivel
+    // Base: 60 segundos
+    // A partir del nivel 5: +5 segundos por nivel adicional
+    let levelTime = 60;
+    if (level >= 5) {
+      levelTime = 60 + (level - 4) * 5; // Nivel 5 = 65s, Nivel 6 = 70s, etc.
+    }
+
     // Reiniciar timer al cambiar de nivel
-    this.resetTimer();
+    this.resetTimer(levelTime);
   }
 
   /**
    * Reinicia el timer
    */
-  public resetTimer(): void {
-    this.timeRemaining = 60;
-    this.levelStartTime = 60; // Guardar tiempo inicial del nivel
+  public resetTimer(time: number = 60): void {
+    this.timeRemaining = time;
+    this.levelStartTime = time; // Guardar tiempo inicial del nivel
     this.levelStartScore = this.currentScore; // Guardar score al inicio del nivel
-    this.timeText.setText("60");
+    this.timeText.setText(time.toString());
 
     // Cancelar timer anterior si existe
     if (this.timerEvent) {
