@@ -51,21 +51,34 @@ export class BoardGenerator {
   /**
    * Genera posiciones para las fichas en múltiples capas
    * Las fichas solo se apilan en columnas verticales exactas (sin offset)
-   * Distribución muy equilibrada: todas las columnas crecen uniformemente
+   * Distribución irregular para crear formas variadas en el tablero
    */
   private static generatePositions(config: LevelConfig): TilePosition[] {
     const allPositions: TilePosition[] = [];
-    const totalColumns = config.rows * config.cols;
 
-    // Calcular altura objetivo para cada columna (distribución uniforme)
-    // Todas las columnas tendrán la misma altura o diferirán en máximo 1
+    // Calcular altura objetivo base
     const targetHeight = config.layers;
 
-    // Crear todas las posiciones columna por columna
+    // Crear posiciones con alturas variables por columna
     for (let row = 0; row < config.rows; row++) {
       for (let col = 0; col < config.cols; col++) {
-        // Cada columna tiene fichas desde z=0 hasta z=targetHeight-1
-        for (let z = 0; z < targetHeight; z++) {
+        // Determinar altura aleatoria para esta columna
+        // Siempre al menos 1 capa de altura
+        // Variación aleatoria para crear "skyline" irregular
+        let columnHeight = targetHeight;
+
+        // Introducir aleatoriedad solo si hay más de 1 capa
+        if (targetHeight > 1) {
+          const rand = Math.random();
+          // 40% de probabilidad de tener la altura máxima
+          // 60% de probabilidad de tener una altura menor aleatoria
+          if (rand > 0.4) {
+            columnHeight = Math.floor(Math.random() * targetHeight) + 1;
+          }
+        }
+
+        // Cada columna tiene fichas desde z=0 hasta z=columnHeight-1
+        for (let z = 0; z < columnHeight; z++) {
           allPositions.push({
             x: col,
             y: row,
@@ -80,8 +93,15 @@ export class BoardGenerator {
     while (allPositions.length % 3 !== 0) {
       // Buscar y quitar una ficha de la capa más alta
       const maxZ = Math.max(...allPositions.map((p) => p.z));
-      const indexToRemove = allPositions.findIndex((p) => p.z === maxZ);
-      if (indexToRemove !== -1) {
+      // Filtrar todas las posiciones en maxZ y elegir una aleatoria para quitar
+      // esto evita que siempre quite la última (abajo a la derecha)
+      const candidates = allPositions
+        .map((p, index) => ({ p, index }))
+        .filter((item) => item.p.z === maxZ);
+
+      if (candidates.length > 0) {
+        const randomIndex = Math.floor(Math.random() * candidates.length);
+        const indexToRemove = candidates[randomIndex].index;
         allPositions.splice(indexToRemove, 1);
       } else {
         break;

@@ -80,7 +80,7 @@ export interface GameTheme {
  */
 export const classicTheme: GameTheme = {
   name: "classic",
-  displayName: "Clásico",
+  displayName: "Classic",
 
   background: {
     main: "#f5deb3", // Wheat
@@ -142,7 +142,7 @@ export const classicTheme: GameTheme = {
  */
 export const oceanTheme: GameTheme = {
   name: "ocean",
-  displayName: "Océano",
+  displayName: "Ocean",
 
   background: {
     main: "#1a3a4a", // Deep ocean blue
@@ -204,7 +204,7 @@ export const oceanTheme: GameTheme = {
  */
 export const sunsetTheme: GameTheme = {
   name: "sunset",
-  displayName: "Atardecer",
+  displayName: "Sunset",
 
   background: {
     main: "#ffb347", // Naranja cálido
@@ -357,6 +357,17 @@ export function setTheme(themeName: string): boolean {
  */
 export function getAvailableThemes(): string[] {
   return Object.keys(themes);
+}
+
+/**
+ * Cycles to the next available theme
+ */
+export function cycleTheme(): GameTheme {
+  const themeNames = Object.keys(themes);
+  const currentIndex = themeNames.indexOf(currentTheme.name);
+  const nextIndex = (currentIndex + 1) % themeNames.length;
+  currentTheme = themes[themeNames[nextIndex]];
+  return currentTheme;
 }
 
 export default getCurrentTheme;

@@ -11,6 +11,9 @@ importers:
       phaser:
         specifier: ^3.90.0
         version: 3.90.0
+      qrcode-terminal:
+        specifier: ^0.12.0
+        version: 0.12.0
     devDependencies:
       '@farcade/game-sdk':
         specifier: ^0.2.1

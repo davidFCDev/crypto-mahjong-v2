@@ -5,8 +5,9 @@
 
 import type { FarcadeSDK } from "@farcade/game-sdk";
 import GameSettings from "../config/GameSettings";
-import { getCurrentTheme, themes } from "../config/Themes";
+import { cycleTheme, getCurrentTheme, themes } from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
+
 import { BoardGenerator } from "../systems/BoardGenerator";
 import { GameUI } from "../systems/GameUI";
 import { HandManager } from "../systems/HandManager";
@@ -30,9 +31,6 @@ export class MahjongScene extends Phaser.Scene {
   private handManager!: HandManager;
   private gameUI!: GameUI;
 
-  // Tutorial
-  private tutorialModal: Phaser.GameObjects.Container | null = null;
-
   // Estado del juego
   private gameState: GameState = {
     currentLevel: 1,
@@ -47,12 +45,16 @@ export class MahjongScene extends Phaser.Scene {
   // Componentes visuales
   private tileSprites: Map<string, Tile3D> = new Map();
   private boardContainer!: Phaser.GameObjects.Container;
+  private backgroundObject:
+    | Phaser.GameObjects.Image
+    | Phaser.GameObjects.Graphics
+    | null = null;
   private currentLevelConfig!: LevelConfig;
 
   // Bounds del tablero - Centrado verticalmente entre score y mano
   // Score badge: Y=55, altura=95 → termina en Y=150
-  // Mano: empieza en Y = 1280 - 130 - 77 = 1073
-  // Área disponible: desde 150 hasta 1073
+  // Mano: empieza en Y = 1080 - 130 - 77 = 873
+  // Área disponible: desde 150 hasta 873
   private boardBounds = {
     x: 5,
     y: 145, // Después del score badge (un poco más arriba)
@@ -67,6 +69,10 @@ export class MahjongScene extends Phaser.Scene {
 
   // Estado de animación
   private isAnimating: boolean = false;
+
+  // Estado de items comprados
+  private hasExclusiveThemes: boolean = false;
+  private hasJustATip: boolean = false;
 
   constructor() {
     super({ key: "MahjongScene" });
@@ -92,6 +98,23 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Resetear estado del juego al iniciar una nueva partida
+    this.gameState = {
+      currentLevel: 1,
+      score: 0,
+      tiles: [],
+      hand: [],
+      isPlaying: false,
+      isGameOver: false,
+      isWin: false,
+    };
+
+    // Resetear estado de animación
+    this.isAnimating = false;
+
+    // Verificar si tiene temas exclusivos
+    this.checkExclusiveThemes();
+
     // Crear fondo
     this.createBackground();
 
@@ -107,7 +130,14 @@ export class MahjongScene extends Phaser.Scene {
       onUndo: () => this.handleUndo(),
       onPauseTime: () => this.handlePauseTime(),
       onHint: () => this.handleHint(),
+      onChangeTheme: () => this.handleThemeChange(),
+      onTip: () => this.handleTip(),
     });
+
+    // Ocultar botón de tip si ya lo tiene
+    if (this.hasJustATip) {
+      this.gameUI.hideTipButton();
+    }
 
     // Escuchar evento de tiempo agotado
     this.gameUI.on("time-up", () => {
@@ -117,10 +147,13 @@ export class MahjongScene extends Phaser.Scene {
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
+    // Configurar callback para "Play Again" del SDK
+    this.setupPlayAgainListener();
+
     // Verificar si es la primera vez que juega
-    const hasPlayedBefore = localStorage.getItem("crypto-mahjong-tutorial-seen");
-    if (!hasPlayedBefore) {
-      // Mostrar tutorial y pausar el timer
+    const tutorialSeen = localStorage.getItem("crypto-mahjong-tutorial-seen");
+    if (!tutorialSeen) {
+      // Mostrar tutorial sobre la escena del juego
       this.showTutorial();
     } else {
       // Iniciar nivel 1 directamente
@@ -129,32 +162,25 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Muestra el tutorial para nuevos jugadores
+   * Muestra el tutorial para nuevos jugadores (sobre la escena del juego)
    */
   private showTutorial(): void {
     const { canvas } = GameSettings;
 
-    // Pausar el timer si existe
-    this.gameUI?.pauseTimer();
-
-    // Iniciar nivel pero con timer pausado
-    this.startLevel(1);
-    this.gameUI?.pauseTimer();
-
     // Contenedor principal del overlay
-    this.tutorialModal = this.add.container(0, 0);
-    this.tutorialModal.setDepth(2000);
+    const tutorialModal = this.add.container(0, 0);
+    tutorialModal.setDepth(2000);
 
-    // Overlay oscuro
+    // Overlay muy oscuro
     const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.92);
+    overlay.fillStyle(0x000000, 0.97);
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
       Phaser.Geom.Rectangle.Contains
     );
     overlay.on("pointerdown", () => {});
-    this.tutorialModal.add(overlay);
+    tutorialModal.add(overlay);
 
     const fontFamily = "'Fredoka One', Arial Black, sans-serif";
     const theme = getCurrentTheme();
@@ -169,7 +195,7 @@ export class MahjongScene extends Phaser.Scene {
       strokeThickness: 8,
     });
     title.setOrigin(0.5);
-    this.tutorialModal.add(title);
+    tutorialModal.add(title);
 
     // Instrucción principal
     const instruction1 = this.add.text(
@@ -185,7 +211,7 @@ export class MahjongScene extends Phaser.Scene {
       }
     );
     instruction1.setOrigin(0.5);
-    this.tutorialModal.add(instruction1);
+    tutorialModal.add(instruction1);
 
     const instruction2 = this.add.text(
       canvas.width / 2,
@@ -200,17 +226,22 @@ export class MahjongScene extends Phaser.Scene {
       }
     );
     instruction2.setOrigin(0.5);
-    this.tutorialModal.add(instruction2);
+    tutorialModal.add(instruction2);
 
-    const instruction3 = this.add.text(canvas.width / 2, 340, "time runs out!", {
-      fontSize: "32px",
-      fontFamily: fontFamily,
-      color: "#ff6b6b",
-      stroke: "#000000",
-      strokeThickness: 4,
-    });
+    const instruction3 = this.add.text(
+      canvas.width / 2,
+      340,
+      "time runs out!",
+      {
+        fontSize: "32px",
+        fontFamily: fontFamily,
+        color: "#ff6b6b",
+        stroke: "#000000",
+        strokeThickness: 4,
+      }
+    );
     instruction3.setOrigin(0.5);
-    this.tutorialModal.add(instruction3);
+    tutorialModal.add(instruction3);
 
     // Título de Power-ups
     const powerupsTitle = this.add.text(canvas.width / 2, 440, "POWER-UPS", {
@@ -221,36 +252,49 @@ export class MahjongScene extends Phaser.Scene {
       strokeThickness: 6,
     });
     powerupsTitle.setOrigin(0.5);
-    this.tutorialModal.add(powerupsTitle);
+    tutorialModal.add(powerupsTitle);
 
-    // Power-ups con iconos idénticos al juego (centrados)
+    // Power-ups con iconos
     const centerX = canvas.width / 2;
     const buttonSize = 70;
     const startY = 530;
     const gap = 100;
 
-    const powerups: Array<{
-      type: "undo" | "clock" | "key";
-      name: string;
-      desc: string;
-      colors: { main: number; border: number };
-    }> = [
-      { type: "undo", name: "Undo", desc: "Return last tile", colors: powerUpColors.undo },
-      { type: "clock", name: "Freeze", desc: "Pause timer", colors: powerUpColors.clock },
-      { type: "key", name: "Hint", desc: "Remove a pair", colors: powerUpColors.key },
+    const powerups = [
+      {
+        type: "undo",
+        name: "Undo",
+        desc: "Return last tile",
+        colors: powerUpColors.undo,
+      },
+      {
+        type: "clock",
+        name: "Freeze",
+        desc: "Pause timer",
+        colors: powerUpColors.clock,
+      },
+      {
+        type: "key",
+        name: "Hint",
+        desc: "Remove a pair",
+        colors: powerUpColors.key,
+      },
     ];
 
-    powerups.forEach((powerup, index) => {
+    powerups.forEach((pu, index) => {
       const y = startY + index * gap;
       const buttonX = centerX - 120;
 
-      // Crear botón idéntico al del juego
-      this.createTutorialPowerUpButton(buttonX, y, buttonSize, powerup.colors, powerup.type);
+      // Botón circular
+      const btn = this.add.graphics();
+      btn.fillStyle(pu.colors.main, 1);
+      btn.fillCircle(buttonX, y, buttonSize / 2);
+      btn.lineStyle(3, pu.colors.border, 1);
+      btn.strokeCircle(buttonX, y, buttonSize / 2);
+      tutorialModal.add(btn);
 
-      // Nombre y descripción a la derecha
-      const textX = centerX - 30;
-
-      const name = this.add.text(textX, y - 12, powerup.name, {
+      // Nombre
+      const name = this.add.text(centerX - 30, y - 12, pu.name, {
         fontSize: "28px",
         fontFamily: fontFamily,
         color: "#ffffff",
@@ -258,152 +302,45 @@ export class MahjongScene extends Phaser.Scene {
         strokeThickness: 4,
       });
       name.setOrigin(0, 0.5);
-      this.tutorialModal!.add(name);
+      tutorialModal.add(name);
 
-      const desc = this.add.text(textX, y + 18, powerup.desc, {
+      // Descripción
+      const desc = this.add.text(centerX - 30, y + 18, pu.desc, {
         fontSize: "20px",
         fontFamily: fontFamily,
         color: "#aaaaaa",
       });
       desc.setOrigin(0, 0.5);
-      this.tutorialModal!.add(desc);
+      tutorialModal.add(desc);
     });
 
-    // Botón de comenzar (estilo igual al selector de tema)
-    this.createStartButton(canvas.width / 2, 880);
+    // Botón "LET'S GO!"
+    const startButton = this.add.container(canvas.width / 2, 880);
+    const btnBg = this.add.graphics();
+    btnBg.fillStyle(0x2d7d32, 1);
+    btnBg.fillRoundedRect(-100, 8, 200, 55, 14);
+    btnBg.fillStyle(0x4caf50, 1);
+    btnBg.fillRoundedRect(-100, 0, 200, 55, 14);
+    btnBg.lineStyle(3, 0x2d7d32, 1);
+    btnBg.strokeRoundedRect(-100, 0, 200, 55, 14);
+    startButton.add(btnBg);
 
-    // Animación de entrada
-    this.tutorialModal.setAlpha(0);
-    this.tweens.add({
-      targets: this.tutorialModal,
-      alpha: 1,
-      duration: 300,
-      ease: "Power2",
-    });
-  }
-
-  /**
-   * Crea un botón de power-up para el tutorial (idéntico al del juego)
-   */
-  private createTutorialPowerUpButton(
-    x: number,
-    y: number,
-    size: number,
-    colors: { main: number; border: number },
-    type: "undo" | "clock" | "key"
-  ): void {
-    const depth = 10;
-    const radius = size / 2;
-
-    const bg = this.add.graphics();
-
-    // Sombra/profundidad 3D (círculo inferior)
-    bg.fillStyle(this.darkenColor(colors.border, 0.3), 1);
-    bg.fillCircle(x, y + depth, radius);
-
-    // Cara principal (círculo superior)
-    bg.fillStyle(colors.main, 1);
-    bg.fillCircle(x, y, radius);
-
-    // Borde
-    bg.lineStyle(3, colors.border, 1);
-    bg.strokeCircle(x, y, radius);
-
-    this.tutorialModal!.add(bg);
-
-    // Dibujar icono (proporcional al tamaño del botón)
-    const icon = this.add.graphics();
-    icon.lineStyle(4, 0xffffff, 1);
-
-    if (type === "undo") {
-      // Flecha circular hacia atrás
-      const arrowRadius = 18;
-      icon.beginPath();
-      icon.arc(x, y, arrowRadius, Phaser.Math.DegToRad(-45), Phaser.Math.DegToRad(180), false);
-      icon.strokePath();
-      icon.beginPath();
-      icon.moveTo(x - arrowRadius - 6, y - 6);
-      icon.lineTo(x - arrowRadius, y - 16);
-      icon.lineTo(x - arrowRadius + 6, y - 6);
-      icon.strokePath();
-    } else if (type === "clock") {
-      // Reloj simple
-      const clockRadius = 18;
-      icon.strokeCircle(x, y, clockRadius);
-      icon.beginPath();
-      icon.moveTo(x, y);
-      icon.lineTo(x, y - 12);
-      icon.moveTo(x, y);
-      icon.lineTo(x + 9, y);
-      icon.strokePath();
-    } else if (type === "key") {
-      // Llave simple
-      icon.strokeCircle(x - 7, y - 7, 9);
-      icon.beginPath();
-      icon.moveTo(x, y);
-      icon.lineTo(x + 14, y + 14);
-      icon.moveTo(x + 9, y + 9);
-      icon.lineTo(x + 14, y + 9);
-      icon.moveTo(x + 12, y + 12);
-      icon.lineTo(x + 17, y + 12);
-      icon.strokePath();
-    }
-
-    this.tutorialModal!.add(icon);
-  }
-
-  /**
-   * Oscurece un color para efecto 3D
-   */
-  private darkenColor(color: number, amount: number): number {
-    const r = Math.max(0, ((color >> 16) & 0xff) * (1 - amount));
-    const g = Math.max(0, ((color >> 8) & 0xff) * (1 - amount));
-    const b = Math.max(0, (color & 0xff) * (1 - amount));
-    return (Math.floor(r) << 16) | (Math.floor(g) << 8) | Math.floor(b);
-  }
-
-  /**
-   * Crea el botón de comenzar del tutorial (estilo igual al selector de tema)
-   */
-  private createStartButton(x: number, y: number): void {
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
-    const btnWidth = 200;
-    const btnHeight = 55;
-    const depth3D = 8;
-
-    const container = this.add.container(x, y);
-    const bg = this.add.graphics();
-
-    // Cara 3D (verde oscuro)
-    bg.fillStyle(0x2d7d32, 1);
-    bg.fillRoundedRect(-btnWidth / 2, depth3D, btnWidth, btnHeight, 14);
-
-    // Cara principal (verde)
-    bg.fillStyle(0x4caf50, 1);
-    bg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-
-    // Borde
-    bg.lineStyle(3, 0x2d7d32, 1);
-    bg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-
-    container.add(bg);
-
-    const text = this.add.text(0, btnHeight / 2, "LET'S GO!", {
+    const btnText = this.add.text(0, 55 / 2, "LET'S GO!", {
       fontSize: "26px",
       fontFamily: fontFamily,
       color: "#ffffff",
       stroke: "#2d7d32",
       strokeThickness: 3,
     });
-    text.setOrigin(0.5);
-    container.add(text);
+    btnText.setOrigin(0.5);
+    startButton.add(btnText);
 
-    container.setSize(btnWidth, btnHeight + depth3D);
-    container.setInteractive({ useHandCursor: true });
+    startButton.setSize(200, 63);
+    startButton.setInteractive({ useHandCursor: true });
 
-    container.on("pointerover", () => {
+    startButton.on("pointerover", () => {
       this.tweens.add({
-        targets: container,
+        targets: startButton,
         scaleX: 1.05,
         scaleY: 1.05,
         duration: 100,
@@ -411,9 +348,9 @@ export class MahjongScene extends Phaser.Scene {
       });
     });
 
-    container.on("pointerout", () => {
+    startButton.on("pointerout", () => {
       this.tweens.add({
-        targets: container,
+        targets: startButton,
         scaleX: 1,
         scaleY: 1,
         duration: 100,
@@ -421,40 +358,55 @@ export class MahjongScene extends Phaser.Scene {
       });
     });
 
-    container.on("pointerdown", () => {
+    startButton.on("pointerdown", () => {
       // Marcar tutorial como visto
       localStorage.setItem("crypto-mahjong-tutorial-seen", "true");
 
-      // Cerrar tutorial
-      this.closeTutorial();
+      // Cerrar tutorial e iniciar juego
+      this.tweens.add({
+        targets: tutorialModal,
+        alpha: 0,
+        duration: 200,
+        ease: "Power2",
+        onComplete: () => {
+          tutorialModal.destroy();
+          // Iniciar nivel 1
+          this.startLevel(1);
+        },
+      });
     });
 
-    this.tutorialModal!.add(container);
-  }
+    tutorialModal.add(startButton);
 
-  /**
-   * Cierra el tutorial y comienza el juego
-   */
-  private closeTutorial(): void {
-    if (!this.tutorialModal) return;
-
+    // Fade in
+    tutorialModal.setAlpha(0);
     this.tweens.add({
-      targets: this.tutorialModal,
-      alpha: 0,
-      duration: 200,
+      targets: tutorialModal,
+      alpha: 1,
+      duration: 300,
       ease: "Power2",
-      onComplete: () => {
-        this.tutorialModal?.destroy();
-        this.tutorialModal = null;
-
-        // Reiniciar el timer
-        this.gameUI?.resumeTimer();
-      },
     });
   }
 
   /**
-   * Crea versiones con esquinas redondeadas de las imágenes de tiles
+   * Configura el listener para cuando el usuario pulsa "Play Again" en el SDK
+   */
+  private setupPlayAgainListener(): void {
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.onPlayAgain) {
+        sdk.onPlayAgain(() => {
+          // Volver a la pantalla de inicio
+          this.scene.start("MainMenuScene");
+        });
+      }
+    } catch {
+      // SDK no disponible
+    }
+  }
+
+  /**
+   * Crea versiones con esquinas redondeadas de las im�genes de tiles
    */
   private createRoundedTileImages(): void {
     const padding = 8;
@@ -508,6 +460,12 @@ export class MahjongScene extends Phaser.Scene {
     const { canvas } = GameSettings;
     const theme = getCurrentTheme();
 
+    // Eliminar fondo anterior
+    if (this.backgroundObject) {
+      this.backgroundObject.destroy();
+      this.backgroundObject = null;
+    }
+
     // Si el tema tiene imagen de fondo, usarla
     const bgImageKey = `bg-${theme.name}`;
     if (theme.background.backgroundImage && this.textures.exists(bgImageKey)) {
@@ -518,6 +476,7 @@ export class MahjongScene extends Phaser.Scene {
       );
       bgImage.setDisplaySize(canvas.width, canvas.height);
       bgImage.setDepth(-3);
+      this.backgroundObject = bgImage;
       return;
     }
 
@@ -526,6 +485,7 @@ export class MahjongScene extends Phaser.Scene {
 
     const bgGraphics = this.add.graphics();
     bgGraphics.setDepth(-3);
+    this.backgroundObject = bgGraphics;
 
     // Fondo base
     bgGraphics.fillStyle(pattern.color1, 1);
@@ -1543,6 +1503,550 @@ export class MahjongScene extends Phaser.Scene {
       this.checkWinCondition();
       this.isAnimating = false;
     }
+  }
+
+  /**
+   * Verifica si el usuario tiene los temas exclusivos comprados
+   */
+  private checkExclusiveThemes(): void {
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.hasItem) {
+        this.hasExclusiveThemes = sdk.hasItem("exclusive-themes");
+        this.hasJustATip = sdk.hasItem("just-a-tip");
+      }
+    } catch {
+      this.hasExclusiveThemes = false;
+      this.hasJustATip = false;
+    }
+  }
+
+  /**
+   * Inicia el proceso de compra de temas exclusivos
+   */
+  private async purchaseExclusiveThemes(): Promise<void> {
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.purchase) {
+        const result = await sdk.purchase({ item: "exclusive-themes" });
+        if (result.success) {
+          this.hasExclusiveThemes = true;
+          // Cerrar el overlay de compra si existe
+          this.closePurchaseOverlay();
+          // Ahora sí cambiar el tema
+          this.applyThemeChange();
+        }
+      }
+    } catch (error) {
+      console.error("Purchase error:", error);
+    }
+  }
+
+  // Overlay de compra de temas
+  private purchaseOverlay: Phaser.GameObjects.Container | null = null;
+
+  /**
+   * Muestra el overlay de compra de temas exclusivos
+   */
+  private showPurchaseOverlay(): void {
+    if (this.purchaseOverlay) return;
+
+    const { canvas } = GameSettings;
+
+    // Pausar el tiempo
+    this.gameUI.pauseTimer();
+
+    // Contenedor principal
+    this.purchaseOverlay = this.add.container(0, 0);
+    this.purchaseOverlay.setDepth(3000);
+
+    // Overlay muy oscuro que bloquea clicks
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.95);
+    overlay.fillRect(0, 0, canvas.width, canvas.height);
+    overlay.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
+      Phaser.Geom.Rectangle.Contains
+    );
+    overlay.on("pointerdown", () => {}); // Bloquear clicks
+    this.purchaseOverlay.add(overlay);
+
+    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const centerX = canvas.width / 2;
+
+    // Título
+    const title = this.add.text(centerX, 380, "EXCLUSIVE THEMES", {
+      fontSize: "48px",
+      fontFamily: fontFamily,
+      color: "#B7FF00",
+      stroke: "#000000",
+      strokeThickness: 8,
+    });
+    title.setOrigin(0.5);
+    this.purchaseOverlay.add(title);
+
+    // Descripción
+    const desc = this.add.text(
+      centerX,
+      470,
+      "Unlock 4 beautiful themes\nto customize your game!",
+      {
+        fontSize: "28px",
+        fontFamily: fontFamily,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 3,
+        align: "center",
+      }
+    );
+    desc.setOrigin(0.5);
+    this.purchaseOverlay.add(desc);
+
+    // Botón UNLOCK
+    const btnWidth = 280;
+    const btnHeight = 70;
+    const unlockBtn = this.add.container(centerX, 600);
+    const unlockBg = this.add.graphics();
+    unlockBg.fillStyle(0x2d7d32, 1);
+    unlockBg.fillRoundedRect(-btnWidth / 2, 10, btnWidth, btnHeight, 14);
+    unlockBg.fillStyle(0x4caf50, 1);
+    unlockBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    unlockBg.lineStyle(3, 0x2d7d32, 1);
+    unlockBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    unlockBtn.add(unlockBg);
+
+    const unlockText = this.add.text(0, btnHeight / 2, "UNLOCK", {
+      fontSize: "36px",
+      fontFamily: fontFamily,
+      color: "#ffffff",
+      stroke: "#2d7d32",
+      strokeThickness: 4,
+    });
+    unlockText.setOrigin(0.5);
+    unlockBtn.add(unlockText);
+
+    unlockBtn.setSize(btnWidth, btnHeight + 10);
+    unlockBtn.setInteractive({ useHandCursor: true });
+
+    unlockBtn.on("pointerover", () => {
+      this.tweens.add({
+        targets: unlockBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    unlockBtn.on("pointerout", () => {
+      this.tweens.add({
+        targets: unlockBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    unlockBtn.on("pointerdown", () => {
+      this.purchaseExclusiveThemes();
+    });
+
+    this.purchaseOverlay.add(unlockBtn);
+
+    // Badge de precio pegado debajo del botón UNLOCK
+    const priceBadge = this.add.graphics();
+    const badgeWidth = 160;
+    const badgeHeight = 40;
+    priceBadge.fillStyle(0xffd700, 1);
+    priceBadge.fillRoundedRect(
+      centerX - badgeWidth / 2,
+      660,
+      badgeWidth,
+      badgeHeight,
+      10
+    );
+    priceBadge.lineStyle(2, 0xb8860b, 1);
+    priceBadge.strokeRoundedRect(
+      centerX - badgeWidth / 2,
+      660,
+      badgeWidth,
+      badgeHeight,
+      10
+    );
+    this.purchaseOverlay.add(priceBadge);
+
+    const priceText = this.add.text(centerX, 680, "100 credits", {
+      fontSize: "24px",
+      fontFamily: fontFamily,
+      color: "#5a4000",
+    });
+    priceText.setOrigin(0.5);
+    this.purchaseOverlay.add(priceText);
+
+    // Botón BACK
+    const backBtn = this.add.container(centerX, 780);
+    const backBg = this.add.graphics();
+    backBg.fillStyle(0x444444, 1);
+    backBg.fillRoundedRect(-btnWidth / 2, 10, btnWidth, btnHeight, 14);
+    backBg.fillStyle(0x666666, 1);
+    backBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    backBg.lineStyle(3, 0x444444, 1);
+    backBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    backBtn.add(backBg);
+
+    const backText = this.add.text(0, btnHeight / 2, "BACK", {
+      fontSize: "36px",
+      fontFamily: fontFamily,
+      color: "#ffffff",
+      stroke: "#333333",
+      strokeThickness: 4,
+    });
+    backText.setOrigin(0.5);
+    backBtn.add(backText);
+
+    backBtn.setSize(btnWidth, btnHeight + 10);
+    backBtn.setInteractive({ useHandCursor: true });
+
+    backBtn.on("pointerover", () => {
+      this.tweens.add({
+        targets: backBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    backBtn.on("pointerout", () => {
+      this.tweens.add({
+        targets: backBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    backBtn.on("pointerdown", () => {
+      this.closePurchaseOverlay();
+    });
+
+    this.purchaseOverlay.add(backBtn);
+
+    // Fade in
+    this.purchaseOverlay.setAlpha(0);
+    this.tweens.add({
+      targets: this.purchaseOverlay,
+      alpha: 1,
+      duration: 200,
+      ease: "Power2",
+    });
+  }
+
+  /**
+   * Cierra el overlay de compra y reanuda el juego
+   */
+  private closePurchaseOverlay(): void {
+    if (!this.purchaseOverlay) return;
+
+    this.tweens.add({
+      targets: this.purchaseOverlay,
+      alpha: 0,
+      duration: 200,
+      ease: "Power2",
+      onComplete: () => {
+        this.purchaseOverlay?.destroy();
+        this.purchaseOverlay = null;
+        // Reanudar el tiempo
+        this.gameUI.resumeTimer();
+      },
+    });
+  }
+
+  // Overlay de tip
+  private tipOverlay: Phaser.GameObjects.Container | null = null;
+
+  /**
+   * Muestra el overlay de tip al desarrollador
+   */
+  private showTipOverlay(): void {
+    if (this.tipOverlay) return;
+
+    const { canvas } = GameSettings;
+
+    // Pausar el tiempo
+    this.gameUI.pauseTimer();
+
+    // Contenedor principal
+    this.tipOverlay = this.add.container(0, 0);
+    this.tipOverlay.setDepth(3000);
+
+    // Overlay muy oscuro que bloquea clicks
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.95);
+    overlay.fillRect(0, 0, canvas.width, canvas.height);
+    overlay.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
+      Phaser.Geom.Rectangle.Contains
+    );
+    overlay.on("pointerdown", () => {}); // Bloquear clicks
+    this.tipOverlay.add(overlay);
+
+    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const centerX = canvas.width / 2;
+
+    // Título
+    const title = this.add.text(centerX, 380, "JUST A TIP", {
+      fontSize: "48px",
+      fontFamily: fontFamily,
+      color: "#B7FF00",
+      stroke: "#000000",
+      strokeThickness: 8,
+    });
+    title.setOrigin(0.5);
+    this.tipOverlay.add(title);
+
+    // Descripción
+    const desc = this.add.text(
+      centerX,
+      470,
+      "In appreciation for the\ncontinued development of the game",
+      {
+        fontSize: "26px",
+        fontFamily: fontFamily,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 3,
+        align: "center",
+      }
+    );
+    desc.setOrigin(0.5);
+    this.tipOverlay.add(desc);
+
+    // Botón UNLOCK (mismo tamaño que el de themes)
+    const btnWidth = 280;
+    const btnHeight = 70;
+    const unlockBtn = this.add.container(centerX, 600);
+    const unlockBg = this.add.graphics();
+    unlockBg.fillStyle(0x2d7d32, 1);
+    unlockBg.fillRoundedRect(-btnWidth / 2, 10, btnWidth, btnHeight, 14);
+    unlockBg.fillStyle(0x4caf50, 1);
+    unlockBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    unlockBg.lineStyle(3, 0x2d7d32, 1);
+    unlockBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    unlockBtn.add(unlockBg);
+
+    const unlockText = this.add.text(0, btnHeight / 2, "SUPPORT", {
+      fontSize: "36px",
+      fontFamily: fontFamily,
+      color: "#ffffff",
+      stroke: "#2d7d32",
+      strokeThickness: 4,
+    });
+    unlockText.setOrigin(0.5);
+    unlockBtn.add(unlockText);
+
+    unlockBtn.setSize(btnWidth, btnHeight + 10);
+    unlockBtn.setInteractive({ useHandCursor: true });
+
+    unlockBtn.on("pointerover", () => {
+      this.tweens.add({
+        targets: unlockBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    unlockBtn.on("pointerout", () => {
+      this.tweens.add({
+        targets: unlockBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    unlockBtn.on("pointerdown", () => {
+      this.purchaseJustATip();
+    });
+
+    this.tipOverlay.add(unlockBtn);
+
+    // Badge de precio pegado debajo del botón
+    const priceBadge = this.add.graphics();
+    const badgeWidth = 160;
+    const badgeHeight = 40;
+    priceBadge.fillStyle(0xffd700, 1);
+    priceBadge.fillRoundedRect(
+      centerX - badgeWidth / 2,
+      660,
+      badgeWidth,
+      badgeHeight,
+      10
+    );
+    priceBadge.lineStyle(2, 0xb8860b, 1);
+    priceBadge.strokeRoundedRect(
+      centerX - badgeWidth / 2,
+      660,
+      badgeWidth,
+      badgeHeight,
+      10
+    );
+    this.tipOverlay.add(priceBadge);
+
+    const priceText = this.add.text(centerX, 680, "500 credits", {
+      fontSize: "24px",
+      fontFamily: fontFamily,
+      color: "#5a4000",
+    });
+    priceText.setOrigin(0.5);
+    this.tipOverlay.add(priceText);
+
+    // Botón BACK
+    const backBtn = this.add.container(centerX, 780);
+    const backBg = this.add.graphics();
+    backBg.fillStyle(0x444444, 1);
+    backBg.fillRoundedRect(-btnWidth / 2, 10, btnWidth, btnHeight, 14);
+    backBg.fillStyle(0x666666, 1);
+    backBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    backBg.lineStyle(3, 0x444444, 1);
+    backBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+    backBtn.add(backBg);
+
+    const backText = this.add.text(0, btnHeight / 2, "BACK", {
+      fontSize: "36px",
+      fontFamily: fontFamily,
+      color: "#ffffff",
+      stroke: "#333333",
+      strokeThickness: 4,
+    });
+    backText.setOrigin(0.5);
+    backBtn.add(backText);
+
+    backBtn.setSize(btnWidth, btnHeight + 10);
+    backBtn.setInteractive({ useHandCursor: true });
+
+    backBtn.on("pointerover", () => {
+      this.tweens.add({
+        targets: backBtn,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    backBtn.on("pointerout", () => {
+      this.tweens.add({
+        targets: backBtn,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    backBtn.on("pointerdown", () => {
+      this.closeTipOverlay();
+    });
+
+    this.tipOverlay.add(backBtn);
+
+    // Fade in
+    this.tipOverlay.setAlpha(0);
+    this.tweens.add({
+      targets: this.tipOverlay,
+      alpha: 1,
+      duration: 200,
+      ease: "Power2",
+    });
+  }
+
+  /**
+   * Cierra el overlay de tip y reanuda el juego
+   */
+  private closeTipOverlay(): void {
+    if (!this.tipOverlay) return;
+
+    this.tweens.add({
+      targets: this.tipOverlay,
+      alpha: 0,
+      duration: 200,
+      ease: "Power2",
+      onComplete: () => {
+        this.tipOverlay?.destroy();
+        this.tipOverlay = null;
+        // Reanudar el tiempo
+        this.gameUI.resumeTimer();
+      },
+    });
+  }
+
+  /**
+   * Inicia el proceso de compra del tip
+   */
+  private async purchaseJustATip(): Promise<void> {
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.purchase) {
+        const result = await sdk.purchase({ item: "just-a-tip" });
+        if (result.success) {
+          this.hasJustATip = true;
+          // Ocultar el botón de tip
+          this.gameUI.hideTipButton();
+          // Cerrar el overlay
+          this.closeTipOverlay();
+        }
+      }
+    } catch (error) {
+      console.error("Purchase error:", error);
+    }
+  }
+
+  /**
+   * Maneja el click en el botón de tip
+   */
+  private handleTip(): void {
+    if (!this.hasJustATip) {
+      // Si no tiene el item, mostrar overlay de tip
+      this.showTipOverlay();
+    }
+    // Si ya tiene el tip, no hacer nada (o podría mostrar un mensaje de agradecimiento)
+  }
+
+  /**
+   * Cambia al siguiente tema visual
+   */
+  private handleThemeChange(): void {
+    if (!this.hasExclusiveThemes) {
+      // Si no tiene el item, mostrar overlay de compra
+      this.showPurchaseOverlay();
+      return;
+    }
+
+    this.applyThemeChange();
+  }
+
+  /**
+   * Aplica el cambio de tema visual
+   */
+  private applyThemeChange(): void {
+    cycleTheme();
+
+    // Actualizar fondo
+    this.createBackground();
+
+    // Actualizar fichas
+    this.tileSprites.forEach((tile) => {
+      tile.refreshTexture();
+    });
+
+    // Actualizar UI (badges, acumulador, corazones)
+    this.gameUI.refreshTheme();
   }
 
   update(): void {

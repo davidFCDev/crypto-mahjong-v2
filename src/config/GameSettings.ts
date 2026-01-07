@@ -83,7 +83,7 @@ export const GameSettings = {
   // Game rules
   rules: {
     matchCount: 3, // Fichas necesarias para hacer match
-    scorePerMatch: 1000,
+    scorePerMatch: 1700,
     bonusPerLevel: 500,
     animationSpeed: 150, // ms para animaciones (muy rápido)
   },

@@ -12,6 +12,8 @@ export interface PowerUpCallbacks {
   onUndo?: () => boolean; // Retorna true si se pudo hacer undo
   onPauseTime?: () => boolean; // Retorna true si se pausó
   onHint?: () => boolean; // Retorna true si se encontró un hint
+  onChangeTheme?: () => void; // Cambiar tema
+  onTip?: () => void; // Tip al desarrollador
 }
 
 export class GameUI extends Phaser.GameObjects.Container {
@@ -45,6 +47,8 @@ export class GameUI extends Phaser.GameObjects.Container {
   private undoButton!: Phaser.GameObjects.Container;
   private clockButton!: Phaser.GameObjects.Container;
   private keyButton!: Phaser.GameObjects.Container;
+  private themeButton!: Phaser.GameObjects.Container; // Botón de tema
+  private tipButton!: Phaser.GameObjects.Container; // Botón de tip
   private undoUsesLeft: number = 3;
   private clockUsesLeft: number = 1;
   private keyUsesLeft: number = 2;
@@ -237,17 +241,21 @@ export class GameUI extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Crea el display de vidas (corazones) - Entre el score y el tablero
+   * Crea el display de vidas (corazones) - Alineado a la izquierda entre score y tablero
    */
   private createLivesDisplay(): void {
     const { canvas } = GameSettings;
     const theme = getCurrentTheme();
 
-    const heartSpacing = 10;
-    const y = 175; // Debajo del score badge y antes del tablero
+    const startX = 65; // Margen izquierdo
+    const startY = 220; // Debajo del score
+    const heartSpacing = 60; // Espaciado vertical
 
     for (let i = 0; i < this.lives; i++) {
-      const heartContainer = this.scene.add.container(0, y);
+      const heartContainer = this.scene.add.container(
+        startX,
+        startY + i * heartSpacing
+      );
 
       // Usar símbolo de corazón ♥ con borde destacado
       const heart = this.scene.add.text(0, 0, "♥", {
@@ -270,27 +278,13 @@ export class GameUI extends Phaser.GameObjects.Container {
       this.heartContainers.push(heartContainer);
       this.add(heartContainer);
     }
-
-    // Posicionar los corazones centrados
-    this.repositionHearts();
   }
 
   /**
-   * Reposiciona los corazones centrados horizontalmente
+   * Reposiciona los corazones (Ya no necesario en vertical, pero mantenemos por compatibilidad)
    */
   private repositionHearts(): void {
-    const { canvas } = GameSettings;
-    const heartSpacing = 12;
-    const heartWidth = 45;
-    const visibleHearts = this.heartContainers.filter((h) => h.visible);
-    const totalWidth =
-      visibleHearts.length * heartWidth +
-      (visibleHearts.length - 1) * heartSpacing;
-    const startX = canvas.width / 2 - totalWidth / 2 + heartWidth / 2;
-
-    visibleHearts.forEach((heart, i) => {
-      heart.x = startX + i * (heartWidth + heartSpacing);
-    });
+    // No action needed for vertical layout
   }
 
   /**
@@ -497,6 +491,185 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.add(this.undoButton);
     this.add(this.clockButton);
     this.add(this.keyButton);
+
+    // Botón de tema arriba a la derecha (misma altura que corazones)
+    this.createThemeButton();
+  }
+
+  /**
+   * Crea el botón de cambio de tema arriba a la derecha
+   */
+  private createThemeButton(): void {
+    const { canvas } = GameSettings;
+    const buttonX = canvas.width - 65; // Margen derecho
+    const buttonY = 220; // Misma altura que primer corazón
+    const buttonSize = 60;
+
+    this.themeButton = this.scene.add.container(buttonX, buttonY);
+
+    const depth = 8;
+    const radius = buttonSize / 2;
+    const mainColor = 0x9b59b6; // Púrpura
+    const borderColor = 0x6c3483;
+
+    const bg = this.scene.add.graphics();
+
+    // Sombra/profundidad 3D
+    bg.fillStyle(this.darkenColor(borderColor, 0.3), 1);
+    bg.fillCircle(0, depth, radius);
+
+    // Cara principal
+    bg.fillStyle(mainColor, 1);
+    bg.fillCircle(0, 0, radius);
+
+    // Borde
+    bg.lineStyle(3, borderColor, 1);
+    bg.strokeCircle(0, 0, radius);
+
+    this.themeButton.add(bg);
+
+    // Emoji de paleta 🎨
+    const emoji = this.scene.add.text(0, 0, "🎨", {
+      fontSize: "32px",
+      fontFamily: "Arial",
+    });
+    emoji.setOrigin(0.5);
+    this.themeButton.add(emoji);
+
+    // Hacer interactivo
+    this.themeButton.setSize(buttonSize, buttonSize + depth);
+    this.themeButton.setInteractive({ useHandCursor: true });
+
+    this.themeButton.on("pointerover", () => {
+      this.scene.tweens.add({
+        targets: this.themeButton,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 100,
+        ease: "Back.easeOut",
+      });
+    });
+
+    this.themeButton.on("pointerout", () => {
+      this.scene.tweens.add({
+        targets: this.themeButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Back.easeOut",
+      });
+    });
+
+    this.themeButton.on("pointerdown", () => {
+      this.scene.tweens.add({
+        targets: this.themeButton,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 50,
+        yoyo: true,
+        onComplete: () => {
+          if (this.powerUpCallbacks.onChangeTheme) {
+            this.powerUpCallbacks.onChangeTheme();
+          }
+        },
+      });
+    });
+
+    this.add(this.themeButton);
+
+    // Crear botón de tip debajo del de tema
+    this.createTipButton();
+  }
+
+  /**
+   * Crea el botón de tip al desarrollador
+   */
+  private createTipButton(): void {
+    const { canvas } = GameSettings;
+    const buttonX = canvas.width - 65; // Mismo margen que theme
+    const buttonY = 310; // Debajo del botón de tema con más separación
+    const buttonSize = 60;
+
+    this.tipButton = this.scene.add.container(buttonX, buttonY);
+
+    const depth = 8;
+    const radius = buttonSize / 2;
+    const mainColor = 0x9b59b6; // Púrpura (mismo que theme)
+    const borderColor = 0x6c3483;
+
+    const bg = this.scene.add.graphics();
+
+    // Sombra/profundidad 3D
+    bg.fillStyle(this.darkenColor(borderColor, 0.3), 1);
+    bg.fillCircle(0, depth, radius);
+
+    // Cara principal
+    bg.fillStyle(mainColor, 1);
+    bg.fillCircle(0, 0, radius);
+
+    // Borde
+    bg.lineStyle(3, borderColor, 1);
+    bg.strokeCircle(0, 0, radius);
+
+    this.tipButton.add(bg);
+
+    // Emoji de moneda 🪙
+    const emoji = this.scene.add.text(0, 0, "🪙", {
+      fontSize: "28px",
+      fontFamily: "Arial",
+    });
+    emoji.setOrigin(0.5);
+    this.tipButton.add(emoji);
+
+    // Hacer interactivo
+    this.tipButton.setSize(buttonSize, buttonSize + depth);
+    this.tipButton.setInteractive({ useHandCursor: true });
+
+    this.tipButton.on("pointerover", () => {
+      this.scene.tweens.add({
+        targets: this.tipButton,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 100,
+        ease: "Back.easeOut",
+      });
+    });
+
+    this.tipButton.on("pointerout", () => {
+      this.scene.tweens.add({
+        targets: this.tipButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Back.easeOut",
+      });
+    });
+
+    this.tipButton.on("pointerdown", () => {
+      this.scene.tweens.add({
+        targets: this.tipButton,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 50,
+        yoyo: true,
+        onComplete: () => {
+          if (this.powerUpCallbacks.onTip) {
+            this.powerUpCallbacks.onTip();
+          }
+        },
+      });
+    });
+
+    this.add(this.tipButton);
+  }
+
+  /**
+   * Oculta el botón de tip (cuando ya se compró)
+   */
+  public hideTipButton(): void {
+    if (this.tipButton) {
+      this.tipButton.setVisible(false);
+    }
   }
 
   /**
@@ -507,7 +680,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     y: number,
     size: number,
     colors: { main: number; border: number },
-    type: "undo" | "clock" | "key",
+    type: "undo" | "clock" | "key" | "theme",
     usesLeft: number
   ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
@@ -515,6 +688,8 @@ export class GameUI extends Phaser.GameObjects.Container {
     const radius = size / 2;
 
     const bg = this.scene.add.graphics();
+
+    // ...resto del código...
 
     // Sombra/profundidad 3D (círculo inferior)
     bg.fillStyle(this.darkenColor(colors.border, 0.3), 1);
@@ -578,36 +753,54 @@ export class GameUI extends Phaser.GameObjects.Container {
       icon.moveTo(12, 12);
       icon.lineTo(17, 12);
       icon.strokePath();
+    } else if (type === "theme") {
+      // Paleta de pintor
+      const pW = 20;
+      const pH = 16;
+
+      // Ajuste para elipse
+      icon.strokeEllipse(0, 0, pW * 2, pH * 2);
+
+      // Agujero
+      icon.strokeCircle(5, -3, 3);
+
+      // Pintura
+      icon.fillStyle(0xffffff, 1);
+      icon.fillCircle(-8, -5, 2);
+      icon.fillCircle(-8, 5, 2);
+      icon.fillCircle(5, 5, 2);
     }
 
     container.add(icon);
 
-    // Contador de usos (badge más visible)
-    const countBadgeSize = 28;
-    const countBg = this.scene.add.graphics();
-    countBg.fillStyle(0x222222, 1);
-    countBg.fillCircle(radius - 4, -radius + 4, countBadgeSize / 2);
-    countBg.lineStyle(2, 0x444444, 1);
-    countBg.strokeCircle(radius - 4, -radius + 4, countBadgeSize / 2);
-    container.add(countBg);
+    if (usesLeft >= 0) {
+      // Contador de usos (badge más visible)
+      const countBadgeSize = 28;
+      const countBg = this.scene.add.graphics();
+      countBg.fillStyle(0x222222, 1);
+      countBg.fillCircle(radius - 4, -radius + 4, countBadgeSize / 2);
+      countBg.lineStyle(2, 0x444444, 1);
+      countBg.strokeCircle(radius - 4, -radius + 4, countBadgeSize / 2);
+      container.add(countBg);
 
-    const countText = this.scene.add.text(
-      radius - 4,
-      -radius + 4,
-      usesLeft.toString(),
-      {
-        fontSize: "18px",
-        fontFamily: "'Fredoka One', cursive",
-        color: "#ffffff",
-      }
-    );
-    countText.setOrigin(0.5);
-    container.add(countText);
+      const countText = this.scene.add.text(
+        radius - 4,
+        -radius + 4,
+        usesLeft.toString(),
+        {
+          fontSize: "18px",
+          fontFamily: "'Fredoka One', cursive",
+          color: "#ffffff",
+        }
+      );
+      countText.setOrigin(0.5);
+      container.add(countText);
 
-    // Guardar referencia al texto del contador
-    if (type === "undo") this.undoCountText = countText;
-    else if (type === "clock") this.clockCountText = countText;
-    else if (type === "key") this.keyCountText = countText;
+      // Guardar referencia al texto del contador
+      if (type === "undo") this.undoCountText = countText;
+      else if (type === "clock") this.clockCountText = countText;
+      else if (type === "key") this.keyCountText = countText;
+    }
 
     // Hacer interactivo
     const hitArea = this.scene.add.circle(0, 0, radius);
@@ -641,7 +834,24 @@ export class GameUI extends Phaser.GameObjects.Container {
   /**
    * Maneja el click en un power-up
    */
-  private onPowerUpClick(type: "undo" | "clock" | "key"): void {
+  private onPowerUpClick(type: "undo" | "clock" | "key" | "theme"): void {
+    if (type === "theme") {
+      if (this.powerUpCallbacks.onChangeTheme) {
+        // Animación de click simple
+        this.scene.tweens.add({
+          targets: this.themeButton,
+          scaleX: 0.9,
+          scaleY: 0.9,
+          duration: 50,
+          yoyo: true,
+          onComplete: () => {
+            this.powerUpCallbacks.onChangeTheme!();
+          },
+        });
+      }
+      return;
+    }
+
     let usesLeft: number;
     let callback: (() => boolean) | undefined;
     let countText: Phaser.GameObjects.Text;
@@ -884,8 +1094,9 @@ export class GameUI extends Phaser.GameObjects.Container {
     const container = this.scene.add.container(0, 0);
     const { hand, tile: tileSettings } = GameSettings;
 
-    // Usar la textura cacheada del tablero (con 3D)
-    const textureKey = `tile-${tile.type}`;
+    // Usar la textura cacheada del tablero (con 3D) - incluye el nombre del tema
+    const theme = getCurrentTheme();
+    const textureKey = `tile-${tile.type}-${theme.name}`;
 
     // Verificar si existe la textura
     if (!this.scene.textures.exists(textureKey)) {
@@ -1202,11 +1413,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.levelText.setText(`Lv.${level}`);
 
     // Calcular tiempo para este nivel
-    // Base: 60 segundos
-    // A partir del nivel 5: +5 segundos por nivel adicional
-    let levelTime = 60;
-    if (level >= 5) {
-      levelTime = 60 + (level - 4) * 5; // Nivel 5 = 65s, Nivel 6 = 70s, etc.
+    // Base: 45 segundos (antes 60) - Más difícil
+    // Incremento: +3 segundos por nivel (antes +5) - Menos tiempo extra
+    let levelTime = 45;
+    if (level > 1) {
+      levelTime = 45 + (level - 1) * 3;
     }
 
     // Reiniciar timer al cambiar de nivel
@@ -1731,5 +1942,231 @@ export class GameUI extends Phaser.GameObjects.Container {
     const g = Math.min(255, Math.floor(((color >> 8) & 0xff) * (1 + factor)));
     const b = Math.min(255, Math.floor((color & 0xff) * (1 + factor)));
     return (r << 16) | (g << 8) | b;
+  }
+
+  /**
+   * Refresca los colores de la UI cuando cambia el tema
+   */
+  public refreshTheme(): void {
+    const { ui, hand, canvas } = GameSettings;
+    const theme = getCurrentTheme();
+
+    // Colores del nuevo tema
+    const badgeColor = (ui.colors as any).badge || 0x5cb85c;
+    const borderColor = (ui.colors as any).badgeBorder || 0x4ca84c;
+    const bgColor = hand.backgroundColor;
+    const slotBorderColor = hand.slotBorderColor;
+    const slotColor = hand.slotColor;
+
+    // Refrescar level badge
+    const levelBg = this.levelBadge.getAt(0) as Phaser.GameObjects.Graphics;
+    if (levelBg) {
+      const badgeWidth = 110;
+      const badgeHeight = 75;
+      const badgeDepth = 16;
+      const borderRadius = 12;
+
+      levelBg.clear();
+      levelBg.fillStyle(borderColor, 1);
+      levelBg.fillRoundedRect(
+        -badgeWidth / 2,
+        badgeDepth,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      levelBg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+      levelBg.strokeRoundedRect(
+        -badgeWidth / 2,
+        badgeDepth,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      levelBg.fillStyle(badgeColor, 1);
+      levelBg.fillRoundedRect(
+        -badgeWidth / 2,
+        0,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      levelBg.lineStyle(2, borderColor, 1);
+      levelBg.strokeRoundedRect(
+        -badgeWidth / 2,
+        0,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+    }
+
+    // Refrescar score badge
+    const scoreBg = this.scoreBadge.getAt(0) as Phaser.GameObjects.Graphics;
+    if (scoreBg) {
+      const badgeWidth = 260;
+      const badgeHeight = 75;
+      const badgeDepth = 16;
+      const borderRadius = 12;
+
+      scoreBg.clear();
+      scoreBg.fillStyle(borderColor, 1);
+      scoreBg.fillRoundedRect(
+        -badgeWidth / 2,
+        badgeDepth,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      scoreBg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+      scoreBg.strokeRoundedRect(
+        -badgeWidth / 2,
+        badgeDepth,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      scoreBg.fillStyle(badgeColor, 1);
+      scoreBg.fillRoundedRect(
+        -badgeWidth / 2,
+        0,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      scoreBg.lineStyle(2, borderColor, 1);
+      scoreBg.strokeRoundedRect(
+        -badgeWidth / 2,
+        0,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+    }
+
+    // Refrescar time badge
+    const timeBg = this.timeBadge.getAt(0) as Phaser.GameObjects.Graphics;
+    if (timeBg) {
+      const badgeWidth = 90;
+      const badgeHeight = 75;
+      const badgeDepth = 16;
+      const borderRadius = 12;
+
+      timeBg.clear();
+      timeBg.fillStyle(borderColor, 1);
+      timeBg.fillRoundedRect(
+        -badgeWidth / 2,
+        badgeDepth,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      timeBg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
+      timeBg.strokeRoundedRect(
+        -badgeWidth / 2,
+        badgeDepth,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      timeBg.fillStyle(badgeColor, 1);
+      timeBg.fillRoundedRect(
+        -badgeWidth / 2,
+        0,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+      timeBg.lineStyle(2, borderColor, 1);
+      timeBg.strokeRoundedRect(
+        -badgeWidth / 2,
+        0,
+        badgeWidth,
+        badgeHeight,
+        borderRadius
+      );
+    }
+
+    // Refrescar acumulador (hand)
+    const handY = canvas.height - hand.bottomMargin;
+    const totalSlotWidth =
+      hand.maxSlots * (hand.slotWidth + hand.slotPadding) - hand.slotPadding;
+    const handWidth = totalSlotWidth + 30;
+    const handX = (canvas.width - handWidth) / 2;
+    const handHeight = hand.slotHeight + 20;
+    const handDepth = 16;
+    const borderRadius = 12;
+
+    this.handBg.clear();
+    this.handBg.fillStyle(this.darkenColor(bgColor, 0.25), 1);
+    this.handBg.fillRoundedRect(
+      handX,
+      handY - handHeight / 2 + handDepth,
+      handWidth,
+      handHeight,
+      borderRadius
+    );
+    this.handBg.lineStyle(2, this.darkenColor(slotBorderColor, 0.3), 1);
+    this.handBg.strokeRoundedRect(
+      handX,
+      handY - handHeight / 2 + handDepth,
+      handWidth,
+      handHeight,
+      borderRadius
+    );
+    this.handBg.fillStyle(bgColor, 1);
+    this.handBg.fillRoundedRect(
+      handX,
+      handY - handHeight / 2,
+      handWidth,
+      handHeight,
+      borderRadius
+    );
+    this.handBg.lineStyle(2, slotBorderColor, 1);
+    this.handBg.strokeRoundedRect(
+      handX,
+      handY - handHeight / 2,
+      handWidth,
+      handHeight,
+      borderRadius
+    );
+
+    // Refrescar slots
+    this.handSlots.forEach((slot) => {
+      const slotBg = slot.getAt(0) as Phaser.GameObjects.Graphics;
+      if (slotBg) {
+        slotBg.clear();
+        slotBg.fillStyle(slotColor, 1);
+        slotBg.fillRoundedRect(
+          -hand.slotWidth / 2,
+          -hand.slotHeight / 2,
+          hand.slotWidth,
+          hand.slotHeight,
+          8
+        );
+        slotBg.lineStyle(2, slotBorderColor, 1);
+        slotBg.strokeRoundedRect(
+          -hand.slotWidth / 2,
+          -hand.slotHeight / 2,
+          hand.slotWidth,
+          hand.slotHeight,
+          8
+        );
+      }
+    });
+
+    // Refrescar corazones
+    this.heartContainers.forEach((heartContainer, i) => {
+      const heartText = heartContainer.getAt(0) as Phaser.GameObjects.Text;
+      if (heartText && i < this.lives) {
+        heartText.setStyle({
+          fontFamily: "Arial",
+          fontSize: "56px",
+          color: theme.lives.color,
+          stroke: theme.lives.stroke,
+          strokeThickness: 5,
+        });
+      }
+    });
   }
 }

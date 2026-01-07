@@ -13,6 +13,7 @@ import {
 
 export class MainMenuScene extends Phaser.Scene {
   private styleModal: Phaser.GameObjects.Container | null = null;
+  private tutorialModal: Phaser.GameObjects.Container | null = null;
   private hasExclusiveThemes: boolean = false;
   private hasJustATip: boolean = false;
   private styleButton: Phaser.GameObjects.Container | null = null;
@@ -225,7 +226,15 @@ export class MainMenuScene extends Phaser.Scene {
       0x8b0000,
       "#5a0000",
       () => {
-        this.scene.start("MahjongScene");
+        // Verificar si es la primera vez que juega
+        const hasPlayedBefore = localStorage.getItem(
+          "crypto-mahjong-tutorial-seen"
+        );
+        if (!hasPlayedBefore) {
+          this.showTutorial();
+        } else {
+          this.scene.start("MahjongScene");
+        }
       }
     );
 
@@ -311,10 +320,11 @@ export class MainMenuScene extends Phaser.Scene {
         }
       ).FarcadeSDK;
 
-      const playerName = sdk?.player?.displayName || sdk?.player?.username || "Player";
+      const playerName =
+        sdk?.player?.displayName || sdk?.player?.username || "Player";
 
-      // Mostrar nombre del usuario debajo
-      const nameText = this.add.text(centerX, y + 75, playerName, {
+      // Mostrar nombre del usuario debajo con @
+      const nameText = this.add.text(centerX, y + 75, `@${playerName}`, {
         fontSize: "36px",
         fontFamily: "'Fredoka One', Arial Black, sans-serif",
         color: "#000000",
@@ -588,7 +598,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     // Overlay oscuro que bloquea interacción con elementos de atrás
     const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.92);
+    overlay.fillStyle(0x000000, 0.97);
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
@@ -883,5 +893,347 @@ export class MainMenuScene extends Phaser.Scene {
     } catch {
       // localStorage no disponible
     }
+  }
+
+  // ================= TUTORIAL =================
+
+  /**
+   * Muestra el tutorial para nuevos jugadores
+   */
+  private showTutorial(): void {
+    if (this.tutorialModal) return;
+
+    const { canvas } = GameSettings;
+
+    // Contenedor principal del overlay
+    this.tutorialModal = this.add.container(0, 0);
+    this.tutorialModal.setDepth(2000);
+
+    // Overlay muy oscuro
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.97);
+    overlay.fillRect(0, 0, canvas.width, canvas.height);
+    overlay.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
+      Phaser.Geom.Rectangle.Contains
+    );
+    overlay.on("pointerdown", () => {});
+    this.tutorialModal.add(overlay);
+
+    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const theme = getCurrentTheme();
+    const powerUpColors = theme.powerUps;
+
+    // Título "HOW TO PLAY"
+    const title = this.add.text(canvas.width / 2, 120, "HOW TO PLAY", {
+      fontSize: "48px",
+      fontFamily: fontFamily,
+      color: "#B7FF00",
+      stroke: "#000000",
+      strokeThickness: 8,
+    });
+    title.setOrigin(0.5);
+    this.tutorialModal.add(title);
+
+    // Instrucción principal
+    const instruction1 = this.add.text(
+      canvas.width / 2,
+      220,
+      "Match 3 identical tiles",
+      {
+        fontSize: "32px",
+        fontFamily: fontFamily,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
+      }
+    );
+    instruction1.setOrigin(0.5);
+    this.tutorialModal.add(instruction1);
+
+    const instruction2 = this.add.text(
+      canvas.width / 2,
+      280,
+      "Clear the board before",
+      {
+        fontSize: "32px",
+        fontFamily: fontFamily,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
+      }
+    );
+    instruction2.setOrigin(0.5);
+    this.tutorialModal.add(instruction2);
+
+    const instruction3 = this.add.text(
+      canvas.width / 2,
+      340,
+      "time runs out!",
+      {
+        fontSize: "32px",
+        fontFamily: fontFamily,
+        color: "#ff6b6b",
+        stroke: "#000000",
+        strokeThickness: 4,
+      }
+    );
+    instruction3.setOrigin(0.5);
+    this.tutorialModal.add(instruction3);
+
+    // Título de Power-ups
+    const powerupsTitle = this.add.text(canvas.width / 2, 440, "POWER-UPS", {
+      fontSize: "36px",
+      fontFamily: fontFamily,
+      color: "#B7FF00",
+      stroke: "#000000",
+      strokeThickness: 6,
+    });
+    powerupsTitle.setOrigin(0.5);
+    this.tutorialModal.add(powerupsTitle);
+
+    // Power-ups con iconos idénticos al juego (centrados)
+    const centerX = canvas.width / 2;
+    const buttonSize = 70;
+    const startY = 530;
+    const gap = 100;
+
+    const powerups: Array<{
+      type: "undo" | "clock" | "key";
+      name: string;
+      desc: string;
+      colors: { main: number; border: number };
+    }> = [
+      {
+        type: "undo",
+        name: "Undo",
+        desc: "Return last tile",
+        colors: powerUpColors.undo,
+      },
+      {
+        type: "clock",
+        name: "Freeze",
+        desc: "Pause timer",
+        colors: powerUpColors.clock,
+      },
+      {
+        type: "key",
+        name: "Hint",
+        desc: "Remove a pair",
+        colors: powerUpColors.key,
+      },
+    ];
+
+    powerups.forEach((powerup, index) => {
+      const y = startY + index * gap;
+      const buttonX = centerX - 120;
+
+      // Crear botón idéntico al del juego
+      this.createTutorialPowerUpButton(
+        buttonX,
+        y,
+        buttonSize,
+        powerup.colors,
+        powerup.type
+      );
+
+      // Nombre y descripción a la derecha
+      const textX = centerX - 30;
+
+      const name = this.add.text(textX, y - 12, powerup.name, {
+        fontSize: "28px",
+        fontFamily: fontFamily,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
+      });
+      name.setOrigin(0, 0.5);
+      this.tutorialModal!.add(name);
+
+      const desc = this.add.text(textX, y + 18, powerup.desc, {
+        fontSize: "20px",
+        fontFamily: fontFamily,
+        color: "#aaaaaa",
+      });
+      desc.setOrigin(0, 0.5);
+      this.tutorialModal!.add(desc);
+    });
+
+    // Botón de comenzar
+    this.createTutorialStartButton(canvas.width / 2, 880);
+
+    // Animación de entrada
+    this.tutorialModal.setAlpha(0);
+    this.tweens.add({
+      targets: this.tutorialModal,
+      alpha: 1,
+      duration: 300,
+      ease: "Power2",
+    });
+  }
+
+  /**
+   * Crea un botón de power-up para el tutorial
+   */
+  private createTutorialPowerUpButton(
+    x: number,
+    y: number,
+    size: number,
+    colors: { main: number; border: number },
+    type: "undo" | "clock" | "key"
+  ): void {
+    const depth = 10;
+    const radius = size / 2;
+
+    const bg = this.add.graphics();
+
+    // Sombra/profundidad 3D
+    bg.fillStyle(this.darkenColor(colors.border, 0.3), 1);
+    bg.fillCircle(x, y + depth, radius);
+
+    // Cara principal
+    bg.fillStyle(colors.main, 1);
+    bg.fillCircle(x, y, radius);
+
+    // Borde
+    bg.lineStyle(3, colors.border, 1);
+    bg.strokeCircle(x, y, radius);
+
+    this.tutorialModal!.add(bg);
+
+    // Dibujar icono
+    const icon = this.add.graphics();
+    icon.lineStyle(4, 0xffffff, 1);
+
+    if (type === "undo") {
+      const arrowRadius = 18;
+      icon.beginPath();
+      icon.arc(
+        x,
+        y,
+        arrowRadius,
+        Phaser.Math.DegToRad(-45),
+        Phaser.Math.DegToRad(180),
+        false
+      );
+      icon.strokePath();
+      icon.beginPath();
+      icon.moveTo(x - arrowRadius - 6, y - 6);
+      icon.lineTo(x - arrowRadius, y - 16);
+      icon.lineTo(x - arrowRadius + 6, y - 6);
+      icon.strokePath();
+    } else if (type === "clock") {
+      const clockRadius = 18;
+      icon.strokeCircle(x, y, clockRadius);
+      icon.beginPath();
+      icon.moveTo(x, y);
+      icon.lineTo(x, y - 12);
+      icon.moveTo(x, y);
+      icon.lineTo(x + 9, y);
+      icon.strokePath();
+    } else if (type === "key") {
+      icon.strokeCircle(x - 7, y - 7, 9);
+      icon.beginPath();
+      icon.moveTo(x, y);
+      icon.lineTo(x + 14, y + 14);
+      icon.moveTo(x + 9, y + 9);
+      icon.lineTo(x + 14, y + 9);
+      icon.moveTo(x + 12, y + 12);
+      icon.lineTo(x + 17, y + 12);
+      icon.strokePath();
+    }
+
+    this.tutorialModal!.add(icon);
+  }
+
+  /**
+   * Crea el botón LET'S GO del tutorial
+   */
+  private createTutorialStartButton(x: number, y: number): void {
+    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const btnWidth = 200;
+    const btnHeight = 55;
+    const depth3D = 8;
+
+    const container = this.add.container(x, y);
+    const bg = this.add.graphics();
+
+    // Cara 3D (verde oscuro)
+    bg.fillStyle(0x2d7d32, 1);
+    bg.fillRoundedRect(-btnWidth / 2, depth3D, btnWidth, btnHeight, 14);
+
+    // Cara principal (verde)
+    bg.fillStyle(0x4caf50, 1);
+    bg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+
+    // Borde
+    bg.lineStyle(3, 0x2d7d32, 1);
+    bg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
+
+    container.add(bg);
+
+    const text = this.add.text(0, btnHeight / 2, "LET'S GO!", {
+      fontSize: "26px",
+      fontFamily: fontFamily,
+      color: "#ffffff",
+      stroke: "#2d7d32",
+      strokeThickness: 3,
+    });
+    text.setOrigin(0.5);
+    container.add(text);
+
+    container.setSize(btnWidth, btnHeight + depth3D);
+    container.setInteractive({ useHandCursor: true });
+
+    container.on("pointerover", () => {
+      this.tweens.add({
+        targets: container,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    container.on("pointerout", () => {
+      this.tweens.add({
+        targets: container,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    container.on("pointerdown", () => {
+      // Marcar tutorial como visto
+      localStorage.setItem("crypto-mahjong-tutorial-seen", "true");
+
+      // Cerrar tutorial y empezar juego
+      this.closeTutorial();
+    });
+
+    this.tutorialModal!.add(container);
+  }
+
+  /**
+   * Cierra el tutorial y navega al juego
+   */
+  private closeTutorial(): void {
+    if (!this.tutorialModal) return;
+
+    this.tweens.add({
+      targets: this.tutorialModal,
+      alpha: 0,
+      duration: 200,
+      ease: "Power2",
+      onComplete: () => {
+        this.tutorialModal?.destroy();
+        this.tutorialModal = null;
+
+        // Ahora sí iniciamos el juego
+        this.scene.start("MahjongScene");
+      },
+    });
   }
 }

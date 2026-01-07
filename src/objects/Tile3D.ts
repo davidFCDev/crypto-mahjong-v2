@@ -4,6 +4,7 @@
  */
 
 import GameSettings from "../config/GameSettings";
+import { getCurrentTheme } from "../config/Themes";
 import { SoundManager } from "../systems/SoundManager";
 import { TILE_COLORS, TileType, type TileState } from "../types";
 
@@ -143,6 +144,15 @@ export class Tile3D extends Phaser.GameObjects.Container {
     scene.add.existing(this);
   }
 
+  /**
+   * Refreshes the texture based on current theme settings
+   */
+  public refreshTexture(): void {
+    this.ensureTextures();
+    const textureName = this.getCurrentTextureName();
+    this.tileImage.setTexture(textureName);
+  }
+
   private ensureTextures(): void {
     const type = this.tileState.type;
 
@@ -168,7 +178,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
   }
 
   private getTextureName(type: TileType): string {
-    return `tile-${type}`;
+    return `tile-${type}-${getCurrentTheme().name}`;
   }
 
   private getCurrentTextureName(): string {

@@ -1,0 +1,11 @@
+
+/**
+ * Cycles to the next available theme
+ */
+export function cycleTheme(): GameTheme {
+  const themeNames = Object.keys(themes);
+  const currentIndex = themeNames.indexOf(currentTheme.name);
+  const nextIndex = (currentIndex + 1) % themeNames.length;
+  currentTheme = themes[themeNames[nextIndex]];
+  return currentTheme;
+}
