@@ -25,7 +25,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.spritesheet(
       "bootSprite",
       "https://remix.gg/blob/13e738d9-e135-454e-9d2a-e456476a0c5e/sprite-start-oVCq0bchsVLwbLqAPbLgVOrQqxcVh5.webp?Cbzd",
-      { frameWidth: 241, frameHeight: 345 }
+      { frameWidth: 241, frameHeight: 345 },
     );
   }
 
@@ -56,7 +56,7 @@ export class PreloadScene extends Phaser.Scene {
     // Escalar basado en altura manteniendo aspect ratio del frame (241:345)
     const frameAspectRatio = 241 / 345; // ~0.698
     const targetHeight = height * 0.42; // 42% del alto de pantalla
-    const targetWidth = targetHeight * frameAspectRatio;
+    const targetWidth = targetHeight * frameAspectRatio * 0.85; // Reducir width 15% para corregir estiramiento
 
     // Obtener tamaño real del frame desde la textura
     const frame = this.bootSprite.frame;
@@ -80,7 +80,7 @@ export class PreloadScene extends Phaser.Scene {
     // WebFont loader para fuentes
     this.load.script(
       "webfont",
-      "https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"
+      "https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js",
     );
 
     // Iniciar carga de fuentes cuando el script esté listo
@@ -111,7 +111,7 @@ export class PreloadScene extends Phaser.Scene {
     // Imagen de fondo del menú principal
     this.load.image(
       "menu-bg",
-      "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj"
+      "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj",
     );
 
     // Cargar imágenes de fondo de todos los temas

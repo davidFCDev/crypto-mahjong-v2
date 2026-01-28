@@ -177,7 +177,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     overlay.on("pointerdown", () => {});
     tutorialModal.add(overlay);
@@ -208,7 +208,7 @@ export class MahjongScene extends Phaser.Scene {
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 4,
-      }
+      },
     );
     instruction1.setOrigin(0.5);
     tutorialModal.add(instruction1);
@@ -223,7 +223,7 @@ export class MahjongScene extends Phaser.Scene {
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 4,
-      }
+      },
     );
     instruction2.setOrigin(0.5);
     tutorialModal.add(instruction2);
@@ -238,7 +238,7 @@ export class MahjongScene extends Phaser.Scene {
         color: "#ff6b6b",
         stroke: "#000000",
         strokeThickness: 4,
-      }
+      },
     );
     instruction3.setOrigin(0.5);
     tutorialModal.add(instruction3);
@@ -396,8 +396,8 @@ export class MahjongScene extends Phaser.Scene {
       const sdk = window.FarcadeSDK as any;
       if (sdk?.onPlayAgain) {
         sdk.onPlayAgain(() => {
-          // Volver a la pantalla de inicio
-          this.scene.start("MainMenuScene");
+          // Reiniciar el juego directamente desde el nivel 1
+          this.scene.restart();
         });
       }
     } catch {
@@ -472,7 +472,7 @@ export class MahjongScene extends Phaser.Scene {
       const bgImage = this.add.image(
         canvas.width / 2,
         canvas.height / 2,
-        bgImageKey
+        bgImageKey,
       );
       bgImage.setDisplaySize(canvas.width, canvas.height);
       bgImage.setDepth(-3);
@@ -516,7 +516,7 @@ export class MahjongScene extends Phaser.Scene {
    */
   private drawDiamondsPattern(
     graphics: Phaser.GameObjects.Graphics,
-    color: number
+    color: number,
   ): void {
     const { canvas } = GameSettings;
     const diamondWidth = 80;
@@ -559,7 +559,7 @@ export class MahjongScene extends Phaser.Scene {
    */
   private drawWavesPattern(
     graphics: Phaser.GameObjects.Graphics,
-    color: number
+    color: number,
   ): void {
     const { canvas } = GameSettings;
     const waveHeight = 40;
@@ -603,7 +603,7 @@ export class MahjongScene extends Phaser.Scene {
    */
   private drawHexagonsPattern(
     graphics: Phaser.GameObjects.Graphics,
-    color: number
+    color: number,
   ): void {
     const { canvas } = GameSettings;
     const hexSize = 50;
@@ -638,7 +638,7 @@ export class MahjongScene extends Phaser.Scene {
     graphics: Phaser.GameObjects.Graphics,
     cx: number,
     cy: number,
-    size: number
+    size: number,
   ): void {
     graphics.beginPath();
     for (let i = 0; i < 6; i++) {
@@ -660,7 +660,7 @@ export class MahjongScene extends Phaser.Scene {
    */
   private drawCirclesPattern(
     graphics: Phaser.GameObjects.Graphics,
-    color: number
+    color: number,
   ): void {
     const { canvas } = GameSettings;
     const theme = getCurrentTheme();
@@ -704,7 +704,7 @@ export class MahjongScene extends Phaser.Scene {
    */
   private drawSakuraFlowers(
     graphics: Phaser.GameObjects.Graphics,
-    color: number
+    color: number,
   ): void {
     const { canvas } = GameSettings;
     const gridSize = 100;
@@ -737,7 +737,7 @@ export class MahjongScene extends Phaser.Scene {
   private drawPolkadotsPattern(
     graphics: Phaser.GameObjects.Graphics,
     bgColor: number,
-    dotColor: number
+    dotColor: number,
   ): void {
     const { canvas } = GameSettings;
 
@@ -793,7 +793,7 @@ export class MahjongScene extends Phaser.Scene {
 
     // Generar nuevo tablero
     this.gameState.tiles = BoardGenerator.generateBoard(
-      this.currentLevelConfig
+      this.currentLevelConfig,
     );
 
     // Iniciar música si es el primer nivel
@@ -841,7 +841,7 @@ export class MahjongScene extends Phaser.Scene {
       const screenPos = BoardGenerator.calculateScreenPosition(
         tileState.position,
         this.currentLevelConfig,
-        this.boardBounds
+        this.boardBounds,
       );
 
       // Determinar si debe mostrar el volumen 3D inferior
@@ -852,13 +852,13 @@ export class MahjongScene extends Phaser.Scene {
         screenPos.x,
         screenPos.y,
         tileState,
-        showBottom3D
+        showBottom3D,
       );
       tile3D.setLayerDepth(tileState.position.z);
 
       // Escuchar click
       tile3D.on("tile-clicked", (state: TileState) =>
-        this.onTileClicked(state)
+        this.onTileClicked(state),
       );
 
       this.tileSprites.set(tileState.id, tile3D);
@@ -967,7 +967,7 @@ export class MahjongScene extends Phaser.Scene {
 
     // IMPORTANTE: Buscar la ficha en gameState.tiles para modificar el original
     const originalTile = this.gameState.tiles.find(
-      (t) => t.id === tileState.id
+      (t) => t.id === tileState.id,
     );
     if (!originalTile) {
       this.isAnimating = false;
@@ -1090,7 +1090,7 @@ export class MahjongScene extends Phaser.Scene {
   private checkWinCondition(): void {
     // Victoria si no quedan fichas en el tablero y la mano está vacía
     const remainingTiles = this.gameState.tiles.filter(
-      (t) => !t.isInHand && !t.isMatched
+      (t) => !t.isInHand && !t.isMatched,
     );
 
     if (remainingTiles.length === 0 && this.handManager.isEmpty()) {
@@ -1229,7 +1229,7 @@ export class MahjongScene extends Phaser.Scene {
     const targetPos = BoardGenerator.calculateScreenPosition(
       originalTile.position,
       this.currentLevelConfig,
-      this.boardBounds
+      this.boardBounds,
     );
 
     // Determinar si debe mostrar el volumen 3D inferior
@@ -1241,7 +1241,7 @@ export class MahjongScene extends Phaser.Scene {
       slotPos.x,
       slotPos.y,
       originalTile,
-      showBottom3D
+      showBottom3D,
     );
     tileSprite.on("tile-clicked", (state: TileState) => {
       this.onTileClicked(state);
@@ -1316,7 +1316,7 @@ export class MahjongScene extends Phaser.Scene {
 
     // Buscar TODAS las fichas del tablero (no solo accesibles)
     const allBoardTiles = this.gameState.tiles.filter(
-      (t) => !t.isInHand && !t.isMatched
+      (t) => !t.isInHand && !t.isMatched,
     );
 
     // Agrupar fichas del tablero por tipo
@@ -1566,7 +1566,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     overlay.on("pointerdown", () => {}); // Bloquear clicks
     this.purchaseOverlay.add(overlay);
@@ -1597,7 +1597,7 @@ export class MahjongScene extends Phaser.Scene {
         stroke: "#000000",
         strokeThickness: 3,
         align: "center",
-      }
+      },
     );
     desc.setOrigin(0.5);
     this.purchaseOverlay.add(desc);
@@ -1654,38 +1654,8 @@ export class MahjongScene extends Phaser.Scene {
 
     this.purchaseOverlay.add(unlockBtn);
 
-    // Badge de precio pegado debajo del botón UNLOCK
-    const priceBadge = this.add.graphics();
-    const badgeWidth = 160;
-    const badgeHeight = 40;
-    priceBadge.fillStyle(0xffd700, 1);
-    priceBadge.fillRoundedRect(
-      centerX - badgeWidth / 2,
-      660,
-      badgeWidth,
-      badgeHeight,
-      10
-    );
-    priceBadge.lineStyle(2, 0xb8860b, 1);
-    priceBadge.strokeRoundedRect(
-      centerX - badgeWidth / 2,
-      660,
-      badgeWidth,
-      badgeHeight,
-      10
-    );
-    this.purchaseOverlay.add(priceBadge);
-
-    const priceText = this.add.text(centerX, 680, "100 credits", {
-      fontSize: "24px",
-      fontFamily: fontFamily,
-      color: "#5a4000",
-    });
-    priceText.setOrigin(0.5);
-    this.purchaseOverlay.add(priceText);
-
     // Botón BACK
-    const backBtn = this.add.container(centerX, 780);
+    const backBtn = this.add.container(centerX, 700);
     const backBg = this.add.graphics();
     backBg.fillStyle(0x444444, 1);
     backBg.fillRoundedRect(-btnWidth / 2, 10, btnWidth, btnHeight, 14);
@@ -1788,7 +1758,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     overlay.on("pointerdown", () => {}); // Bloquear clicks
     this.tipOverlay.add(overlay);
@@ -1819,7 +1789,7 @@ export class MahjongScene extends Phaser.Scene {
         stroke: "#000000",
         strokeThickness: 3,
         align: "center",
-      }
+      },
     );
     desc.setOrigin(0.5);
     this.tipOverlay.add(desc);
@@ -1886,7 +1856,7 @@ export class MahjongScene extends Phaser.Scene {
       660,
       badgeWidth,
       badgeHeight,
-      10
+      10,
     );
     priceBadge.lineStyle(2, 0xb8860b, 1);
     priceBadge.strokeRoundedRect(
@@ -1894,7 +1864,7 @@ export class MahjongScene extends Phaser.Scene {
       660,
       badgeWidth,
       badgeHeight,
-      10
+      10,
     );
     this.tipOverlay.add(priceBadge);
 

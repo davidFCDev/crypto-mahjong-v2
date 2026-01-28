@@ -20,7 +20,7 @@ export class BoardGenerator {
     const positions = this.generatePositions(levelConfig);
     const tileTypes = this.generateTileTypes(
       positions.length,
-      levelConfig.tileTypes
+      levelConfig.tileTypes,
     );
 
     // Mezclar tipos para distribución aleatoria (no posiciones)
@@ -50,38 +50,75 @@ export class BoardGenerator {
 
   /**
    * Genera posiciones para las fichas en múltiples capas
-   * Las fichas solo se apilan en columnas verticales exactas (sin offset)
-   * Distribución irregular para crear formas variadas en el tablero
+   * Sistema híbrido pirámide + columna:
+   * - Niveles fáciles (1-4): pirámide pura (cada capa reduce una fila)
+   * - Niveles difíciles (5+): pirámide + repetición (algunas capas mantienen tamaño)
+   *
+   * Ejemplo nivel difícil: Capa0=4filas, Capa1=3, Capa2=3, Capa3=2, Capa4=2, Capa5=1...
    */
   private static generatePositions(config: LevelConfig): TilePosition[] {
     const allPositions: TilePosition[] = [];
 
-    // Calcular altura objetivo base
+    const baseRows = config.rows;
+    const baseCols = config.cols;
     const targetHeight = config.layers;
+    const level = config.level;
 
-    // Crear posiciones con alturas variables por columna
-    for (let row = 0; row < config.rows; row++) {
-      for (let col = 0; col < config.cols; col++) {
-        // Determinar altura aleatoria para esta columna
-        // Siempre al menos 1 capa de altura
-        // Variación aleatoria para crear "skyline" irregular
-        let columnHeight = targetHeight;
+    // Determinar patrón de reducción según nivel
+    // Niveles 1-4: pirámide pura (reduce cada capa)
+    // Niveles 5+: pirámide + columna (reduce cada 2 capas)
+    const isAdvancedLevel = level >= 5;
 
-        // Introducir aleatoriedad solo si hay más de 1 capa
-        if (targetHeight > 1) {
-          const rand = Math.random();
-          // 40% de probabilidad de tener la altura máxima
-          // 60% de probabilidad de tener una altura menor aleatoria
-          if (rand > 0.4) {
-            columnHeight = Math.floor(Math.random() * targetHeight) + 1;
+    // Calcular filas por capa
+    const rowsPerLayer: number[] = [];
+    let currentRows = baseRows;
+    let reductionCounter = 0;
+
+    for (let z = 0; z < targetHeight; z++) {
+      rowsPerLayer.push(currentRows);
+
+      if (currentRows > 1) {
+        if (isAdvancedLevel) {
+          // Niveles avanzados: reduce cada 2 capas (pirámide + columna)
+          reductionCounter++;
+          if (reductionCounter >= 2) {
+            currentRows--;
+            reductionCounter = 0;
           }
+        } else {
+          // Niveles fáciles: reduce cada capa (pirámide pura)
+          currentRows--;
         }
+      }
+    }
 
-        // Cada columna tiene fichas desde z=0 hasta z=columnHeight-1
-        for (let z = 0; z < columnHeight; z++) {
+    // Generar posiciones para cada capa
+    // El offset Y se calcula basándose en la diferencia de filas con la base
+    for (let z = 0; z < targetHeight; z++) {
+      const layerRows = rowsPerLayer[z];
+      const layerCols = baseCols;
+
+      // Offset en Y para centrar las filas reducidas
+      // Cada fila menos = 0.5 de offset para quedar entre las de abajo
+      const rowsReduced = baseRows - layerRows;
+      const offsetY = rowsReduced * 0.5;
+
+      if (layerRows <= 0) break;
+
+      for (let row = 0; row < layerRows; row++) {
+        for (let col = 0; col < layerCols; col++) {
+          // Aplicar variación aleatoria en altura (algunas posiciones no tienen ficha)
+          if (z > 0 && targetHeight > 1) {
+            const rand = Math.random();
+            // 25% de probabilidad de saltar esta posición en capas superiores
+            if (rand < 0.25) {
+              continue;
+            }
+          }
+
           allPositions.push({
             x: col,
-            y: row,
+            y: row + offsetY,
             z: z,
           });
         }
@@ -120,7 +157,7 @@ export class BoardGenerator {
     x: number,
     y: number,
     z: number,
-    allPositions: TilePosition[]
+    allPositions: TilePosition[],
   ): number {
     let totalCoverage = 0;
 
@@ -153,7 +190,7 @@ export class BoardGenerator {
    */
   private static generateTileTypes(
     count: number,
-    maxTypes: number
+    maxTypes: number,
   ): TileType[] {
     const types: TileType[] = [];
     const groupCount = Math.floor(count / 3);
@@ -197,12 +234,13 @@ export class BoardGenerator {
 
   /**
    * Comprueba si una ficha está bloqueada por otra encima
-   * LÓGICA SIMPLE: Una ficha está bloqueada si hay CUALQUIER ficha
-   * en una capa superior que esté cerca (a menos de 1 unidad de distancia)
+   * LÓGICA MEJORADA: Una ficha está bloqueada si hay CUALQUIER ficha
+   * en una capa superior que se solape significativamente (> 10% del área)
+   * Esto funciona con posiciones fraccionarias (offsets de 0.5)
    */
   private static isTileBlocked(
     tile: TileState,
-    allTiles: TileState[]
+    allTiles: TileState[],
   ): boolean {
     const { x, y, z } = tile.position;
 
@@ -218,10 +256,18 @@ export class BoardGenerator {
       const dx = Math.abs(other.position.x - x);
       const dy = Math.abs(other.position.y - y);
 
-      // Una ficha bloquea si está a menos de 1 unidad de distancia
-      // (es decir, se superpone visualmente)
+      // Una ficha bloquea si se solapa (distancia < 1 en ambos ejes)
+      // Con offsets de 0.5, las fichas pueden solaparse parcialmente
       if (dx < 1 && dy < 1) {
-        return true;
+        // Calcular el porcentaje de solapamiento
+        const overlapX = 1 - dx;
+        const overlapY = 1 - dy;
+        const overlapArea = overlapX * overlapY;
+
+        // Bloquea si el solapamiento es significativo (> 10%)
+        if (overlapArea > 0.1) {
+          return true;
+        }
       }
     }
 
@@ -244,7 +290,7 @@ export class BoardGenerator {
   public static calculateScreenPosition(
     position: TilePosition,
     levelConfig: LevelConfig,
-    boardBounds: { x: number; y: number; width: number; height: number }
+    boardBounds: { x: number; y: number; width: number; height: number },
   ): { x: number; y: number } {
     const tileW = GameSettings.tile.width + GameSettings.tile.padding;
     const tileH = GameSettings.tile.height + GameSettings.tile.padding;

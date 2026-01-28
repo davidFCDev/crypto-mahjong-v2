@@ -13,7 +13,6 @@ export interface PowerUpCallbacks {
   onPauseTime?: () => boolean; // Retorna true si se pausó
   onHint?: () => boolean; // Retorna true si se encontró un hint
   onChangeTheme?: () => void; // Cambiar tema
-  onTip?: () => void; // Tip al desarrollador
 }
 
 export class GameUI extends Phaser.GameObjects.Container {
@@ -48,7 +47,6 @@ export class GameUI extends Phaser.GameObjects.Container {
   private clockButton!: Phaser.GameObjects.Container;
   private keyButton!: Phaser.GameObjects.Container;
   private themeButton!: Phaser.GameObjects.Container; // Botón de tema
-  private tipButton!: Phaser.GameObjects.Container; // Botón de tip
   private undoUsesLeft: number = 3;
   private clockUsesLeft: number = 1;
   private keyUsesLeft: number = 2;
@@ -116,7 +114,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       badgeDepth,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara 3D
@@ -126,7 +124,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       badgeDepth,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Fondo del badge (cara principal)
@@ -136,7 +134,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       0,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara principal
@@ -146,7 +144,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       0,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     this.levelBadge.add(bg);
@@ -191,7 +189,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       badgeDepth,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara 3D
@@ -201,7 +199,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       badgeDepth,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Fondo del badge (cara principal)
@@ -211,7 +209,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       0,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara principal
@@ -221,7 +219,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       0,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     this.scoreBadge.add(bg);
@@ -254,7 +252,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     for (let i = 0; i < this.lives; i++) {
       const heartContainer = this.scene.add.container(
         startX,
-        startY + i * heartSpacing
+        startY + i * heartSpacing,
       );
 
       // Usar símbolo de corazón ♥ con borde destacado
@@ -393,7 +391,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       badgeDepth,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara 3D
@@ -403,7 +401,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       badgeDepth,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Fondo del badge (cara principal)
@@ -413,7 +411,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       0,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara principal
@@ -423,7 +421,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       0,
       badgeWidth,
       badgeHeight,
-      borderRadius
+      borderRadius,
     );
 
     this.timeBadge.add(bg);
@@ -467,7 +465,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       buttonSize,
       colors.undo,
       "undo",
-      this.undoUsesLeft
+      this.undoUsesLeft,
     );
 
     this.clockButton = this.createPowerUpButton(
@@ -476,7 +474,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       buttonSize,
       colors.clock,
       "clock",
-      this.clockUsesLeft
+      this.clockUsesLeft,
     );
 
     this.keyButton = this.createPowerUpButton(
@@ -485,7 +483,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       buttonSize,
       colors.key,
       "key",
-      this.keyUsesLeft
+      this.keyUsesLeft,
     );
 
     this.add(this.undoButton);
@@ -576,100 +574,6 @@ export class GameUI extends Phaser.GameObjects.Container {
     });
 
     this.add(this.themeButton);
-
-    // Crear botón de tip debajo del de tema
-    this.createTipButton();
-  }
-
-  /**
-   * Crea el botón de tip al desarrollador
-   */
-  private createTipButton(): void {
-    const { canvas } = GameSettings;
-    const buttonX = canvas.width - 65; // Mismo margen que theme
-    const buttonY = 310; // Debajo del botón de tema con más separación
-    const buttonSize = 60;
-
-    this.tipButton = this.scene.add.container(buttonX, buttonY);
-
-    const depth = 8;
-    const radius = buttonSize / 2;
-    const mainColor = 0x9b59b6; // Púrpura (mismo que theme)
-    const borderColor = 0x6c3483;
-
-    const bg = this.scene.add.graphics();
-
-    // Sombra/profundidad 3D
-    bg.fillStyle(this.darkenColor(borderColor, 0.3), 1);
-    bg.fillCircle(0, depth, radius);
-
-    // Cara principal
-    bg.fillStyle(mainColor, 1);
-    bg.fillCircle(0, 0, radius);
-
-    // Borde
-    bg.lineStyle(3, borderColor, 1);
-    bg.strokeCircle(0, 0, radius);
-
-    this.tipButton.add(bg);
-
-    // Emoji de moneda 🪙
-    const emoji = this.scene.add.text(0, 0, "🪙", {
-      fontSize: "28px",
-      fontFamily: "Arial",
-    });
-    emoji.setOrigin(0.5);
-    this.tipButton.add(emoji);
-
-    // Hacer interactivo
-    this.tipButton.setSize(buttonSize, buttonSize + depth);
-    this.tipButton.setInteractive({ useHandCursor: true });
-
-    this.tipButton.on("pointerover", () => {
-      this.scene.tweens.add({
-        targets: this.tipButton,
-        scaleX: 1.1,
-        scaleY: 1.1,
-        duration: 100,
-        ease: "Back.easeOut",
-      });
-    });
-
-    this.tipButton.on("pointerout", () => {
-      this.scene.tweens.add({
-        targets: this.tipButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Back.easeOut",
-      });
-    });
-
-    this.tipButton.on("pointerdown", () => {
-      this.scene.tweens.add({
-        targets: this.tipButton,
-        scaleX: 0.9,
-        scaleY: 0.9,
-        duration: 50,
-        yoyo: true,
-        onComplete: () => {
-          if (this.powerUpCallbacks.onTip) {
-            this.powerUpCallbacks.onTip();
-          }
-        },
-      });
-    });
-
-    this.add(this.tipButton);
-  }
-
-  /**
-   * Oculta el botón de tip (cuando ya se compró)
-   */
-  public hideTipButton(): void {
-    if (this.tipButton) {
-      this.tipButton.setVisible(false);
-    }
   }
 
   /**
@@ -681,7 +585,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     size: number,
     colors: { main: number; border: number },
     type: "undo" | "clock" | "key" | "theme",
-    usesLeft: number
+    usesLeft: number,
   ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(x, y);
     const depth = 10;
@@ -720,7 +624,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         arrowRadius,
         Phaser.Math.DegToRad(-45),
         Phaser.Math.DegToRad(180),
-        false
+        false,
       );
       icon.strokePath();
       // Flecha
@@ -791,7 +695,7 @@ export class GameUI extends Phaser.GameObjects.Container {
           fontSize: "18px",
           fontFamily: "'Fredoka One', cursive",
           color: "#ffffff",
-        }
+        },
       );
       countText.setOrigin(0.5);
       container.add(countText);
@@ -952,7 +856,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2 + handDepth,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara 3D
@@ -962,7 +866,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2 + handDepth,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Fondo del acumulador (cara principal)
@@ -972,7 +876,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde exterior
@@ -982,7 +886,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
 
     this.add(this.handBg);
@@ -1013,7 +917,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       -hand.slotHeight / 2,
       hand.slotWidth,
       hand.slotHeight,
-      8
+      8,
     );
 
     // Borde del slot
@@ -1023,7 +927,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       -hand.slotHeight / 2,
       hand.slotWidth,
       hand.slotHeight,
-      8
+      8,
     );
 
     container.add(slotBg);
@@ -1150,7 +1054,7 @@ export class GameUI extends Phaser.GameObjects.Container {
    * Fallback para crear mini ficha si no existe la textura
    */
   private createFallbackMiniTile(
-    tile: TileState
+    tile: TileState,
   ): Phaser.GameObjects.Container {
     const container = this.scene.add.container(0, 0);
     const colors = TILE_COLORS[tile.type];
@@ -1204,7 +1108,7 @@ export class GameUI extends Phaser.GameObjects.Container {
             const imgCopy = this.scene.add.image(
               child.x,
               child.y,
-              child.texture.key
+              child.texture.key,
             );
             imgCopy.setScale(child.scaleX, child.scaleY);
             imgCopy.setOrigin(child.originX, child.originY);
@@ -1272,7 +1176,7 @@ export class GameUI extends Phaser.GameObjects.Container {
               if (index === animationSprites.length - 1) {
                 this.createMatchParticles(
                   animationCenterX,
-                  animationCenterY - 30
+                  animationCenterY - 30,
                 );
                 this.createFlashEffect(animationCenterX, animationCenterY - 30);
               }
@@ -1413,11 +1317,11 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.levelText.setText(`Lv.${level}`);
 
     // Calcular tiempo para este nivel
-    // Base: 45 segundos (antes 60) - Más difícil
-    // Incremento: +3 segundos por nivel (antes +5) - Menos tiempo extra
+    // Base: 45 segundos
+    // Incremento: +5 segundos por nivel
     let levelTime = 45;
     if (level > 1) {
-      levelTime = 45 + (level - 1) * 3;
+      levelTime = 45 + (level - 1) * 5;
     }
 
     // Reiniciar timer al cambiar de nivel
@@ -1582,7 +1486,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Contenedor centrado
     const winContainer = this.scene.add.container(
       canvas.width / 2,
-      canvas.height / 2
+      canvas.height / 2,
     );
 
     const bg = this.scene.add.graphics();
@@ -1597,7 +1501,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY + depth3D,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara 3D
@@ -1607,7 +1511,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY + depth3D,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Cara principal
@@ -1617,7 +1521,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara principal
@@ -1627,7 +1531,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
     winContainer.add(bg);
 
@@ -1656,7 +1560,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
         color: theme.modal.textColor,
-      }
+      },
     );
     timeText.setOrigin(0.5);
     winContainer.add(timeText);
@@ -1670,7 +1574,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         fontSize: "24px",
         fontFamily: "'Fredoka One', sans-serif",
         color: theme.modal.textColor,
-      }
+      },
     );
     scoreText.setOrigin(0.5);
     winContainer.add(scoreText);
@@ -1774,7 +1678,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Contenedor centrado
     const tryAgainContainer = this.scene.add.container(
       canvas.width / 2,
-      canvas.height / 2
+      canvas.height / 2,
     );
 
     const bg = this.scene.add.graphics();
@@ -1789,7 +1693,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY + depth3D,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara 3D
@@ -1799,7 +1703,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY + depth3D,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Cara principal
@@ -1809,7 +1713,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara principal
@@ -1819,7 +1723,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       offsetY,
       modalWidth,
       modalHeight,
-      borderRadius
+      borderRadius,
     );
     tryAgainContainer.add(bg);
 
@@ -1845,7 +1749,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         fontFamily: "'Fredoka One', sans-serif",
         color: theme.modal.textColor,
         align: "center",
-      }
+      },
     );
     livesText.setOrigin(0.5);
     tryAgainContainer.add(livesText);
@@ -1973,7 +1877,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         badgeDepth,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       levelBg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
       levelBg.strokeRoundedRect(
@@ -1981,7 +1885,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         badgeDepth,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       levelBg.fillStyle(badgeColor, 1);
       levelBg.fillRoundedRect(
@@ -1989,7 +1893,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         0,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       levelBg.lineStyle(2, borderColor, 1);
       levelBg.strokeRoundedRect(
@@ -1997,7 +1901,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         0,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
     }
 
@@ -2016,7 +1920,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         badgeDepth,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       scoreBg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
       scoreBg.strokeRoundedRect(
@@ -2024,7 +1928,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         badgeDepth,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       scoreBg.fillStyle(badgeColor, 1);
       scoreBg.fillRoundedRect(
@@ -2032,7 +1936,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         0,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       scoreBg.lineStyle(2, borderColor, 1);
       scoreBg.strokeRoundedRect(
@@ -2040,7 +1944,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         0,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
     }
 
@@ -2059,7 +1963,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         badgeDepth,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       timeBg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
       timeBg.strokeRoundedRect(
@@ -2067,7 +1971,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         badgeDepth,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       timeBg.fillStyle(badgeColor, 1);
       timeBg.fillRoundedRect(
@@ -2075,7 +1979,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         0,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
       timeBg.lineStyle(2, borderColor, 1);
       timeBg.strokeRoundedRect(
@@ -2083,7 +1987,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         0,
         badgeWidth,
         badgeHeight,
-        borderRadius
+        borderRadius,
       );
     }
 
@@ -2104,7 +2008,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2 + handDepth,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
     this.handBg.lineStyle(2, this.darkenColor(slotBorderColor, 0.3), 1);
     this.handBg.strokeRoundedRect(
@@ -2112,7 +2016,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2 + handDepth,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
     this.handBg.fillStyle(bgColor, 1);
     this.handBg.fillRoundedRect(
@@ -2120,7 +2024,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
     this.handBg.lineStyle(2, slotBorderColor, 1);
     this.handBg.strokeRoundedRect(
@@ -2128,7 +2032,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       handY - handHeight / 2,
       handWidth,
       handHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Refrescar slots
@@ -2142,7 +2046,7 @@ export class GameUI extends Phaser.GameObjects.Container {
           -hand.slotHeight / 2,
           hand.slotWidth,
           hand.slotHeight,
-          8
+          8,
         );
         slotBg.lineStyle(2, slotBorderColor, 1);
         slotBg.strokeRoundedRect(
@@ -2150,7 +2054,7 @@ export class GameUI extends Phaser.GameObjects.Container {
           -hand.slotHeight / 2,
           hand.slotWidth,
           hand.slotHeight,
-          8
+          8,
         );
       }
     });
