@@ -5,13 +5,11 @@
 
 // La primera pista siempre se reproduce primero (se precarga en PreloadScene)
 const PRIMARY_MUSIC_TRACK =
-  "https://remix.gg/blob/zS0QCi0PfUjO/japan1-h7Q5EJSRNkIhLRsmjr59uj2OVJ7vLR.mp3?7Mgg";
+  "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/sounds/mahjong1.mp3";
 
 // Pistas adicionales que se cargarán en lazy load
 const ADDITIONAL_MUSIC_TRACKS = [
-  "https://remix.gg/blob/zS0QCi0PfUjO/japan2-UX2geRsXkauPcmjwLqcN8pyKkKX1u4.mp3?Pcxh",
-  "https://remix.gg/blob/zS0QCi0PfUjO/japan3-lZ1E47esXUjGBsCVs8Cm1JSwnH26uT.mp3?UVvJ",
-  "https://remix.gg/blob/zS0QCi0PfUjO/japan4-WoachgGDYPTmcoRaQOGrwPZ5MpGeyW.mp3?VzVh",
+  "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/sounds/mahjong2.mp3",
 ];
 
 class SoundManagerClass {
