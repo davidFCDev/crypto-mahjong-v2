@@ -131,7 +131,7 @@ export class MainMenuScene extends Phaser.Scene {
       depth3D,
       buttonWidth,
       buttonHeight,
-      16
+      16,
     );
 
     // Cara principal

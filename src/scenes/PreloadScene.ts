@@ -138,8 +138,8 @@ export class PreloadScene extends Phaser.Scene {
     // 2. Todos los assets de la cola de Phaser cargaron
     // 3. Las fuentes web cargaron
     if (this.animationComplete && this.assetsLoaded && this.fontsLoaded) {
-      // Ir directamente al juego (omitir menú principal)
-      this.scene.start("MahjongScene");
+      // Ir al menú principal
+      this.scene.start("MainMenuScene");
     }
   }
 }

@@ -30,7 +30,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     x: number,
     y: number,
     state: TileState,
-    showBottom3D: boolean = true
+    showBottom3D: boolean = true,
   ) {
     super(scene, x, y);
 
@@ -117,7 +117,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
             blur: 0,
             fill: true,
           },
-        }
+        },
       );
       this.symbolText.setOrigin(0.5);
       this.add(this.symbolText);
@@ -132,7 +132,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
     // Configurar interactividad
     this.setSize(
       this.tileWidth + this.tileDepth,
-      this.tileHeight + this.tileDepth
+      this.tileHeight + this.tileDepth,
     );
     this.setInteractive({ useHandCursor: true });
 
@@ -189,7 +189,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
   private generateTileTexture(
     key: string,
     type: TileType,
-    showBottom: boolean
+    showBottom: boolean,
   ): void {
     const w = this.tileWidth;
     const h = this.tileHeight;
@@ -215,7 +215,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
       g.lineStyle(
         1,
         this.darkenColor(tileColors.bottomLight || tileColors.bottom, 0.15),
-        1
+        1,
       );
       g.strokeRoundedRect(offsetX, offsetY + d, w, h, r);
     }
@@ -246,7 +246,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
         offsetY + margin,
         innerW,
         innerH,
-        innerR
+        innerR,
       );
     } else {
       // Fondo con gradiente del color del tipo
@@ -256,7 +256,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
         offsetY + margin,
         innerW,
         innerH,
-        innerR
+        innerR,
       );
 
       // Borde interior más oscuro
@@ -266,7 +266,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
         offsetY + margin,
         innerW,
         innerH,
-        innerR
+        innerR,
       );
 
       // === EFECTOS DE LUZ Y BRILLO ===
@@ -277,7 +277,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
         offsetY + margin + 3,
         innerW - 6,
         innerH * 0.3,
-        { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 }
+        { tl: innerR - 1, tr: innerR - 1, bl: 0, br: 0 },
       );
     }
 
@@ -395,7 +395,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
   public animateToHand(
     targetX: number,
     targetY: number,
-    onComplete?: () => void
+    onComplete?: () => void,
   ): void {
     this.scene.tweens.add({
       targets: this,
