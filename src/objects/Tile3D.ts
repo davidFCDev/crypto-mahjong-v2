@@ -106,7 +106,7 @@ export class Tile3D extends Phaser.GameObjects.Container {
         tileColors.letter,
         {
           fontSize: `${fontSize}px`,
-          fontFamily: "'Bangers', 'Comic Sans MS', cursive",
+          fontFamily: "'Luckiest Guy', 'Comic Sans MS', cursive",
           color: "#ffffff",
           stroke: this.colorToHex(tileColors.accent),
           strokeThickness: 4,

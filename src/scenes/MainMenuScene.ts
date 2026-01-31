@@ -47,7 +47,7 @@ export class MainMenuScene extends Phaser.Scene {
    * Crea el título "MATCH 3" con el 3 más grande
    */
   private createTitle(centerX: number): void {
-    const fontFamily = "'Bangers', 'Comic Sans MS', cursive";
+    const fontFamily = "'Luckiest Guy', 'Comic Sans MS', cursive";
     const titleY = 350;
 
     // Contenedor para el título
@@ -114,7 +114,7 @@ export class MainMenuScene extends Phaser.Scene {
    */
   private createStartButton(centerX: number): void {
     const theme = getCurrentTheme();
-    const fontFamily = "'Bangers', 'Comic Sans MS', cursive";
+    const fontFamily = "'Luckiest Guy', 'Comic Sans MS', cursive";
     const buttonY = 700;
     const buttonWidth = 280;
     const buttonHeight = 80;

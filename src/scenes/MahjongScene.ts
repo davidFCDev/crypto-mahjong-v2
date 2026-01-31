@@ -941,7 +941,7 @@ export class MahjongScene extends Phaser.Scene {
     );
     gameOverModal.add(overlay);
 
-    const fontFamily = "'Bangers', Arial Black, sans-serif";
+    const fontFamily = "'Luckiest Guy', Arial Black, sans-serif";
     const centerX = canvas.width / 2;
 
     // Título GAME OVER
@@ -1410,7 +1410,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.on("pointerdown", () => {}); // Bloquear clicks
     this.purchaseOverlay.add(overlay);
 
-    const fontFamily = "'Bangers', Arial Black, sans-serif";
+    const fontFamily = "'Luckiest Guy', Arial Black, sans-serif";
     const centerX = canvas.width / 2;
 
     // Título
@@ -1602,7 +1602,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.on("pointerdown", () => {}); // Bloquear clicks
     this.tipOverlay.add(overlay);
 
-    const fontFamily = "'Bangers', Arial Black, sans-serif";
+    const fontFamily = "'Luckiest Guy', Arial Black, sans-serif";
     const centerX = canvas.width / 2;
 
     // Título

@@ -152,7 +152,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Texto del nivel
     this.levelText = this.scene.add.text(0, badgeHeight / 2, "Lv.1", {
       fontSize: "32px",
-      fontFamily: "'Bangers', 'Comic Sans MS', cursive",
+      fontFamily: "'Luckiest Guy', 'Comic Sans MS', cursive",
       color: "#ffffff",
       stroke: "#1a3a1a",
       strokeThickness: 3,
@@ -227,7 +227,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Solo el número del score
     this.scoreText = this.scene.add.text(0, badgeHeight / 2, "0", {
       fontSize: "42px",
-      fontFamily: "'Bangers', 'Comic Sans MS', cursive",
+      fontFamily: "'Luckiest Guy', 'Comic Sans MS', cursive",
       color: "#ffffff",
       stroke: "#1a3a1a",
       strokeThickness: 4,
@@ -429,7 +429,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Texto del tiempo
     this.timeText = this.scene.add.text(0, badgeHeight / 2, "60", {
       fontSize: "32px",
-      fontFamily: "'Bangers', 'Comic Sans MS', cursive",
+      fontFamily: "'Luckiest Guy', 'Comic Sans MS', cursive",
       color: "#ffffff",
       stroke: "#1a3a1a",
       strokeThickness: 3,
@@ -690,7 +690,7 @@ export class GameUI extends Phaser.GameObjects.Container {
         usesLeft.toString(),
         {
           fontSize: "18px",
-          fontFamily: "'Bangers', cursive",
+          fontFamily: "'Luckiest Guy', cursive",
           color: "#ffffff",
         },
       );
@@ -1072,7 +1072,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const fontSize = Math.floor(w * 0.4);
     const symbol = this.scene.add.text(0, 0, colors.letter, {
       fontSize: `${fontSize}px`,
-      fontFamily: "'Bangers', sans-serif",
+      fontFamily: "'Luckiest Guy', sans-serif",
       color: "#ffffff",
     });
     symbol.setOrigin(0.5);
@@ -1535,7 +1535,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Título
     const winText = this.scene.add.text(0, offsetY + 50, "LEVEL COMPLETE!", {
       fontSize: "38px",
-      fontFamily: "'Bangers', Arial Black, sans-serif",
+      fontFamily: "'Luckiest Guy', Arial Black, sans-serif",
       color: theme.modal.titleColor,
       stroke: theme.modal.titleStroke,
       strokeThickness: 5,
@@ -1555,7 +1555,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       `TIME: ${levelTime}s`,
       {
         fontSize: "24px",
-        fontFamily: "'Bangers', sans-serif",
+        fontFamily: "'Luckiest Guy', sans-serif",
         color: theme.modal.textColor,
       },
     );
@@ -1569,7 +1569,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       `SCORE: +${levelScore}`,
       {
         fontSize: "24px",
-        fontFamily: "'Bangers', sans-serif",
+        fontFamily: "'Luckiest Guy', sans-serif",
         color: theme.modal.textColor,
       },
     );
@@ -1602,7 +1602,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const btnText = this.scene.add.text(0, btnHeight / 2, "NEXT LEVEL →", {
       fontSize: "24px",
-      fontFamily: "'Bangers', Arial Black, sans-serif",
+      fontFamily: "'Luckiest Guy', Arial Black, sans-serif",
       color: theme.modal.buttonTextColor,
     });
     btnText.setOrigin(0.5);
@@ -1727,7 +1727,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Título
     const titleText = this.scene.add.text(0, offsetY + 55, "TIME'S UP!", {
       fontSize: "38px",
-      fontFamily: "'Bangers', Arial Black, sans-serif",
+      fontFamily: "'Luckiest Guy', Arial Black, sans-serif",
       color: theme.modal.titleColor,
       stroke: theme.modal.titleStroke,
       strokeThickness: 5,
@@ -1743,7 +1743,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       `${this.lives} life remaining`,
       {
         fontSize: "24px",
-        fontFamily: "'Bangers', sans-serif",
+        fontFamily: "'Luckiest Guy', sans-serif",
         color: theme.modal.textColor,
         align: "center",
       },
@@ -1777,7 +1777,7 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     const btnText = this.scene.add.text(0, btnHeight / 2, "TRY AGAIN", {
       fontSize: "24px",
-      fontFamily: "'Bangers', Arial Black, sans-serif",
+      fontFamily: "'Luckiest Guy', Arial Black, sans-serif",
       color: theme.modal.buttonTextColor,
     });
     btnText.setOrigin(0.5);
