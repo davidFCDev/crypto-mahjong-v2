@@ -1,23 +1,12 @@
 /**
  * MainMenuScene - Pantalla principal del juego
- * Muestra el título estilo cartoon, botón de Start y botón de Style
+ * Muestra el título MATCH 3, botón START y fondo
  */
 
 import GameSettings from "../config/GameSettings";
-import {
-  getAvailableThemes,
-  getCurrentTheme,
-  setTheme,
-  themes,
-} from "../config/Themes";
+import { getCurrentTheme } from "../config/Themes";
 
 export class MainMenuScene extends Phaser.Scene {
-  private styleModal: Phaser.GameObjects.Container | null = null;
-  private tutorialModal: Phaser.GameObjects.Container | null = null;
-  private hasExclusiveThemes: boolean = false;
-  private hasJustATip: boolean = false;
-  private styleButton: Phaser.GameObjects.Container | null = null;
-
   constructor() {
     super({ key: "MainMenuScene" });
   }
@@ -26,429 +15,156 @@ export class MainMenuScene extends Phaser.Scene {
     const { canvas } = GameSettings;
     const centerX = canvas.width / 2;
 
-    // Cargar tema guardado
-    this.loadSavedTheme();
-
-    // Fondo con imagen
+    // Fondo
     this.createBackground();
 
-    // Título del juego estilo cartoon
-    this.createCartoonTitle(centerX);
+    // Título del juego "MATCH 3"
+    this.createTitle(centerX);
 
-    // Botones estilo badge 3D
-    this.createMenuButtons(centerX);
+    // Botón START
+    this.createStartButton(centerX);
   }
 
   /**
-   * Crea el fondo de la escena con imagen
+   * Crea el fondo de la escena
    */
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    // Imagen de fondo
-    const bg = this.add.image(canvas.width / 2, canvas.height / 2, "menu-bg");
-    bg.setDisplaySize(canvas.width, canvas.height);
-  }
-
-  /**
-   * Crea el título del juego con estilo comic/cartoon
-   */
-  private createCartoonTitle(centerX: number): void {
-    // Contenedor para el título completo
-    const titleContainer = this.add.container(centerX, 280);
-
-    const fontFamily = "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive";
-
-    // ========== CRYPTO con estilo comic ==========
-    this.createComicWord(
-      titleContainer,
-      "CRYPTO",
-      0,
-      0,
-      100,
-      [
-        { rotation: -8, scale: 1.1 },
-        { rotation: 5, scale: 1.0 },
-        { rotation: -3, scale: 1.15 },
-        { rotation: 6, scale: 0.95 },
-        { rotation: -4, scale: 1.05 },
-        { rotation: 7, scale: 1.1 },
-      ],
-      fontFamily,
-    );
-
-    // ========== MAHJONG con estilo comic ==========
-    this.createComicWord(
-      titleContainer,
-      "MAHJONG",
-      0,
-      130,
-      110,
-      [
-        { rotation: 6, scale: 1.05 },
-        { rotation: -5, scale: 1.1 },
-        { rotation: 4, scale: 0.95 },
-        { rotation: -7, scale: 1.15 },
-        { rotation: 3, scale: 1.0 },
-        { rotation: -4, scale: 1.1 },
-        { rotation: 5, scale: 1.05 },
-      ],
-      fontFamily,
-    );
-
-    // ========== REMIXED subtítulo ==========
-    this.createRemixedSubtitle(titleContainer, 0, 230, fontFamily);
-  }
-
-  /**
-   * Crea una palabra con estilo comic (cada letra con rotación y escala individual)
-   */
-  private createComicWord(
-    container: Phaser.GameObjects.Container,
-    word: string,
-    startX: number,
-    y: number,
-    fontSize: number,
-    letterStyles: { rotation: number; scale: number }[],
-    fontFamily: string,
-  ): void {
-    const letters = word.split("");
-    const letterSpacing = fontSize * 0.72;
-    const totalWidth = (letters.length - 1) * letterSpacing;
-    const offsetX = startX - totalWidth / 2;
-
-    letters.forEach((letter, index) => {
-      const style = letterStyles[index] || { rotation: 0, scale: 1 };
-      const x = offsetX + index * letterSpacing;
-
-      // Sombra 3D para cada letra
-      for (let i = 6; i > 0; i--) {
-        const shadow = this.add.text(x + i * 2, y + i * 2, letter, {
-          fontSize: `${fontSize}px`,
-          fontFamily: fontFamily,
-          color: "#000000",
-        });
-        shadow.setOrigin(0.5);
-        shadow.setRotation(Phaser.Math.DegToRad(style.rotation));
-        shadow.setScale(style.scale);
-        shadow.setAlpha(i === 6 ? 0.8 : 0.4);
-        container.add(shadow);
-      }
-
-      // Letra principal
-      const letterText = this.add.text(x, y, letter, {
-        fontSize: `${fontSize}px`,
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 8,
-      });
-      letterText.setOrigin(0.5);
-      letterText.setRotation(Phaser.Math.DegToRad(style.rotation));
-      letterText.setScale(style.scale);
-      container.add(letterText);
-    });
-  }
-
-  /**
-   * Crea el subtítulo "REMIXED" en cursiva con estilo comic
-   */
-  private createRemixedSubtitle(
-    container: Phaser.GameObjects.Container,
-    x: number,
-    y: number,
-    fontFamily: string,
-  ): void {
-    const fontSize = 48;
-    const word = "REMIXED";
-    const letters = word.split("");
-    const letterSpacing = fontSize * 0.65;
-    const totalWidth = (letters.length - 1) * letterSpacing;
-    const offsetX = x - totalWidth / 2;
-
-    // Estilos para cada letra (rotaciones sutiles para estilo comic)
-    const letterStyles = [
-      { rotation: -4, scale: 1.0 },
-      { rotation: 3, scale: 1.05 },
-      { rotation: -2, scale: 0.98 },
-      { rotation: 4, scale: 1.02 },
-      { rotation: -3, scale: 1.0 },
-      { rotation: 2, scale: 1.03 },
-      { rotation: -4, scale: 1.0 },
-    ];
-
-    letters.forEach((letter, index) => {
-      const style = letterStyles[index] || { rotation: 0, scale: 1 };
-      const letterX = offsetX + index * letterSpacing;
-
-      // Sombra 3D
-      for (let i = 4; i > 0; i--) {
-        const shadow = this.add.text(letterX + i * 2, y + i * 2, letter, {
-          fontSize: `${fontSize}px`,
-          fontFamily: fontFamily,
-          color: "#000000",
-        });
-        shadow.setOrigin(0.5);
-        shadow.setRotation(Phaser.Math.DegToRad(style.rotation));
-        shadow.setScale(style.scale);
-        shadow.setAlpha(i === 4 ? 0.6 : 0.3);
-        container.add(shadow);
-      }
-
-      // Letra principal en verde lima
-      const letterText = this.add.text(letterX, y, letter, {
-        fontSize: `${fontSize}px`,
-        fontFamily: fontFamily,
-        color: "#B7FF00",
-        stroke: "#000000",
-        strokeThickness: 6,
-      });
-      letterText.setOrigin(0.5);
-      letterText.setRotation(Phaser.Math.DegToRad(style.rotation));
-      letterText.setScale(style.scale);
-      container.add(letterText);
-    });
-  }
-
-  /**
-   * Crea los botones del menú con estilo badge 3D
-   */
-  private createMenuButtons(centerX: number): void {
-    // Verificar si tiene temas exclusivos comprados
-    this.checkExclusiveThemes();
-
-    // Botón START - Tonos ROJOS
-    this.createBadgeButton(
-      centerX,
-      640,
-      "START",
-      0xff3b3b,
-      0x8b0000,
-      "#5a0000",
-      () => {
-        // Verificar si es la primera vez que juega
-        const hasPlayedBefore = localStorage.getItem(
-          "crypto-mahjong-tutorial-seen",
-        );
-        if (!hasPlayedBefore) {
-          this.showTutorial();
-        } else {
-          this.scene.start("MahjongScene");
-        }
-      },
-    );
-  }
-
-  /**
-   * Verifica si el usuario tiene los temas exclusivos (siempre disponibles en Astrocade)
-   */
-  private checkExclusiveThemes(): void {
-    // En Astrocade todos los temas están disponibles
-    this.hasExclusiveThemes = true;
-    this.hasJustATip = true;
-  }
-
-  /**
-   * Crea el botón THEME con badge de créditos si no está desbloqueado
-   */
-  private createStyleButton(centerX: number, y: number): void {
-    const mainColor = this.hasExclusiveThemes ? 0x3cb371 : 0x666666;
-    const borderColor = this.hasExclusiveThemes ? 0x1a5a1a : 0x444444;
-    const textStroke = this.hasExclusiveThemes ? "#0a3a0a" : "#333333";
-
-    this.styleButton = this.createBadgeButton(
-      centerX,
-      y,
-      "THEME",
-      mainColor,
-      borderColor,
-      textStroke,
-      () => {
-        if (this.hasExclusiveThemes) {
-          this.showStyleModal();
-        } else {
-          this.purchaseExclusiveThemes();
-        }
-      },
-    );
-
-    // Si no tiene temas exclusivos, añadir badge de créditos
-    if (!this.hasExclusiveThemes) {
-      this.addCreditsBadge(this.styleButton, 100);
+    // Intentar cargar imagen de fondo, si no existe usar color sólido
+    if (this.textures.exists("menu-bg")) {
+      const bg = this.add.image(canvas.width / 2, canvas.height / 2, "menu-bg");
+      bg.setDisplaySize(canvas.width, canvas.height);
+    } else {
+      // Fondo degradado como fallback
+      const bg = this.add.graphics();
+      bg.fillGradientStyle(0x1a1a2e, 0x1a1a2e, 0x16213e, 0x16213e, 1);
+      bg.fillRect(0, 0, canvas.width, canvas.height);
     }
-
-    // Crear botón JUST A TIP debajo
-    this.createJustATipButton(centerX, y + 180);
   }
 
   /**
-   * Crea el botón JUST A TIP o muestra mensaje de agradecimiento
+   * Crea el título "MATCH 3" con el 3 más grande
    */
-  private createJustATipButton(centerX: number, y: number): void {
-    // En Astrocade, mostrar mensaje de agradecimiento
-    const thanksText = this.add.text(centerX, y + 35, "Thanks for playing!", {
-      fontSize: "32px",
-      fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#B7FF00",
-      stroke: "#000000",
-      strokeThickness: 4,
-    });
-    thanksText.setOrigin(0.5);
+  private createTitle(centerX: number): void {
+    const fontFamily = "'Bangers', 'Comic Sans MS', cursive";
+    const titleY = 350;
 
-    // Mostrar mensaje adicional
-    const subText = this.add.text(centerX, y + 75, "Astrocade Edition", {
-      fontSize: "28px",
-      fontFamily: "'Fredoka One', Arial Black, sans-serif",
+    // Contenedor para el título
+    const titleContainer = this.add.container(centerX, titleY);
+
+    // "MATCH" - letras con estilo cartoon
+    const matchText = this.add.text(-60, 0, "MATCH", {
+      fontSize: "120px",
+      fontFamily: fontFamily,
       color: "#ffffff",
       stroke: "#000000",
-      strokeThickness: 3,
+      strokeThickness: 12,
     });
-    subText.setOrigin(0.5);
+    matchText.setOrigin(0.5);
+
+    // Sombra para MATCH
+    const matchShadow = this.add.text(-60 + 6, 6, "MATCH", {
+      fontSize: "120px",
+      fontFamily: fontFamily,
+      color: "#000000",
+    });
+    matchShadow.setOrigin(0.5);
+    matchShadow.setAlpha(0.5);
+
+    // "3" - más grande y con color destacado
+    const threeText = this.add.text(180, -20, "3", {
+      fontSize: "180px",
+      fontFamily: fontFamily,
+      color: "#ff6b6b",
+      stroke: "#000000",
+      strokeThickness: 14,
+    });
+    threeText.setOrigin(0.5);
+
+    // Sombra para el 3
+    const threeShadow = this.add.text(180 + 8, -20 + 8, "3", {
+      fontSize: "180px",
+      fontFamily: fontFamily,
+      color: "#000000",
+    });
+    threeShadow.setOrigin(0.5);
+    threeShadow.setAlpha(0.5);
+
+    // Añadir en orden (sombras primero)
+    titleContainer.add(matchShadow);
+    titleContainer.add(threeShadow);
+    titleContainer.add(matchText);
+    titleContainer.add(threeText);
+
+    // Animación sutil del 3
+    this.tweens.add({
+      targets: threeText,
+      scaleX: 1.05,
+      scaleY: 1.05,
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: "Sine.easeInOut",
+    });
   }
 
   /**
-   * Proceso de tip (deshabilitado en Astrocade)
+   * Crea el botón START
    */
-  private purchaseJustATip(): void {
-    // No hacer nada en Astrocade
-  }
+  private createStartButton(centerX: number): void {
+    const theme = getCurrentTheme();
+    const fontFamily = "'Bangers', 'Comic Sans MS', cursive";
+    const buttonY = 700;
+    const buttonWidth = 280;
+    const buttonHeight = 80;
+    const depth3D = 12;
 
-  /**
-   * Añade un badge de créditos al botón
-   */
-  private addCreditsBadge(
-    container: Phaser.GameObjects.Container,
-    credits: number,
-  ): void {
-    const badgeWidth = 180;
-    const badgeHeight = 42;
-    const badgeY = 90 + 18 - 12; // buttonHeight + badgeDepth - overlap
-
-    const badge = this.add.graphics();
-
-    // Fondo del badge (amarillo/dorado)
-    badge.fillStyle(0xffd700, 1);
-    badge.fillRoundedRect(-badgeWidth / 2, badgeY, badgeWidth, badgeHeight, 10);
-
-    // Borde del badge
-    badge.lineStyle(3, 0xb8860b, 1);
-    badge.strokeRoundedRect(
-      -badgeWidth / 2,
-      badgeY,
-      badgeWidth,
-      badgeHeight,
-      10,
-    );
-
-    container.add(badge);
-
-    // Texto del badge
-    const badgeText = this.add.text(
-      0,
-      badgeY + badgeHeight / 2,
-      `${credits} credits`,
-      {
-        fontSize: "24px",
-        fontFamily: "'Fredoka One', Arial Black, sans-serif",
-        color: "#5a4000",
-      },
-    );
-    badgeText.setOrigin(0.5);
-    container.add(badgeText);
-  }
-
-  /**
-   * Proceso de compra de temas (deshabilitado en Astrocade)
-   */
-  private purchaseExclusiveThemes(): void {
-    // En Astrocade los temas ya están desbloqueados, abrir modal directamente
-    this.showStyleModal();
-  }
-
-  /**
-   * Crea un botón con estilo badge 3D
-   */
-  private createBadgeButton(
-    x: number,
-    y: number,
-    text: string,
-    mainColor: number,
-    borderColor: number,
-    textStroke: string,
-    onClick: () => void,
-  ): Phaser.GameObjects.Container {
-    const buttonWidth = 340;
-    const buttonHeight = 90;
-    const badgeDepth = 18;
-    const borderRadius = 14;
-
-    const container = this.add.container(x, y);
+    const container = this.add.container(centerX, buttonY);
 
     const bg = this.add.graphics();
 
-    // Cara inferior (volumen 3D)
-    bg.fillStyle(borderColor, 1);
+    // Cara 3D (más oscura)
+    bg.fillStyle(theme.badge.border, 1);
     bg.fillRoundedRect(
       -buttonWidth / 2,
-      badgeDepth,
+      depth3D,
       buttonWidth,
       buttonHeight,
-      borderRadius,
+      16
     );
 
-    // Borde de la cara 3D
-    bg.lineStyle(2, this.darkenColor(borderColor, 0.3), 1);
-    bg.strokeRoundedRect(
-      -buttonWidth / 2,
-      badgeDepth,
-      buttonWidth,
-      buttonHeight,
-      borderRadius,
-    );
+    // Cara principal
+    bg.fillStyle(theme.badge.main, 1);
+    bg.fillRoundedRect(-buttonWidth / 2, 0, buttonWidth, buttonHeight, 16);
 
-    // Fondo del botón (cara principal)
-    bg.fillStyle(mainColor, 1);
-    bg.fillRoundedRect(
-      -buttonWidth / 2,
-      0,
-      buttonWidth,
-      buttonHeight,
-      borderRadius,
-    );
-
-    // Borde de la cara principal
-    bg.lineStyle(2, borderColor, 1);
-    bg.strokeRoundedRect(
-      -buttonWidth / 2,
-      0,
-      buttonWidth,
-      buttonHeight,
-      borderRadius,
-    );
+    // Borde
+    bg.lineStyle(3, theme.badge.border, 1);
+    bg.strokeRoundedRect(-buttonWidth / 2, 0, buttonWidth, buttonHeight, 16);
 
     container.add(bg);
 
-    // Texto del botón
-    const buttonText = this.add.text(0, buttonHeight / 2, text, {
-      fontSize: "44px",
-      fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+    // Texto START
+    const buttonText = this.add.text(0, buttonHeight / 2, "START", {
+      fontSize: "52px",
+      fontFamily: fontFamily,
       color: "#ffffff",
-      stroke: textStroke,
-      strokeThickness: 7,
+      stroke: theme.badge.textStroke,
+      strokeThickness: 6,
     });
     buttonText.setOrigin(0.5);
     container.add(buttonText);
 
     // Hacer interactivo
-    container.setSize(buttonWidth, buttonHeight + badgeDepth);
+    container.setSize(buttonWidth, buttonHeight + depth3D);
     container.setInteractive({ useHandCursor: true });
 
-    // Efectos hover y click
+    // Efectos hover
     container.on("pointerover", () => {
       this.tweens.add({
         targets: container,
-        scaleX: 1.05,
-        scaleY: 1.05,
+        scaleX: 1.08,
+        scaleY: 1.08,
         duration: 100,
         ease: "Power2",
       });
@@ -467,7 +183,7 @@ export class MainMenuScene extends Phaser.Scene {
     container.on("pointerdown", () => {
       this.tweens.add({
         targets: container,
-        y: y + 4,
+        y: buttonY + 4,
         duration: 50,
         ease: "Power2",
       });
@@ -476,639 +192,14 @@ export class MainMenuScene extends Phaser.Scene {
     container.on("pointerup", () => {
       this.tweens.add({
         targets: container,
-        y: y,
+        y: buttonY,
         duration: 50,
         ease: "Power2",
         onComplete: () => {
-          onClick();
+          // Ir directamente al juego
+          this.scene.start("MahjongScene");
         },
       });
-    });
-
-    return container;
-  }
-
-  /**
-   * Oscurece un color hexadecimal
-   */
-  private darkenColor(color: number, factor: number): number {
-    const r = Math.floor(((color >> 16) & 0xff) * (1 - factor));
-    const g = Math.floor(((color >> 8) & 0xff) * (1 - factor));
-    const b = Math.floor((color & 0xff) * (1 - factor));
-    return (r << 16) | (g << 8) | b;
-  }
-
-  /**
-   * Muestra el modal de selección de estilos
-   */
-  private showStyleModal(): void {
-    if (this.styleModal) return; // Ya está abierto
-
-    const { canvas } = GameSettings;
-
-    // Contenedor principal del overlay (cubre toda la pantalla)
-    this.styleModal = this.add.container(0, 0);
-    this.styleModal.setDepth(1000);
-
-    // Overlay oscuro que bloquea interacción con elementos de atrás
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.97);
-    overlay.fillRect(0, 0, canvas.width, canvas.height);
-    overlay.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains,
-    );
-    // Evitar que los clicks pasen a los elementos de atrás
-    overlay.on("pointerdown", () => {});
-    this.styleModal.add(overlay);
-
-    // Título "SELECT THEME"
-    const title = this.add.text(canvas.width / 2, 160, "SELECT THEME", {
-      fontSize: "52px",
-      fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 8,
-    });
-    title.setOrigin(0.5);
-    this.styleModal.add(title);
-
-    // Crear botones de temas en columna
-    const themeNames = getAvailableThemes();
-    const buttonWidth = 420;
-    const buttonHeight = 95;
-    const gap = 30;
-    const startY = 290;
-
-    themeNames.forEach((themeName, index) => {
-      const theme = themes[themeName];
-      const y = startY + index * (buttonHeight + gap);
-
-      this.createThemeButton(
-        canvas.width / 2,
-        y,
-        buttonWidth,
-        buttonHeight,
-        theme,
-        themeName,
-      );
-    });
-
-    // Botón de cerrar
-    const closeY = startY + themeNames.length * (buttonHeight + gap) + 40;
-    this.createCloseButton(canvas.width / 2, closeY);
-
-    // Animación de entrada
-    this.styleModal.setAlpha(0);
-    this.tweens.add({
-      targets: this.styleModal,
-      alpha: 1,
-      duration: 200,
-      ease: "Power2",
-    });
-  }
-
-  /**
-   * Crea un botón de selección de tema
-   */
-  private createThemeButton(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    theme: (typeof themes)[string],
-    themeName: string,
-  ): void {
-    if (!this.styleModal) return;
-
-    const isSelected = getCurrentTheme().name === themeName;
-    const depth3D = 12;
-
-    const container = this.add.container(x, y);
-    const bg = this.add.graphics();
-
-    // Cara 3D
-    bg.fillStyle(theme.badge.border, 1);
-    bg.fillRoundedRect(-width / 2, depth3D, width, height, 14);
-
-    // Cara principal
-    bg.fillStyle(theme.badge.main, 1);
-    bg.fillRoundedRect(-width / 2, 0, width, height, 14);
-
-    // Borde (sin diferenciación para seleccionado)
-    bg.lineStyle(2, theme.badge.border, 1);
-    bg.strokeRoundedRect(-width / 2, 0, width, height, 14);
-
-    container.add(bg);
-
-    // Nombre del tema (centrado o desplazado si hay check)
-    const textX = isSelected ? -20 : 0;
-    const text = this.add.text(textX, height / 2, theme.displayName, {
-      fontSize: "28px",
-      fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#ffffff",
-      stroke: theme.badge.textStroke,
-      strokeThickness: 5,
-    });
-    text.setOrigin(0.5);
-    container.add(text);
-
-    // Indicador de seleccionado - Check grande y llamativo al lado del texto
-    if (isSelected) {
-      const checkX = textX + text.width / 2 + 30;
-      const check = this.add.text(checkX, height / 2, "✔", {
-        fontSize: "36px",
-        fontFamily: "Arial",
-        color: "#00ff00",
-        stroke: "#006600",
-        strokeThickness: 4,
-      });
-      check.setOrigin(0.5);
-      container.add(check);
-    }
-
-    // Interactividad
-    container.setSize(width, height + depth3D);
-    container.setInteractive({ useHandCursor: true });
-
-    container.on("pointerover", () => {
-      this.tweens.add({
-        targets: container,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    container.on("pointerout", () => {
-      this.tweens.add({
-        targets: container,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    container.on("pointerdown", () => {
-      // Seleccionar tema
-      setTheme(themeName);
-      this.saveThemeToStorage(themeName);
-      this.closeStyleModal();
-    });
-
-    this.styleModal.add(container);
-  }
-
-  /**
-   * Crea el botón de cerrar el modal
-   */
-  private createCloseButton(x: number, y: number): void {
-    if (!this.styleModal) return;
-
-    const btnWidth = 200;
-    const btnHeight = 55;
-    const depth3D = 8;
-
-    const container = this.add.container(x, y);
-    const bg = this.add.graphics();
-
-    // Cara 3D (blanco)
-    bg.fillStyle(0xcccccc, 1);
-    bg.fillRoundedRect(-btnWidth / 2, depth3D, btnWidth, btnHeight, 14);
-
-    // Cara principal (blanco)
-    bg.fillStyle(0xffffff, 1);
-    bg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-
-    // Borde
-    bg.lineStyle(3, 0x333333, 1);
-    bg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-
-    container.add(bg);
-
-    const text = this.add.text(0, btnHeight / 2, "CLOSE", {
-      fontSize: "26px",
-      fontFamily: "'Fredoka One', Arial Black, sans-serif",
-      color: "#333333",
-    });
-    text.setOrigin(0.5);
-    container.add(text);
-
-    container.setSize(btnWidth, btnHeight + depth3D);
-    container.setInteractive({ useHandCursor: true });
-
-    container.on("pointerover", () => {
-      this.tweens.add({
-        targets: container,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    container.on("pointerout", () => {
-      this.tweens.add({
-        targets: container,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    container.on("pointerdown", () => {
-      this.closeStyleModal();
-    });
-
-    this.styleModal.add(container);
-  }
-
-  /**
-   * Cierra el modal de estilos
-   */
-  private closeStyleModal(): void {
-    if (!this.styleModal) return;
-
-    this.tweens.add({
-      targets: this.styleModal,
-      scale: 0.8,
-      alpha: 0,
-      duration: 150,
-      ease: "Power2",
-      onComplete: () => {
-        this.styleModal?.destroy();
-        this.styleModal = null;
-      },
-    });
-  }
-
-  /**
-   * Guarda el tema seleccionado en localStorage
-   */
-  private saveThemeToStorage(themeName: string): void {
-    try {
-      localStorage.setItem("cryptoMahjong_theme", themeName);
-    } catch {
-      console.warn("Could not save theme preference");
-    }
-  }
-
-  /**
-   * Carga el tema guardado al iniciar
-   */
-  private loadSavedTheme(): void {
-    try {
-      const savedTheme = localStorage.getItem("cryptoMahjong_theme");
-      if (savedTheme) {
-        setTheme(savedTheme);
-      }
-    } catch {
-      // localStorage no disponible
-    }
-  }
-
-  // ================= TUTORIAL =================
-
-  /**
-   * Muestra el tutorial para nuevos jugadores
-   */
-  private showTutorial(): void {
-    if (this.tutorialModal) return;
-
-    const { canvas } = GameSettings;
-
-    // Contenedor principal del overlay
-    this.tutorialModal = this.add.container(0, 0);
-    this.tutorialModal.setDepth(2000);
-
-    // Overlay muy oscuro
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.97);
-    overlay.fillRect(0, 0, canvas.width, canvas.height);
-    overlay.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains,
-    );
-    overlay.on("pointerdown", () => {});
-    this.tutorialModal.add(overlay);
-
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
-    const theme = getCurrentTheme();
-    const powerUpColors = theme.powerUps;
-
-    // Título "HOW TO PLAY"
-    const title = this.add.text(canvas.width / 2, 120, "HOW TO PLAY", {
-      fontSize: "48px",
-      fontFamily: fontFamily,
-      color: "#B7FF00",
-      stroke: "#000000",
-      strokeThickness: 8,
-    });
-    title.setOrigin(0.5);
-    this.tutorialModal.add(title);
-
-    // Instrucción principal
-    const instruction1 = this.add.text(
-      canvas.width / 2,
-      220,
-      "Match 3 identical tiles",
-      {
-        fontSize: "32px",
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-      },
-    );
-    instruction1.setOrigin(0.5);
-    this.tutorialModal.add(instruction1);
-
-    const instruction2 = this.add.text(
-      canvas.width / 2,
-      280,
-      "Clear the board before",
-      {
-        fontSize: "32px",
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-      },
-    );
-    instruction2.setOrigin(0.5);
-    this.tutorialModal.add(instruction2);
-
-    const instruction3 = this.add.text(
-      canvas.width / 2,
-      340,
-      "time runs out!",
-      {
-        fontSize: "32px",
-        fontFamily: fontFamily,
-        color: "#ff6b6b",
-        stroke: "#000000",
-        strokeThickness: 4,
-      },
-    );
-    instruction3.setOrigin(0.5);
-    this.tutorialModal.add(instruction3);
-
-    // Título de Power-ups
-    const powerupsTitle = this.add.text(canvas.width / 2, 440, "POWER-UPS", {
-      fontSize: "36px",
-      fontFamily: fontFamily,
-      color: "#B7FF00",
-      stroke: "#000000",
-      strokeThickness: 6,
-    });
-    powerupsTitle.setOrigin(0.5);
-    this.tutorialModal.add(powerupsTitle);
-
-    // Power-ups con iconos idénticos al juego (centrados)
-    const centerX = canvas.width / 2;
-    const buttonSize = 70;
-    const startY = 530;
-    const gap = 100;
-
-    const powerups: Array<{
-      type: "undo" | "clock" | "key";
-      name: string;
-      desc: string;
-      colors: { main: number; border: number };
-    }> = [
-      {
-        type: "undo",
-        name: "Undo",
-        desc: "Return last tile",
-        colors: powerUpColors.undo,
-      },
-      {
-        type: "clock",
-        name: "Freeze",
-        desc: "Pause timer",
-        colors: powerUpColors.clock,
-      },
-      {
-        type: "key",
-        name: "Hint",
-        desc: "Remove a pair",
-        colors: powerUpColors.key,
-      },
-    ];
-
-    powerups.forEach((powerup, index) => {
-      const y = startY + index * gap;
-      const buttonX = centerX - 120;
-
-      // Crear botón idéntico al del juego
-      this.createTutorialPowerUpButton(
-        buttonX,
-        y,
-        buttonSize,
-        powerup.colors,
-        powerup.type,
-      );
-
-      // Nombre y descripción a la derecha
-      const textX = centerX - 30;
-
-      const name = this.add.text(textX, y - 12, powerup.name, {
-        fontSize: "28px",
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-      });
-      name.setOrigin(0, 0.5);
-      this.tutorialModal!.add(name);
-
-      const desc = this.add.text(textX, y + 18, powerup.desc, {
-        fontSize: "20px",
-        fontFamily: fontFamily,
-        color: "#aaaaaa",
-      });
-      desc.setOrigin(0, 0.5);
-      this.tutorialModal!.add(desc);
-    });
-
-    // Botón de comenzar
-    this.createTutorialStartButton(canvas.width / 2, 880);
-
-    // Animación de entrada
-    this.tutorialModal.setAlpha(0);
-    this.tweens.add({
-      targets: this.tutorialModal,
-      alpha: 1,
-      duration: 300,
-      ease: "Power2",
-    });
-  }
-
-  /**
-   * Crea un botón de power-up para el tutorial
-   */
-  private createTutorialPowerUpButton(
-    x: number,
-    y: number,
-    size: number,
-    colors: { main: number; border: number },
-    type: "undo" | "clock" | "key",
-  ): void {
-    const depth = 10;
-    const radius = size / 2;
-
-    const bg = this.add.graphics();
-
-    // Sombra/profundidad 3D
-    bg.fillStyle(this.darkenColor(colors.border, 0.3), 1);
-    bg.fillCircle(x, y + depth, radius);
-
-    // Cara principal
-    bg.fillStyle(colors.main, 1);
-    bg.fillCircle(x, y, radius);
-
-    // Borde
-    bg.lineStyle(3, colors.border, 1);
-    bg.strokeCircle(x, y, radius);
-
-    this.tutorialModal!.add(bg);
-
-    // Dibujar icono
-    const icon = this.add.graphics();
-    icon.lineStyle(4, 0xffffff, 1);
-
-    if (type === "undo") {
-      const arrowRadius = 18;
-      icon.beginPath();
-      icon.arc(
-        x,
-        y,
-        arrowRadius,
-        Phaser.Math.DegToRad(-45),
-        Phaser.Math.DegToRad(180),
-        false,
-      );
-      icon.strokePath();
-      icon.beginPath();
-      icon.moveTo(x - arrowRadius - 6, y - 6);
-      icon.lineTo(x - arrowRadius, y - 16);
-      icon.lineTo(x - arrowRadius + 6, y - 6);
-      icon.strokePath();
-    } else if (type === "clock") {
-      const clockRadius = 18;
-      icon.strokeCircle(x, y, clockRadius);
-      icon.beginPath();
-      icon.moveTo(x, y);
-      icon.lineTo(x, y - 12);
-      icon.moveTo(x, y);
-      icon.lineTo(x + 9, y);
-      icon.strokePath();
-    } else if (type === "key") {
-      icon.strokeCircle(x - 7, y - 7, 9);
-      icon.beginPath();
-      icon.moveTo(x, y);
-      icon.lineTo(x + 14, y + 14);
-      icon.moveTo(x + 9, y + 9);
-      icon.lineTo(x + 14, y + 9);
-      icon.moveTo(x + 12, y + 12);
-      icon.lineTo(x + 17, y + 12);
-      icon.strokePath();
-    }
-
-    this.tutorialModal!.add(icon);
-  }
-
-  /**
-   * Crea el botón LET'S GO del tutorial
-   */
-  private createTutorialStartButton(x: number, y: number): void {
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
-    const btnWidth = 200;
-    const btnHeight = 55;
-    const depth3D = 8;
-
-    const container = this.add.container(x, y);
-    const bg = this.add.graphics();
-
-    // Cara 3D (verde oscuro)
-    bg.fillStyle(0x2d7d32, 1);
-    bg.fillRoundedRect(-btnWidth / 2, depth3D, btnWidth, btnHeight, 14);
-
-    // Cara principal (verde)
-    bg.fillStyle(0x4caf50, 1);
-    bg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-
-    // Borde
-    bg.lineStyle(3, 0x2d7d32, 1);
-    bg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-
-    container.add(bg);
-
-    const text = this.add.text(0, btnHeight / 2, "LET'S GO!", {
-      fontSize: "26px",
-      fontFamily: fontFamily,
-      color: "#ffffff",
-      stroke: "#2d7d32",
-      strokeThickness: 3,
-    });
-    text.setOrigin(0.5);
-    container.add(text);
-
-    container.setSize(btnWidth, btnHeight + depth3D);
-    container.setInteractive({ useHandCursor: true });
-
-    container.on("pointerover", () => {
-      this.tweens.add({
-        targets: container,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    container.on("pointerout", () => {
-      this.tweens.add({
-        targets: container,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    container.on("pointerdown", () => {
-      // Marcar tutorial como visto
-      localStorage.setItem("crypto-mahjong-tutorial-seen", "true");
-
-      // Cerrar tutorial y empezar juego
-      this.closeTutorial();
-    });
-
-    this.tutorialModal!.add(container);
-  }
-
-  /**
-   * Cierra el tutorial y navega al juego
-   */
-  private closeTutorial(): void {
-    if (!this.tutorialModal) return;
-
-    this.tweens.add({
-      targets: this.tutorialModal,
-      alpha: 0,
-      duration: 200,
-      ease: "Power2",
-      onComplete: () => {
-        this.tutorialModal?.destroy();
-        this.tutorialModal = null;
-
-        // Ahora sí iniciamos el juego
-        this.scene.start("MahjongScene");
-      },
     });
   }
 }

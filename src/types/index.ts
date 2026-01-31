@@ -36,7 +36,7 @@ export const TILE_COLORS: Record<
     symbol: "₿",
     letter: "B",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/1-tfgDt6wKwhgkpKJW1twPmHg6rAOHLo.webp?jhm5",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/1.png",
   },
   [TileType.ETHEREUM]: {
     main: 0x3c3cff, // Azul eléctrico
@@ -44,7 +44,7 @@ export const TILE_COLORS: Record<
     symbol: "Ξ",
     letter: "E",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/2-3i8JAyodt8kbxwwH0YjiAsUDirxmx7.webp?6AoF",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/2.png",
   },
   [TileType.DOGE]: {
     main: 0xdfc850, // Amarillo dorado
@@ -52,7 +52,7 @@ export const TILE_COLORS: Record<
     symbol: "Ð",
     letter: "D",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/3-dzjcu8w0P45R8rsxCMKdy3sZ3pdIwC.webp?6cRk",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/3.png",
   },
   [TileType.PEPE]: {
     main: 0x00c853, // Verde brillante
@@ -60,7 +60,7 @@ export const TILE_COLORS: Record<
     symbol: "🐸",
     letter: "P",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/4-jxrFEJIcMRsWZMDxBwGSRlQhWUpL9r.webp?i98M",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/4.png",
   },
   [TileType.SHIBA]: {
     main: 0xff6b00, // Naranja fuerte
@@ -68,7 +68,7 @@ export const TILE_COLORS: Record<
     symbol: "🐕",
     letter: "S",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/5-ZvozVqo8KVSerdcckwQC6YAKDNqMa5.webp?gFSm",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/5.png",
   },
   [TileType.SOLANA]: {
     main: 0xaa00ff, // Morado brillante
@@ -76,7 +76,7 @@ export const TILE_COLORS: Record<
     symbol: "◎",
     letter: "O",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/6-4jXawjGI2kOag70GKqI3TeZIgeNXot.webp?bDDy",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/6.png",
   },
   [TileType.CARDANO]: {
     main: 0x0066ff, // Azul puro
@@ -84,7 +84,7 @@ export const TILE_COLORS: Record<
     symbol: "₳",
     letter: "A",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/7-EkUvygoc8Rp8yYpGimerPyoh8xucgV.webp?0QTq",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/7.png",
   },
   [TileType.POLKADOT]: {
     main: 0xff0080, // Rosa fuerte/Magenta
@@ -92,7 +92,7 @@ export const TILE_COLORS: Record<
     symbol: "●",
     letter: "K",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/8-MRrjJ4cYqR4HTH8WYBK2Bt5Z8GSuMB.webp?ShaT",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/8.png",
   },
   [TileType.AVALANCHE]: {
     main: 0xe60000, // Rojo puro
@@ -100,7 +100,7 @@ export const TILE_COLORS: Record<
     symbol: "▲",
     letter: "X",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/9-qVK9NAXivgIxj4PKBqwK3NwOEj8MB2.webp?NUbJ",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/9.png",
   },
   [TileType.CHAINLINK]: {
     main: 0x00bcd4, // Cyan/Turquesa
@@ -108,7 +108,7 @@ export const TILE_COLORS: Record<
     symbol: "⬡",
     letter: "L",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/10-xmmDHKIHikDvzXk3XqlMa8tb0nFY3B.webp?rA5I",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/10.png",
   },
   [TileType.POLYGON]: {
     main: 0x7b1fa2, // Púrpura oscuro
@@ -116,7 +116,7 @@ export const TILE_COLORS: Record<
     symbol: "⬢",
     letter: "M",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/11-hRjJPOuUSYR5vwZP4D2O6YenlmvsIK.webp?YZr2",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/11.png",
   },
   [TileType.LITECOIN]: {
     main: 0x607d8b, // Gris azulado
@@ -124,7 +124,7 @@ export const TILE_COLORS: Record<
     symbol: "Ł",
     letter: "C",
     imageUrl:
-      "https://remix.gg/blob/zS0QCi0PfUjO/12-usqCjP7WU9a17mzQsqUj7PuMxgBnVQ.webp?Aafi",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/tiles/12.png",
   },
 };
 

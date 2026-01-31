@@ -90,7 +90,7 @@ export class PreloadScene extends Phaser.Scene {
         // @ts-ignore
         window.WebFont.load({
           google: {
-            families: ["Fredoka One"],
+            families: ["Bangers"],
           },
           active: () => {
             console.log("Fonts loaded");

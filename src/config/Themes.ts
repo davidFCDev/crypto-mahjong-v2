@@ -86,7 +86,7 @@ export const classicTheme: GameTheme = {
     main: "#f5deb3", // Wheat
     mainHex: 0xf5deb3,
     backgroundImage:
-      "https://remix.gg/blob/zS0QCi0PfUjO/11%20%281%29-5rWcZQAXCAHAxPIlyY1z0F0WTVTLxD.webp?G141",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/bg2.png",
     pattern: {
       type: "diamonds",
       color1: 0xf5deb3, // Wheat base
@@ -95,23 +95,23 @@ export const classicTheme: GameTheme = {
   },
 
   badge: {
-    main: 0x3cb371, // Medium Sea Green
-    border: 0x2e8b57, // Sea Green
+    main: 0xc0392b, // Rojo elegante
+    border: 0x922b21, // Rojo oscuro
     depth3D: 16,
-    textStroke: "#1a3a1a",
+    textStroke: "#5a1a1a",
   },
 
   hand: {
-    background: 0x3cb371, // Medium Sea Green
-    slot: 0x2e8b57, // Sea Green
-    slotBorder: 0x228b22, // Forest Green
+    background: 0xc0392b, // Rojo elegante
+    slot: 0x922b21, // Rojo oscuro
+    slotBorder: 0x7b241c, // Rojo muy oscuro
   },
 
   modal: {
-    main: 0x3cb371, // Medium Sea Green (same as badge)
-    border: 0x2e8b57, // Sea Green
+    main: 0xc0392b, // Rojo elegante
+    border: 0x922b21, // Rojo oscuro
     titleColor: "#ffffff",
-    titleStroke: "#1a3a1a",
+    titleStroke: "#5a1a1a",
     textColor: "#1a1a1a",
     buttonTextColor: "#1a1a1a",
   },

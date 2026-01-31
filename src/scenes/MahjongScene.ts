@@ -133,232 +133,8 @@ export class MahjongScene extends Phaser.Scene {
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
-    // Iniciar directamente con el tutorial
-    this.showTutorial();
-  }
-
-  /**
-   * Muestra el tutorial para nuevos jugadores (sobre la escena del juego)
-   */
-  private showTutorial(): void {
-    const { canvas } = GameSettings;
-
-    // Contenedor principal del overlay
-    const tutorialModal = this.add.container(0, 0);
-    tutorialModal.setDepth(2000);
-
-    // Overlay muy oscuro
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.97);
-    overlay.fillRect(0, 0, canvas.width, canvas.height);
-    overlay.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains,
-    );
-    overlay.on("pointerdown", () => {});
-    tutorialModal.add(overlay);
-
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
-    const theme = getCurrentTheme();
-    const powerUpColors = theme.powerUps;
-
-    // Título "HOW TO PLAY"
-    const title = this.add.text(canvas.width / 2, 120, "HOW TO PLAY", {
-      fontSize: "48px",
-      fontFamily: fontFamily,
-      color: "#B7FF00",
-      stroke: "#000000",
-      strokeThickness: 8,
-    });
-    title.setOrigin(0.5);
-    tutorialModal.add(title);
-
-    // Instrucción principal
-    const instruction1 = this.add.text(
-      canvas.width / 2,
-      220,
-      "Match 3 identical tiles",
-      {
-        fontSize: "32px",
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-      },
-    );
-    instruction1.setOrigin(0.5);
-    tutorialModal.add(instruction1);
-
-    const instruction2 = this.add.text(
-      canvas.width / 2,
-      280,
-      "Clear the board before",
-      {
-        fontSize: "32px",
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-      },
-    );
-    instruction2.setOrigin(0.5);
-    tutorialModal.add(instruction2);
-
-    const instruction3 = this.add.text(
-      canvas.width / 2,
-      340,
-      "time runs out!",
-      {
-        fontSize: "32px",
-        fontFamily: fontFamily,
-        color: "#ff6b6b",
-        stroke: "#000000",
-        strokeThickness: 4,
-      },
-    );
-    instruction3.setOrigin(0.5);
-    tutorialModal.add(instruction3);
-
-    // Título de Power-ups
-    const powerupsTitle = this.add.text(canvas.width / 2, 440, "POWER-UPS", {
-      fontSize: "36px",
-      fontFamily: fontFamily,
-      color: "#B7FF00",
-      stroke: "#000000",
-      strokeThickness: 6,
-    });
-    powerupsTitle.setOrigin(0.5);
-    tutorialModal.add(powerupsTitle);
-
-    // Power-ups con iconos
-    const centerX = canvas.width / 2;
-    const buttonSize = 70;
-    const startY = 530;
-    const gap = 100;
-
-    const powerups = [
-      {
-        type: "undo",
-        name: "Undo",
-        desc: "Return last tile",
-        colors: powerUpColors.undo,
-      },
-      {
-        type: "clock",
-        name: "Freeze",
-        desc: "Pause timer",
-        colors: powerUpColors.clock,
-      },
-      {
-        type: "key",
-        name: "Hint",
-        desc: "Remove a pair",
-        colors: powerUpColors.key,
-      },
-    ];
-
-    powerups.forEach((pu, index) => {
-      const y = startY + index * gap;
-      const buttonX = centerX - 120;
-
-      // Botón circular
-      const btn = this.add.graphics();
-      btn.fillStyle(pu.colors.main, 1);
-      btn.fillCircle(buttonX, y, buttonSize / 2);
-      btn.lineStyle(3, pu.colors.border, 1);
-      btn.strokeCircle(buttonX, y, buttonSize / 2);
-      tutorialModal.add(btn);
-
-      // Nombre
-      const name = this.add.text(centerX - 30, y - 12, pu.name, {
-        fontSize: "28px",
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 4,
-      });
-      name.setOrigin(0, 0.5);
-      tutorialModal.add(name);
-
-      // Descripción
-      const desc = this.add.text(centerX - 30, y + 18, pu.desc, {
-        fontSize: "20px",
-        fontFamily: fontFamily,
-        color: "#aaaaaa",
-      });
-      desc.setOrigin(0, 0.5);
-      tutorialModal.add(desc);
-    });
-
-    // Botón "LET'S GO!"
-    const startButton = this.add.container(canvas.width / 2, 880);
-    const btnBg = this.add.graphics();
-    btnBg.fillStyle(0x2d7d32, 1);
-    btnBg.fillRoundedRect(-100, 8, 200, 55, 14);
-    btnBg.fillStyle(0x4caf50, 1);
-    btnBg.fillRoundedRect(-100, 0, 200, 55, 14);
-    btnBg.lineStyle(3, 0x2d7d32, 1);
-    btnBg.strokeRoundedRect(-100, 0, 200, 55, 14);
-    startButton.add(btnBg);
-
-    const btnText = this.add.text(0, 55 / 2, "LET'S GO!", {
-      fontSize: "26px",
-      fontFamily: fontFamily,
-      color: "#ffffff",
-      stroke: "#2d7d32",
-      strokeThickness: 3,
-    });
-    btnText.setOrigin(0.5);
-    startButton.add(btnText);
-
-    startButton.setSize(200, 63);
-    startButton.setInteractive({ useHandCursor: true });
-
-    startButton.on("pointerover", () => {
-      this.tweens.add({
-        targets: startButton,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    startButton.on("pointerout", () => {
-      this.tweens.add({
-        targets: startButton,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    startButton.on("pointerdown", () => {
-      // Cerrar tutorial e iniciar juego
-      this.tweens.add({
-        targets: tutorialModal,
-        alpha: 0,
-        duration: 200,
-        ease: "Power2",
-        onComplete: () => {
-          tutorialModal.destroy();
-          // Iniciar nivel 1
-          this.startLevel(1);
-        },
-      });
-    });
-
-    tutorialModal.add(startButton);
-
-    // Fade in
-    tutorialModal.setAlpha(0);
-    this.tweens.add({
-      targets: tutorialModal,
-      alpha: 1,
-      duration: 300,
-      ease: "Power2",
-    });
+    // Iniciar directamente el nivel 1
+    this.startLevel(1);
   }
 
   /**
@@ -1165,7 +941,7 @@ export class MahjongScene extends Phaser.Scene {
     );
     gameOverModal.add(overlay);
 
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const fontFamily = "'Bangers', Arial Black, sans-serif";
     const centerX = canvas.width / 2;
 
     // Título GAME OVER
@@ -1634,7 +1410,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.on("pointerdown", () => {}); // Bloquear clicks
     this.purchaseOverlay.add(overlay);
 
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const fontFamily = "'Bangers', Arial Black, sans-serif";
     const centerX = canvas.width / 2;
 
     // Título
@@ -1826,7 +1602,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.on("pointerdown", () => {}); // Bloquear clicks
     this.tipOverlay.add(overlay);
 
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const fontFamily = "'Bangers', Arial Black, sans-serif";
     const centerX = canvas.width / 2;
 
     // Título
