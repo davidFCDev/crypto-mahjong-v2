@@ -489,9 +489,6 @@ export class GameUI extends Phaser.GameObjects.Container {
     this.add(this.undoButton);
     this.add(this.clockButton);
     this.add(this.keyButton);
-
-    // Botón de tema arriba a la derecha (misma altura que corazones)
-    this.createThemeButton();
   }
 
   /**

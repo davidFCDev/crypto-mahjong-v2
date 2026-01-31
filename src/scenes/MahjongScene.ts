@@ -123,7 +123,6 @@ export class MahjongScene extends Phaser.Scene {
       onUndo: () => this.handleUndo(),
       onPauseTime: () => this.handlePauseTime(),
       onHint: () => this.handleHint(),
-      onChangeTheme: () => this.handleThemeChange(),
     });
 
     // Escuchar evento de tiempo agotado
@@ -1162,7 +1161,7 @@ export class MahjongScene extends Phaser.Scene {
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     gameOverModal.add(overlay);
 
@@ -1191,7 +1190,7 @@ export class MahjongScene extends Phaser.Scene {
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 4,
-      }
+      },
     );
     scoreText.setOrigin(0.5);
     gameOverModal.add(scoreText);
@@ -1210,7 +1209,7 @@ export class MahjongScene extends Phaser.Scene {
       -buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      20
+      20,
     );
     buttonBg.lineStyle(4, theme.badge.border, 1);
     buttonBg.strokeRoundedRect(
@@ -1218,7 +1217,7 @@ export class MahjongScene extends Phaser.Scene {
       -buttonHeight / 2,
       buttonWidth,
       buttonHeight,
-      20
+      20,
     );
     playAgainButton.add(buttonBg);
 

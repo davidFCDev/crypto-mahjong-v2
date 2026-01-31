@@ -3,6 +3,6 @@
  */
 
 // Phaser is loaded globally via CDN
-declare const Phaser: typeof import('phaser')
+declare const Phaser: typeof import("phaser");
 
-export {}
+export {};

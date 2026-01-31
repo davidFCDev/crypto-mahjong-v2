@@ -74,7 +74,7 @@ export class MainMenuScene extends Phaser.Scene {
         { rotation: -4, scale: 1.05 },
         { rotation: 7, scale: 1.1 },
       ],
-      fontFamily
+      fontFamily,
     );
 
     // ========== MAHJONG con estilo comic ==========
@@ -93,7 +93,7 @@ export class MainMenuScene extends Phaser.Scene {
         { rotation: -4, scale: 1.1 },
         { rotation: 5, scale: 1.05 },
       ],
-      fontFamily
+      fontFamily,
     );
 
     // ========== REMIXED subtítulo ==========
@@ -110,7 +110,7 @@ export class MainMenuScene extends Phaser.Scene {
     y: number,
     fontSize: number,
     letterStyles: { rotation: number; scale: number }[],
-    fontFamily: string
+    fontFamily: string,
   ): void {
     const letters = word.split("");
     const letterSpacing = fontSize * 0.72;
@@ -157,7 +157,7 @@ export class MainMenuScene extends Phaser.Scene {
     container: Phaser.GameObjects.Container,
     x: number,
     y: number,
-    fontFamily: string
+    fontFamily: string,
   ): void {
     const fontSize = 48;
     const word = "REMIXED";
@@ -228,18 +228,15 @@ export class MainMenuScene extends Phaser.Scene {
       () => {
         // Verificar si es la primera vez que juega
         const hasPlayedBefore = localStorage.getItem(
-          "crypto-mahjong-tutorial-seen"
+          "crypto-mahjong-tutorial-seen",
         );
         if (!hasPlayedBefore) {
           this.showTutorial();
         } else {
           this.scene.start("MahjongScene");
         }
-      }
+      },
     );
-
-    // Botón STYLE - Tonos VERDES (puede estar bloqueado)
-    this.createStyleButton(centerX, 800);
   }
 
   /**
@@ -272,7 +269,7 @@ export class MainMenuScene extends Phaser.Scene {
         } else {
           this.purchaseExclusiveThemes();
         }
-      }
+      },
     );
 
     // Si no tiene temas exclusivos, añadir badge de créditos
@@ -321,7 +318,7 @@ export class MainMenuScene extends Phaser.Scene {
    */
   private addCreditsBadge(
     container: Phaser.GameObjects.Container,
-    credits: number
+    credits: number,
   ): void {
     const badgeWidth = 180;
     const badgeHeight = 42;
@@ -340,7 +337,7 @@ export class MainMenuScene extends Phaser.Scene {
       badgeY,
       badgeWidth,
       badgeHeight,
-      10
+      10,
     );
 
     container.add(badge);
@@ -354,7 +351,7 @@ export class MainMenuScene extends Phaser.Scene {
         fontSize: "24px",
         fontFamily: "'Fredoka One', Arial Black, sans-serif",
         color: "#5a4000",
-      }
+      },
     );
     badgeText.setOrigin(0.5);
     container.add(badgeText);
@@ -367,8 +364,6 @@ export class MainMenuScene extends Phaser.Scene {
     // En Astrocade los temas ya están desbloqueados, abrir modal directamente
     this.showStyleModal();
   }
-    }
-  }
 
   /**
    * Crea un botón con estilo badge 3D
@@ -380,7 +375,7 @@ export class MainMenuScene extends Phaser.Scene {
     mainColor: number,
     borderColor: number,
     textStroke: string,
-    onClick: () => void
+    onClick: () => void,
   ): Phaser.GameObjects.Container {
     const buttonWidth = 340;
     const buttonHeight = 90;
@@ -398,7 +393,7 @@ export class MainMenuScene extends Phaser.Scene {
       badgeDepth,
       buttonWidth,
       buttonHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara 3D
@@ -408,7 +403,7 @@ export class MainMenuScene extends Phaser.Scene {
       badgeDepth,
       buttonWidth,
       buttonHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Fondo del botón (cara principal)
@@ -418,7 +413,7 @@ export class MainMenuScene extends Phaser.Scene {
       0,
       buttonWidth,
       buttonHeight,
-      borderRadius
+      borderRadius,
     );
 
     // Borde de la cara principal
@@ -428,7 +423,7 @@ export class MainMenuScene extends Phaser.Scene {
       0,
       buttonWidth,
       buttonHeight,
-      borderRadius
+      borderRadius,
     );
 
     container.add(bg);
@@ -521,7 +516,7 @@ export class MainMenuScene extends Phaser.Scene {
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     // Evitar que los clicks pasen a los elementos de atrás
     overlay.on("pointerdown", () => {});
@@ -555,7 +550,7 @@ export class MainMenuScene extends Phaser.Scene {
         buttonWidth,
         buttonHeight,
         theme,
-        themeName
+        themeName,
       );
     });
 
@@ -582,7 +577,7 @@ export class MainMenuScene extends Phaser.Scene {
     width: number,
     height: number,
     theme: (typeof themes)[string],
-    themeName: string
+    themeName: string,
   ): void {
     if (!this.styleModal) return;
 
@@ -795,7 +790,7 @@ export class MainMenuScene extends Phaser.Scene {
     overlay.fillRect(0, 0, canvas.width, canvas.height);
     overlay.setInteractive(
       new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains
+      Phaser.Geom.Rectangle.Contains,
     );
     overlay.on("pointerdown", () => {});
     this.tutorialModal.add(overlay);
@@ -826,7 +821,7 @@ export class MainMenuScene extends Phaser.Scene {
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 4,
-      }
+      },
     );
     instruction1.setOrigin(0.5);
     this.tutorialModal.add(instruction1);
@@ -841,7 +836,7 @@ export class MainMenuScene extends Phaser.Scene {
         color: "#ffffff",
         stroke: "#000000",
         strokeThickness: 4,
-      }
+      },
     );
     instruction2.setOrigin(0.5);
     this.tutorialModal.add(instruction2);
@@ -856,7 +851,7 @@ export class MainMenuScene extends Phaser.Scene {
         color: "#ff6b6b",
         stroke: "#000000",
         strokeThickness: 4,
-      }
+      },
     );
     instruction3.setOrigin(0.5);
     this.tutorialModal.add(instruction3);
@@ -914,7 +909,7 @@ export class MainMenuScene extends Phaser.Scene {
         y,
         buttonSize,
         powerup.colors,
-        powerup.type
+        powerup.type,
       );
 
       // Nombre y descripción a la derecha
@@ -960,7 +955,7 @@ export class MainMenuScene extends Phaser.Scene {
     y: number,
     size: number,
     colors: { main: number; border: number },
-    type: "undo" | "clock" | "key"
+    type: "undo" | "clock" | "key",
   ): void {
     const depth = 10;
     const radius = size / 2;
@@ -994,7 +989,7 @@ export class MainMenuScene extends Phaser.Scene {
         arrowRadius,
         Phaser.Math.DegToRad(-45),
         Phaser.Math.DegToRad(180),
-        false
+        false,
       );
       icon.strokePath();
       icon.beginPath();
