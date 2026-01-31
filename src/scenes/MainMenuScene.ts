@@ -48,62 +48,62 @@ export class MainMenuScene extends Phaser.Scene {
    */
   private createTitle(centerX: number): void {
     const fontFamily = "'Luckiest Guy', 'Comic Sans MS', cursive";
-    const titleY = 320;
+    const titleY = 300;
 
     // Contenedor para el título
     const titleContainer = this.add.container(centerX, titleY);
 
     // El "3" grande a la derecha (abarca altura de MATCH + FRUIT)
-    const threeShadow = this.add.text(120 + 8, 8, "3", {
-      fontSize: "220px",
+    const threeShadow = this.add.text(150 + 10, 10, "3", {
+      fontSize: "280px",
       fontFamily: fontFamily,
       color: "#000000",
     });
     threeShadow.setOrigin(0.5);
     threeShadow.setAlpha(0.5);
 
-    const threeText = this.add.text(120, 0, "3", {
-      fontSize: "220px",
+    const threeText = this.add.text(150, 0, "3", {
+      fontSize: "280px",
       fontFamily: fontFamily,
       color: "#ff6b6b",
       stroke: "#000000",
-      strokeThickness: 14,
+      strokeThickness: 18,
     });
     threeText.setOrigin(0.5);
 
     // "MATCH" arriba a la izquierda
-    const matchShadow = this.add.text(-80 + 5, -55 + 5, "MATCH", {
-      fontSize: "80px",
+    const matchShadow = this.add.text(-90 + 6, -65 + 6, "MATCH", {
+      fontSize: "100px",
       fontFamily: fontFamily,
       color: "#000000",
     });
     matchShadow.setOrigin(0.5);
     matchShadow.setAlpha(0.5);
 
-    const matchText = this.add.text(-80, -55, "MATCH", {
-      fontSize: "80px",
+    const matchText = this.add.text(-90, -65, "MATCH", {
+      fontSize: "100px",
       fontFamily: fontFamily,
       color: "#ffffff",
       stroke: "#000000",
-      strokeThickness: 10,
+      strokeThickness: 14,
     });
     matchText.setOrigin(0.5);
 
     // "FRUIT" abajo a la izquierda
-    const fruitShadow = this.add.text(-80 + 5, 55 + 5, "FRUIT", {
-      fontSize: "80px",
+    const fruitShadow = this.add.text(-90 + 6, 65 + 6, "FRUIT", {
+      fontSize: "100px",
       fontFamily: fontFamily,
       color: "#000000",
     });
     fruitShadow.setOrigin(0.5);
     fruitShadow.setAlpha(0.5);
 
-    const fruitText = this.add.text(-80, 55, "FRUIT", {
-      fontSize: "80px",
+    const fruitText = this.add.text(-90, 65, "FRUIT", {
+      fontSize: "100px",
       fontFamily: fontFamily,
       color: "#ffeb3b",
       stroke: "#000000",
-      strokeThickness: 10,
+      strokeThickness: 14,
     });
     fruitText.setOrigin(0.5);
 
@@ -114,17 +114,6 @@ export class MainMenuScene extends Phaser.Scene {
     titleContainer.add(threeText);
     titleContainer.add(matchText);
     titleContainer.add(fruitText);
-
-    // Animación sutil del 3
-    this.tweens.add({
-      targets: threeText,
-      scaleX: 1.05,
-      scaleY: 1.05,
-      duration: 800,
-      yoyo: true,
-      repeat: -1,
-      ease: "Sine.easeInOut",
-    });
   }
 
   /**
@@ -135,7 +124,7 @@ export class MainMenuScene extends Phaser.Scene {
     const fontFamily = "'Luckiest Guy', 'Comic Sans MS', cursive";
     const buttonY = 700;
     const buttonWidth = 280;
-    const buttonHeight = 80;
+    const buttonHeight = 95;
     const depth3D = 12;
 
     const container = this.add.container(centerX, buttonY);

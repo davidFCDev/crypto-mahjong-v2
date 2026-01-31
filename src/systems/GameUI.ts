@@ -1744,7 +1744,7 @@ export class GameUI extends Phaser.GameObjects.Container {
       {
         fontSize: "24px",
         fontFamily: "'Luckiest Guy', sans-serif",
-        color: theme.modal.textColor,
+        color: "#ffffff",
         align: "center",
       },
     );

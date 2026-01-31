@@ -955,17 +955,28 @@ export class MahjongScene extends Phaser.Scene {
     gameOverTitle.setOrigin(0.5);
     gameOverModal.add(gameOverTitle);
 
-    // Puntuación final
+    // Texto "Final Score:"
+    const scoreLabelText = this.add.text(centerX, 420, "Final Score:", {
+      fontSize: "36px",
+      fontFamily,
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 3,
+    });
+    scoreLabelText.setOrigin(0.5);
+    gameOverModal.add(scoreLabelText);
+
+    // Número del score debajo
     const scoreText = this.add.text(
       centerX,
-      450,
-      `Final Score: ${this.gameState.score}`,
+      490,
+      `${this.gameState.score}`,
       {
-        fontSize: "48px",
+        fontSize: "64px",
         fontFamily,
-        color: "#ffffff",
+        color: "#ffeb3b",
         stroke: "#000000",
-        strokeThickness: 4,
+        strokeThickness: 5,
       },
     );
     scoreText.setOrigin(0.5);
@@ -974,7 +985,7 @@ export class MahjongScene extends Phaser.Scene {
     // Botón Play Again con estilo 3D
     const buttonWidth = 280;
     const buttonHeight = 70;
-    const buttonY = 600;
+    const buttonY = 620;
     const depth3D = 10;
 
     const playAgainButton = this.add.container(centerX, buttonY);
