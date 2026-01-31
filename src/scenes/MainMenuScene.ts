@@ -31,9 +31,9 @@ export class MainMenuScene extends Phaser.Scene {
   private createBackground(): void {
     const { canvas } = GameSettings;
 
-    // Intentar cargar imagen de fondo, si no existe usar color sólido
-    if (this.textures.exists("menu-bg")) {
-      const bg = this.add.image(canvas.width / 2, canvas.height / 2, "menu-bg");
+    // Cargar imagen de fondo desde GitHub
+    if (this.textures.exists("bg-main")) {
+      const bg = this.add.image(canvas.width / 2, canvas.height / 2, "bg-main");
       bg.setDisplaySize(canvas.width, canvas.height);
     } else {
       // Fondo degradado como fallback
@@ -44,37 +44,26 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Crea el título "MATCH 3" con el 3 más grande
+   * Crea el título "MATCH 3 FRUIT" con layout: MATCH/FRUIT en columna, 3 grande a la derecha
    */
   private createTitle(centerX: number): void {
     const fontFamily = "'Luckiest Guy', 'Comic Sans MS', cursive";
-    const titleY = 350;
+    const titleY = 320;
 
     // Contenedor para el título
     const titleContainer = this.add.container(centerX, titleY);
 
-    // "MATCH" - letras con estilo cartoon
-    const matchText = this.add.text(-60, 0, "MATCH", {
-      fontSize: "120px",
-      fontFamily: fontFamily,
-      color: "#ffffff",
-      stroke: "#000000",
-      strokeThickness: 12,
-    });
-    matchText.setOrigin(0.5);
-
-    // Sombra para MATCH
-    const matchShadow = this.add.text(-60 + 6, 6, "MATCH", {
-      fontSize: "120px",
+    // El "3" grande a la derecha (abarca altura de MATCH + FRUIT)
+    const threeShadow = this.add.text(120 + 8, 8, "3", {
+      fontSize: "220px",
       fontFamily: fontFamily,
       color: "#000000",
     });
-    matchShadow.setOrigin(0.5);
-    matchShadow.setAlpha(0.5);
+    threeShadow.setOrigin(0.5);
+    threeShadow.setAlpha(0.5);
 
-    // "3" - más grande y con color destacado
-    const threeText = this.add.text(180, -20, "3", {
-      fontSize: "180px",
+    const threeText = this.add.text(120, 0, "3", {
+      fontSize: "220px",
       fontFamily: fontFamily,
       color: "#ff6b6b",
       stroke: "#000000",
@@ -82,20 +71,49 @@ export class MainMenuScene extends Phaser.Scene {
     });
     threeText.setOrigin(0.5);
 
-    // Sombra para el 3
-    const threeShadow = this.add.text(180 + 8, -20 + 8, "3", {
-      fontSize: "180px",
+    // "MATCH" arriba a la izquierda
+    const matchShadow = this.add.text(-80 + 5, -55 + 5, "MATCH", {
+      fontSize: "80px",
       fontFamily: fontFamily,
       color: "#000000",
     });
-    threeShadow.setOrigin(0.5);
-    threeShadow.setAlpha(0.5);
+    matchShadow.setOrigin(0.5);
+    matchShadow.setAlpha(0.5);
+
+    const matchText = this.add.text(-80, -55, "MATCH", {
+      fontSize: "80px",
+      fontFamily: fontFamily,
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 10,
+    });
+    matchText.setOrigin(0.5);
+
+    // "FRUIT" abajo a la izquierda
+    const fruitShadow = this.add.text(-80 + 5, 55 + 5, "FRUIT", {
+      fontSize: "80px",
+      fontFamily: fontFamily,
+      color: "#000000",
+    });
+    fruitShadow.setOrigin(0.5);
+    fruitShadow.setAlpha(0.5);
+
+    const fruitText = this.add.text(-80, 55, "FRUIT", {
+      fontSize: "80px",
+      fontFamily: fontFamily,
+      color: "#ffeb3b",
+      stroke: "#000000",
+      strokeThickness: 10,
+    });
+    fruitText.setOrigin(0.5);
 
     // Añadir en orden (sombras primero)
-    titleContainer.add(matchShadow);
     titleContainer.add(threeShadow);
-    titleContainer.add(matchText);
+    titleContainer.add(matchShadow);
+    titleContainer.add(fruitShadow);
     titleContainer.add(threeText);
+    titleContainer.add(matchText);
+    titleContainer.add(fruitText);
 
     // Animación sutil del 3
     this.tweens.add({

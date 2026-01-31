@@ -971,43 +971,58 @@ export class MahjongScene extends Phaser.Scene {
     scoreText.setOrigin(0.5);
     gameOverModal.add(scoreText);
 
-    // Botón Play Again
+    // Botón Play Again con estilo 3D
     const buttonWidth = 280;
     const buttonHeight = 70;
     const buttonY = 600;
+    const depth3D = 10;
 
     const playAgainButton = this.add.container(centerX, buttonY);
 
     const buttonBg = this.add.graphics();
+
+    // Cara 3D (más oscura)
+    buttonBg.fillStyle(theme.badge.border, 1);
+    buttonBg.fillRoundedRect(
+      -buttonWidth / 2,
+      depth3D,
+      buttonWidth,
+      buttonHeight,
+      16,
+    );
+
+    // Cara principal
     buttonBg.fillStyle(theme.badge.main, 1);
     buttonBg.fillRoundedRect(
       -buttonWidth / 2,
-      -buttonHeight / 2,
+      0,
       buttonWidth,
       buttonHeight,
-      20,
+      16,
     );
-    buttonBg.lineStyle(4, theme.badge.border, 1);
+
+    // Borde
+    buttonBg.lineStyle(3, theme.badge.border, 1);
     buttonBg.strokeRoundedRect(
       -buttonWidth / 2,
-      -buttonHeight / 2,
+      0,
       buttonWidth,
       buttonHeight,
-      20,
+      16,
     );
     playAgainButton.add(buttonBg);
 
-    const buttonText = this.add.text(0, 0, "PLAY AGAIN", {
+    const buttonText = this.add.text(0, buttonHeight / 2, "PLAY AGAIN", {
       fontSize: "36px",
       fontFamily,
       color: "#ffffff",
       stroke: theme.badge.textStroke,
-      strokeThickness: 4,
+      strokeThickness: 5,
     });
     buttonText.setOrigin(0.5);
     playAgainButton.add(buttonText);
 
-    playAgainButton.setSize(buttonWidth, buttonHeight);
+    playAgainButton.setSize(buttonWidth, buttonHeight + depth3D);
     playAgainButton.setInteractive({ useHandCursor: true });
 
     playAgainButton.on("pointerover", () => {

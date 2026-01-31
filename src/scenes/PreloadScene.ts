@@ -108,10 +108,10 @@ export class PreloadScene extends Phaser.Scene {
 
     // --- ASSETS PRIORITARIOS ---
 
-    // Imagen de fondo del menú principal
+    // Imagen de fondo del menú principal desde GitHub
     this.load.image(
-      "menu-bg",
-      "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj",
+      "bg-main",
+      "https://raw.githubusercontent.com/davidFCDev/crypto-mahjong-v2/main-astrocade/public/assets/bg-main.png",
     );
 
     // Cargar imágenes de fondo de todos los temas
