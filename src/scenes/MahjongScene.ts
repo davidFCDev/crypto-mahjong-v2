@@ -967,18 +967,13 @@ export class MahjongScene extends Phaser.Scene {
     gameOverModal.add(scoreLabelText);
 
     // Número del score debajo
-    const scoreText = this.add.text(
-      centerX,
-      490,
-      `${this.gameState.score}`,
-      {
-        fontSize: "64px",
-        fontFamily,
-        color: "#ffeb3b",
-        stroke: "#000000",
-        strokeThickness: 5,
-      },
-    );
+    const scoreText = this.add.text(centerX, 490, `${this.gameState.score}`, {
+      fontSize: "64px",
+      fontFamily,
+      color: "#ffeb3b",
+      stroke: "#000000",
+      strokeThickness: 5,
+    });
     scoreText.setOrigin(0.5);
     gameOverModal.add(scoreText);
 
