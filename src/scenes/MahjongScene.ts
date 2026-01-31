@@ -3,7 +3,6 @@
  * Integra todos los sistemas: tablero, fichas 3D, mano y UI
  */
 
-import type { FarcadeSDK } from "@farcade/game-sdk";
 import GameSettings from "../config/GameSettings";
 import { cycleTheme, getCurrentTheme, themes } from "../config/Themes";
 import { Tile3D } from "../objects/Tile3D";
@@ -19,12 +18,6 @@ import {
   type LevelConfig,
   type TileState,
 } from "../types";
-
-declare global {
-  interface Window {
-    FarcadeSDK: FarcadeSDK;
-  }
-}
 
 export class MahjongScene extends Phaser.Scene {
   // Sistemas
@@ -131,13 +124,7 @@ export class MahjongScene extends Phaser.Scene {
       onPauseTime: () => this.handlePauseTime(),
       onHint: () => this.handleHint(),
       onChangeTheme: () => this.handleThemeChange(),
-      onTip: () => this.handleTip(),
     });
-
-    // Ocultar botón de tip si ya lo tiene
-    if (this.hasJustATip) {
-      this.gameUI.hideTipButton();
-    }
 
     // Escuchar evento de tiempo agotado
     this.gameUI.on("time-up", () => {
@@ -147,18 +134,8 @@ export class MahjongScene extends Phaser.Scene {
     // Crear contenedor del tablero
     this.boardContainer = this.add.container(0, 0);
 
-    // Configurar callback para "Play Again" del SDK
-    this.setupPlayAgainListener();
-
-    // Verificar si es la primera vez que juega
-    const tutorialSeen = localStorage.getItem("crypto-mahjong-tutorial-seen");
-    if (!tutorialSeen) {
-      // Mostrar tutorial sobre la escena del juego
-      this.showTutorial();
-    } else {
-      // Iniciar nivel 1 directamente
-      this.startLevel(1);
-    }
+    // Iniciar directamente con el tutorial
+    this.showTutorial();
   }
 
   /**
@@ -359,9 +336,6 @@ export class MahjongScene extends Phaser.Scene {
     });
 
     startButton.on("pointerdown", () => {
-      // Marcar tutorial como visto
-      localStorage.setItem("crypto-mahjong-tutorial-seen", "true");
-
       // Cerrar tutorial e iniciar juego
       this.tweens.add({
         targets: tutorialModal,
@@ -389,24 +363,8 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Configura el listener para cuando el usuario pulsa "Play Again" en el SDK
-   */
-  private setupPlayAgainListener(): void {
-    try {
-      const sdk = window.FarcadeSDK as any;
-      if (sdk?.onPlayAgain) {
-        sdk.onPlayAgain(() => {
-          // Reiniciar el juego directamente desde el nivel 1
-          this.scene.restart();
-        });
-      }
-    } catch {
-      // SDK no disponible
-    }
-  }
-
-  /**
-   * Crea versiones con esquinas redondeadas de las im�genes de tiles
+   * Crea versiones con esquinas redondeadas de las imágenes de tiles
+   * Usa polyfill para roundRect para compatibilidad con navegadores móviles
    */
   private createRoundedTileImages(): void {
     const padding = 8;
@@ -435,9 +393,16 @@ export class MahjongScene extends Phaser.Scene {
           const ctx = canvas.getContext("2d");
           if (!ctx) return;
 
-          // Dibujar rectángulo redondeado como máscara
+          // Dibujar rectángulo redondeado como máscara (con polyfill para móviles)
           ctx.beginPath();
-          ctx.roundRect(0, 0, innerWidth, innerHeight, cornerRadius);
+          this.drawRoundedRect(
+            ctx,
+            0,
+            0,
+            innerWidth,
+            innerHeight,
+            cornerRadius,
+          );
           ctx.closePath();
           ctx.clip();
 
@@ -451,6 +416,34 @@ export class MahjongScene extends Phaser.Scene {
         }
       }
     });
+  }
+
+  /**
+   * Dibuja un rectángulo redondeado (polyfill para navegadores que no soportan roundRect)
+   */
+  private drawRoundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+  ): void {
+    // Usar roundRect nativo si está disponible
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(x, y, width, height, radius);
+      return;
+    }
+    // Polyfill manual para navegadores antiguos
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.arcTo(x + width, y, x + width, y + radius, radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+    ctx.lineTo(x + radius, y + height);
+    ctx.arcTo(x, y + height, x, y + height - radius, radius);
+    ctx.lineTo(x, y + radius);
+    ctx.arcTo(x, y, x + radius, y, radius);
   }
 
   /**
@@ -960,9 +953,6 @@ export class MahjongScene extends Phaser.Scene {
       return;
     }
 
-    // Haptic feedback al seleccionar ficha
-    this.triggerHapticFeedback();
-
     this.isAnimating = true;
 
     // IMPORTANTE: Buscar la ficha en gameState.tiles para modificar el original
@@ -1028,9 +1018,6 @@ export class MahjongScene extends Phaser.Scene {
     if (matchResult.matched) {
       // Delay breve para que se vea la tercera ficha antes del match
       this.time.delayedCall(100, () => {
-        // Haptic feedback al hacer trio
-        this.triggerHapticFeedback();
-
         // Animar match
         const matchedIds = matchResult.tiles.map((t) => t.id);
         this.gameUI.animateMatch(matchedIds, () => {
@@ -1127,9 +1114,6 @@ export class MahjongScene extends Phaser.Scene {
    * Maneja la pérdida de una vida
    */
   private handleLoseLife(): void {
-    // Haptic feedback al perder vida
-    this.triggerHapticFeedback();
-
     // Parar el timer inmediatamente
     this.gameUI.stopTimer();
 
@@ -1157,35 +1141,135 @@ export class MahjongScene extends Phaser.Scene {
     // Parar música
     SoundManager.stopMusic();
 
-    // Enviar puntuación a Farcade - el SDK gestiona el modal de game over
-    try {
-      const sdk = window.FarcadeSDK as any;
-      if (sdk?.singlePlayer?.actions?.gameOver) {
-        sdk.singlePlayer.actions.gameOver({ score: this.gameState.score });
-      } else if (sdk?.gameOver) {
-        sdk.gameOver({ score: this.gameState.score });
-      } else if (sdk?.actions?.gameOver) {
-        sdk.actions.gameOver({ score: this.gameState.score });
-      }
-    } catch (e) {
-      console.log("Farcade SDK not available");
-    }
+    // Mostrar pantalla de Game Over
+    this.showGameOverScreen();
   }
 
   /**
-   * Dispara haptic feedback si el SDK está disponible
+   * Muestra la pantalla de Game Over
    */
-  private triggerHapticFeedback(): void {
-    try {
-      const sdk = window.FarcadeSDK as any;
-      if (sdk?.singlePlayer?.actions?.hapticFeedback) {
-        sdk.singlePlayer.actions.hapticFeedback();
-      } else if (sdk?.hapticFeedback) {
-        sdk.hapticFeedback();
+  private showGameOverScreen(): void {
+    const { canvas } = GameSettings;
+    const theme = getCurrentTheme();
+
+    // Contenedor principal
+    const gameOverModal = this.add.container(0, 0);
+    gameOverModal.setDepth(3000);
+
+    // Overlay oscuro
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.85);
+    overlay.fillRect(0, 0, canvas.width, canvas.height);
+    overlay.setInteractive(
+      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
+      Phaser.Geom.Rectangle.Contains
+    );
+    gameOverModal.add(overlay);
+
+    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
+    const centerX = canvas.width / 2;
+
+    // Título GAME OVER
+    const gameOverTitle = this.add.text(centerX, 320, "GAME OVER", {
+      fontSize: "72px",
+      fontFamily,
+      color: "#ff4444",
+      stroke: "#000000",
+      strokeThickness: 8,
+    });
+    gameOverTitle.setOrigin(0.5);
+    gameOverModal.add(gameOverTitle);
+
+    // Puntuación final
+    const scoreText = this.add.text(
+      centerX,
+      450,
+      `Final Score: ${this.gameState.score}`,
+      {
+        fontSize: "48px",
+        fontFamily,
+        color: "#ffffff",
+        stroke: "#000000",
+        strokeThickness: 4,
       }
-    } catch {
-      // SDK no disponible, ignorar
-    }
+    );
+    scoreText.setOrigin(0.5);
+    gameOverModal.add(scoreText);
+
+    // Botón Play Again
+    const buttonWidth = 280;
+    const buttonHeight = 70;
+    const buttonY = 600;
+
+    const playAgainButton = this.add.container(centerX, buttonY);
+
+    const buttonBg = this.add.graphics();
+    buttonBg.fillStyle(theme.badge.main, 1);
+    buttonBg.fillRoundedRect(
+      -buttonWidth / 2,
+      -buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      20
+    );
+    buttonBg.lineStyle(4, theme.badge.border, 1);
+    buttonBg.strokeRoundedRect(
+      -buttonWidth / 2,
+      -buttonHeight / 2,
+      buttonWidth,
+      buttonHeight,
+      20
+    );
+    playAgainButton.add(buttonBg);
+
+    const buttonText = this.add.text(0, 0, "PLAY AGAIN", {
+      fontSize: "36px",
+      fontFamily,
+      color: "#ffffff",
+      stroke: theme.badge.textStroke,
+      strokeThickness: 4,
+    });
+    buttonText.setOrigin(0.5);
+    playAgainButton.add(buttonText);
+
+    playAgainButton.setSize(buttonWidth, buttonHeight);
+    playAgainButton.setInteractive({ useHandCursor: true });
+
+    playAgainButton.on("pointerover", () => {
+      this.tweens.add({
+        targets: playAgainButton,
+        scaleX: 1.05,
+        scaleY: 1.05,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    playAgainButton.on("pointerout", () => {
+      this.tweens.add({
+        targets: playAgainButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Power2",
+      });
+    });
+
+    playAgainButton.on("pointerdown", () => {
+      gameOverModal.destroy();
+      this.scene.restart();
+    });
+
+    gameOverModal.add(playAgainButton);
+
+    // Fade in
+    gameOverModal.setAlpha(0);
+    this.tweens.add({
+      targets: gameOverModal,
+      alpha: 1,
+      duration: 500,
+      ease: "Power2",
+    });
   }
 
   /**
@@ -1506,40 +1590,20 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Verifica si el usuario tiene los temas exclusivos comprados
+   * Verifica si el usuario tiene los temas exclusivos (siempre disponibles en Astrocade)
    */
   private checkExclusiveThemes(): void {
-    try {
-      const sdk = window.FarcadeSDK as any;
-      if (sdk?.hasItem) {
-        this.hasExclusiveThemes = sdk.hasItem("exclusive-themes");
-        this.hasJustATip = sdk.hasItem("just-a-tip");
-      }
-    } catch {
-      this.hasExclusiveThemes = false;
-      this.hasJustATip = false;
-    }
+    // En Astrocade todos los temas están disponibles
+    this.hasExclusiveThemes = true;
+    this.hasJustATip = true;
   }
 
   /**
-   * Inicia el proceso de compra de temas exclusivos
+   * Aplica el cambio de tema (siempre disponible en Astrocade)
    */
-  private async purchaseExclusiveThemes(): Promise<void> {
-    try {
-      const sdk = window.FarcadeSDK as any;
-      if (sdk?.purchase) {
-        const result = await sdk.purchase({ item: "exclusive-themes" });
-        if (result.success) {
-          this.hasExclusiveThemes = true;
-          // Cerrar el overlay de compra si existe
-          this.closePurchaseOverlay();
-          // Ahora sí cambiar el tema
-          this.applyThemeChange();
-        }
-      }
-    } catch (error) {
-      console.error("Purchase error:", error);
-    }
+  private purchaseExclusiveThemes(): void {
+    // En Astrocade, directamente aplicamos el cambio de tema
+    this.applyThemeChange();
   }
 
   // Overlay de compra de temas
@@ -1957,24 +2021,11 @@ export class MahjongScene extends Phaser.Scene {
   }
 
   /**
-   * Inicia el proceso de compra del tip
+   * Cierra el overlay de tip (siempre disponible en Astrocade)
    */
-  private async purchaseJustATip(): Promise<void> {
-    try {
-      const sdk = window.FarcadeSDK as any;
-      if (sdk?.purchase) {
-        const result = await sdk.purchase({ item: "just-a-tip" });
-        if (result.success) {
-          this.hasJustATip = true;
-          // Ocultar el botón de tip
-          this.gameUI.hideTipButton();
-          // Cerrar el overlay
-          this.closeTipOverlay();
-        }
-      }
-    } catch (error) {
-      console.error("Purchase error:", error);
-    }
+  private purchaseJustATip(): void {
+    // En Astrocade, simplemente cerramos el overlay
+    this.closeTipOverlay();
   }
 
   /**

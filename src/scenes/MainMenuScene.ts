@@ -243,24 +243,12 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Verifica si el usuario tiene los temas exclusivos comprados
+   * Verifica si el usuario tiene los temas exclusivos (siempre disponibles en Astrocade)
    */
   private checkExclusiveThemes(): void {
-    try {
-      const sdk = (
-        window as unknown as {
-          FarcadeSDK?: { hasItem: (item: string) => boolean };
-        }
-      ).FarcadeSDK;
-      if (sdk?.hasItem) {
-        this.hasExclusiveThemes = sdk.hasItem("exclusive-themes");
-        this.hasJustATip = sdk.hasItem("just-a-tip");
-      }
-    } catch {
-      // SDK no disponible, mantener como false
-      this.hasExclusiveThemes = false;
-      this.hasJustATip = false;
-    }
+    // En Astrocade todos los temas están disponibles
+    this.hasExclusiveThemes = true;
+    this.hasJustATip = true;
   }
 
   /**
@@ -300,83 +288,32 @@ export class MainMenuScene extends Phaser.Scene {
    * Crea el botón JUST A TIP o muestra mensaje de agradecimiento
    */
   private createJustATipButton(centerX: number, y: number): void {
-    if (this.hasJustATip) {
-      // Mostrar mensaje de agradecimiento
-      const thanksText = this.add.text(centerX, y + 35, "Thank you", {
-        fontSize: "32px",
-        fontFamily: "'Fredoka One', Arial Black, sans-serif",
-        color: "#B7FF00",
-        stroke: "#000000",
-        strokeThickness: 4,
-      });
-      thanksText.setOrigin(0.5);
+    // En Astrocade, mostrar mensaje de agradecimiento
+    const thanksText = this.add.text(centerX, y + 35, "Thanks for playing!", {
+      fontSize: "32px",
+      fontFamily: "'Fredoka One', Arial Black, sans-serif",
+      color: "#B7FF00",
+      stroke: "#000000",
+      strokeThickness: 4,
+    });
+    thanksText.setOrigin(0.5);
 
-      // Obtener nombre del usuario del SDK
-      const sdk = (
-        window as unknown as {
-          FarcadeSDK?: {
-            player?: { username?: string; displayName?: string };
-          };
-        }
-      ).FarcadeSDK;
-
-      const playerName =
-        sdk?.player?.displayName || sdk?.player?.username || "Player";
-
-      // Mostrar nombre del usuario debajo con @
-      const nameText = this.add.text(centerX, y + 75, `@${playerName}`, {
-        fontSize: "36px",
-        fontFamily: "'Fredoka One', Arial Black, sans-serif",
-        color: "#000000",
-        stroke: "#ffffff",
-        strokeThickness: 4,
-      });
-      nameText.setOrigin(0.5);
-    } else {
-      // Botón JUST A TIP - Tonos MORADOS
-      const tipButton = this.createBadgeButton(
-        centerX,
-        y,
-        "JUST A TIP",
-        0x9b59b6,
-        0x6c3483,
-        "#4a235a",
-        () => {
-          this.purchaseJustATip();
-        }
-      );
-
-      // Añadir badge de 500 créditos
-      this.addCreditsBadge(tipButton, 500);
-    }
+    // Mostrar mensaje adicional
+    const subText = this.add.text(centerX, y + 75, "Astrocade Edition", {
+      fontSize: "28px",
+      fontFamily: "'Fredoka One', Arial Black, sans-serif",
+      color: "#ffffff",
+      stroke: "#000000",
+      strokeThickness: 3,
+    });
+    subText.setOrigin(0.5);
   }
 
   /**
-   * Inicia el proceso de compra de just-a-tip
+   * Proceso de tip (deshabilitado en Astrocade)
    */
-  private async purchaseJustATip(): Promise<void> {
-    try {
-      const sdk = (
-        window as unknown as {
-          FarcadeSDK?: {
-            purchase: (data: { item: string }) => Promise<{ success: boolean }>;
-          };
-        }
-      ).FarcadeSDK;
-
-      if (sdk?.purchase) {
-        const result = await sdk.purchase({ item: "just-a-tip" });
-        if (result.success) {
-          this.hasJustATip = true;
-          // Recrear la escena para mostrar el mensaje de agradecimiento
-          this.scene.restart();
-        }
-      } else {
-        console.log("Purchase not available - SDK not loaded");
-      }
-    } catch (error) {
-      console.error("Purchase error:", error);
-    }
+  private purchaseJustATip(): void {
+    // No hacer nada en Astrocade
   }
 
   /**
@@ -424,30 +361,12 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Inicia el proceso de compra de temas exclusivos
+   * Proceso de compra de temas (deshabilitado en Astrocade)
    */
-  private async purchaseExclusiveThemes(): Promise<void> {
-    try {
-      const sdk = (
-        window as unknown as {
-          FarcadeSDK?: {
-            purchase: (data: { item: string }) => Promise<{ success: boolean }>;
-          };
-        }
-      ).FarcadeSDK;
-
-      if (sdk?.purchase) {
-        const result = await sdk.purchase({ item: "exclusive-themes" });
-        if (result.success) {
-          this.hasExclusiveThemes = true;
-          // Recrear el botón para mostrar el estado desbloqueado
-          this.scene.restart();
-        }
-      } else {
-        console.log("Purchase not available - SDK not loaded");
-      }
-    } catch (error) {
-      console.error("Purchase error:", error);
+  private purchaseExclusiveThemes(): void {
+    // En Astrocade los temas ya están desbloqueados, abrir modal directamente
+    this.showStyleModal();
+  }
     }
   }
 
@@ -832,36 +751,13 @@ export class MainMenuScene extends Phaser.Scene {
   }
 
   /**
-   * Guarda el tema seleccionado usando el SDK de Farcade
+   * Guarda el tema seleccionado en localStorage
    */
   private saveThemeToStorage(themeName: string): void {
     try {
-      // Intentar usar el SDK de Farcade si está disponible
-      const sdk = (
-        window as unknown as {
-          FarcadeSDK?: {
-            singlePlayer: {
-              actions: {
-                saveGameState: (data: {
-                  gameState: Record<string, unknown>;
-                }) => void;
-              };
-            };
-          };
-        }
-      ).FarcadeSDK;
-      if (sdk?.singlePlayer?.actions?.saveGameState) {
-        sdk.singlePlayer.actions.saveGameState({
-          gameState: { selectedTheme: themeName },
-        });
-      }
-    } catch (e) {
-      // Fallback a localStorage para desarrollo local
-      try {
-        localStorage.setItem("cryptoMahjong_theme", themeName);
-      } catch {
-        console.warn("Could not save theme preference");
-      }
+      localStorage.setItem("cryptoMahjong_theme", themeName);
+    } catch {
+      console.warn("Could not save theme preference");
     }
   }
 
@@ -869,22 +765,6 @@ export class MainMenuScene extends Phaser.Scene {
    * Carga el tema guardado al iniciar
    */
   private loadSavedTheme(): void {
-    try {
-      // Intentar usar el SDK de Farcade si está disponible
-      const sdk = (
-        window as unknown as {
-          FarcadeSDK?: { gameState?: { selectedTheme?: string } };
-        }
-      ).FarcadeSDK;
-      if (sdk?.gameState?.selectedTheme) {
-        setTheme(sdk.gameState.selectedTheme);
-        return;
-      }
-    } catch {
-      // SDK no disponible
-    }
-
-    // Fallback a localStorage
     try {
       const savedTheme = localStorage.getItem("cryptoMahjong_theme");
       if (savedTheme) {

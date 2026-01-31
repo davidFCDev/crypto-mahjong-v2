@@ -1,10 +1,7 @@
-import { initRemix } from "@insidethesim/remix-dev";
 import GameSettings from "./config/GameSettings";
 import { MahjongScene } from "./scenes/MahjongScene";
 import { MainMenuScene } from "./scenes/MainMenuScene";
 import { PreloadScene } from "./scenes/PreloadScene";
-
-// SDK mock is automatically initialized by the framework (dev-init.ts)
 
 // Game configuration
 const config: Phaser.Types.Core.GameConfig = {
@@ -33,12 +30,5 @@ const config: Phaser.Types.Core.GameConfig = {
 // Create the game instance
 const game = new Phaser.Game(config);
 
-// Store globally for performance monitoring and HMR cleanup
+// Store globally for performance monitoring
 (window as any).game = game;
-
-// Initialize Remix framework after game is created
-game.events.once("ready", () => {
-  initRemix(game, {
-    multiplayer: false,
-  });
-});
