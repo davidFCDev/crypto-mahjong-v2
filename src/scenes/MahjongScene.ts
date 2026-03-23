@@ -52,27 +52,27 @@ export class MahjongScene extends Phaser.Scene {
   private currentLevelConfig!: LevelConfig;
 
   // Bounds del tablero - Centrado verticalmente entre score y mano
-  // Score badge: Y=55, altura=95 → termina en Y=150
-  // Mano: empieza en Y = 1080 - 130 - 77 = 873
-  // Área disponible: desde 150 hasta 873
+  // Se calcula dinámicamente según canvas.height (2:3 vs full screen)
+  // safeAreaTop empuja el header hacia abajo en full screen
   private boardBounds = {
     x: 5,
-    y: 145, // Después del score badge (un poco más arriba)
+    y: 145 + GameSettings.safeAreaTop, // Después del score badge + safe area
     width: GameSettings.canvas.width - 10,
     height:
       GameSettings.canvas.height -
-      160 - // Espacio superior (score)
+      (160 + GameSettings.safeAreaTop) - // Espacio superior (score badges + safe area)
       GameSettings.hand.bottomMargin -
       GameSettings.hand.slotHeight / 2 -
-      30, // Margen inferior
+      90, // Espacio para power-up buttons + margen
   };
 
   // Estado de animación
   private isAnimating: boolean = false;
 
   // Estado de items comprados
-  private hasExclusiveThemes: boolean = false;
+  private hasUiStyles: boolean = false;
   private hasJustATip: boolean = false;
+  private hasSaveState: boolean = false;
 
   constructor() {
     super({ key: "MahjongScene" });
@@ -112,8 +112,8 @@ export class MahjongScene extends Phaser.Scene {
     // Resetear estado de animación
     this.isAnimating = false;
 
-    // Verificar si tiene temas exclusivos
-    this.checkExclusiveThemes();
+    // Verificar items comprados del SDK
+    this.checkPurchasedItems();
 
     // Crear fondo
     this.createBackground();
@@ -131,12 +131,17 @@ export class MahjongScene extends Phaser.Scene {
       onPauseTime: () => this.handlePauseTime(),
       onHint: () => this.handleHint(),
       onChangeTheme: () => this.handleThemeChange(),
-      onTip: () => this.handleTip(),
+      onSave: () => this.saveAndExit(),
     });
 
-    // Ocultar botón de tip si ya lo tiene
-    if (this.hasJustATip) {
-      this.gameUI.hideTipButton();
+    // Ocultar botón de tema si NO tiene 'ui-styles'
+    if (!this.hasUiStyles) {
+      this.gameUI.hideThemeButton();
+    }
+
+    // Mostrar botón de guardar si tiene 'save-state'
+    if (this.hasSaveState) {
+      this.gameUI.showSaveButton();
     }
 
     // Escuchar evento de tiempo agotado
@@ -156,8 +161,21 @@ export class MahjongScene extends Phaser.Scene {
       // Mostrar tutorial sobre la escena del juego
       this.showTutorial();
     } else {
-      // Iniciar nivel 1 directamente
-      this.startLevel(1);
+      // Intentar cargar estado guardado (si tiene save-state)
+      const saved = this.loadSavedState();
+      if (saved) {
+        this.gameState.score = saved.score;
+        this.gameUI.updateScore(saved.score);
+        // Restaurar vidas si hay menos de 2
+        if (saved.lives < 2) {
+          for (let i = 0; i < 2 - saved.lives; i++) {
+            this.gameUI.loseLife();
+          }
+        }
+        this.startLevel(saved.level);
+      } else {
+        this.startLevel(1);
+      }
     }
   }
 
@@ -1106,10 +1124,29 @@ export class MahjongScene extends Phaser.Scene {
       // Parar el timer
       this.gameUI.stopTimer();
 
+      // Guardar progreso para la próxima sesión (siguiente nivel)
+      const nextLevel = this.gameState.currentLevel + 1;
+      if (this.hasSaveState) {
+        try {
+          const sdk = window.FarcadeSDK as any;
+          if (sdk?.singlePlayer?.actions?.saveGameState) {
+            sdk.singlePlayer.actions.saveGameState({
+              gameState: {
+                level: nextLevel,
+                score: this.gameState.score,
+                lives: this.gameUI.getLives(),
+              },
+            });
+          }
+        } catch (e) {
+          console.log("Save state error:", e);
+        }
+      }
+
       // Mostrar mensaje de victoria
       this.time.delayedCall(500, () => {
         this.gameUI.showWinMessage(() => {
-          this.startLevel(this.gameState.currentLevel + 1);
+          this.startLevel(nextLevel);
         });
       });
     }
@@ -1157,6 +1194,9 @@ export class MahjongScene extends Phaser.Scene {
     // Parar música
     SoundManager.stopMusic();
 
+    // Limpiar estado guardado al perder definitivamente
+    this.clearSavedState();
+
     // Enviar puntuación a Farcade - el SDK gestiona el modal de game over
     try {
       const sdk = window.FarcadeSDK as any;
@@ -1196,6 +1236,113 @@ export class MahjongScene extends Phaser.Scene {
     this.gameUI.updateScore(0);
     this.gameUI.resetLives();
     this.startLevel(1);
+  }
+
+  // ─── Save State (SDK) ───────────────────────────────────────────
+
+  /**
+   * Guarda el progreso y sale del juego (gameOver + saveState)
+   */
+  private saveAndExit(): void {
+    if (!this.hasSaveState) return;
+
+    // Primero guardar el estado actual
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.singlePlayer?.actions?.saveGameState) {
+        const saveData: Record<string, unknown> = {
+          level: this.gameState.currentLevel,
+          score: this.gameState.score,
+          lives: this.gameUI.getLives(),
+        };
+        sdk.singlePlayer.actions.saveGameState({ gameState: saveData });
+      }
+    } catch (e) {
+      console.log("Save state error:", e);
+    }
+
+    // Luego enviar gameOver con el score (sale del juego)
+    this.gameState.isGameOver = true;
+    this.gameState.isPlaying = false;
+    this.isAnimating = false;
+    SoundManager.stopMusic();
+
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.singlePlayer?.actions?.gameOver) {
+        sdk.singlePlayer.actions.gameOver({ score: this.gameState.score });
+      } else if (sdk?.gameOver) {
+        sdk.gameOver({ score: this.gameState.score });
+      } else if (sdk?.actions?.gameOver) {
+        sdk.actions.gameOver({ score: this.gameState.score });
+      }
+    } catch (e) {
+      console.log("Farcade SDK not available");
+    }
+  }
+
+  /**
+   * Guarda el progreso del juego usando el SDK (solo si tiene 'save-state')
+   */
+  private saveGameProgress(): void {
+    if (!this.hasSaveState) return;
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.singlePlayer?.actions?.saveGameState) {
+        const saveData: Record<string, unknown> = {
+          level: this.gameState.currentLevel,
+          score: this.gameState.score,
+          lives: this.gameUI.getLives(),
+        };
+        sdk.singlePlayer.actions.saveGameState({ gameState: saveData });
+      }
+    } catch (e) {
+      console.log("Save state error:", e);
+    }
+  }
+
+  /**
+   * Limpia el estado guardado (al perder todas las vidas)
+   */
+  private clearSavedState(): void {
+    if (!this.hasSaveState) return;
+    try {
+      const sdk = window.FarcadeSDK as any;
+      if (sdk?.singlePlayer?.actions?.saveGameState) {
+        sdk.singlePlayer.actions.saveGameState({ gameState: {} });
+      }
+    } catch (e) {
+      console.log("Clear state error:", e);
+    }
+  }
+
+  /**
+   * Intenta cargar estado guardado del SDK.
+   * Devuelve el nivel inicial y el score si hay estado guardado, o null.
+   */
+  private loadSavedState(): {
+    level: number;
+    score: number;
+    lives: number;
+  } | null {
+    if (!this.hasSaveState) return null;
+    try {
+      const sdk = window.FarcadeSDK as any;
+      const saved = sdk?.gameState as
+        | Record<string, unknown>
+        | null
+        | undefined;
+      if (saved && typeof saved.level === "number" && saved.level > 1) {
+        return {
+          level: saved.level as number,
+          score: (saved.score as number) || 0,
+          lives: (saved.lives as number) ?? 2,
+        };
+      }
+    } catch (e) {
+      console.log("Load state error:", e);
+    }
+    return null;
   }
 
   /**
@@ -1508,230 +1655,19 @@ export class MahjongScene extends Phaser.Scene {
   /**
    * Verifica si el usuario tiene los temas exclusivos comprados
    */
-  private checkExclusiveThemes(): void {
+  private checkPurchasedItems(): void {
     try {
       const sdk = window.FarcadeSDK as any;
       if (sdk?.hasItem) {
-        this.hasExclusiveThemes = sdk.hasItem("exclusive-themes");
+        this.hasUiStyles = sdk.hasItem("ui-styles");
         this.hasJustATip = sdk.hasItem("just-a-tip");
+        this.hasSaveState = sdk.hasItem("save-state");
       }
     } catch {
-      this.hasExclusiveThemes = false;
+      this.hasUiStyles = false;
       this.hasJustATip = false;
+      this.hasSaveState = false;
     }
-  }
-
-  /**
-   * Inicia el proceso de compra de temas exclusivos
-   */
-  private async purchaseExclusiveThemes(): Promise<void> {
-    try {
-      const sdk = window.FarcadeSDK as any;
-      if (sdk?.purchase) {
-        const result = await sdk.purchase({ item: "exclusive-themes" });
-        if (result.success) {
-          this.hasExclusiveThemes = true;
-          // Cerrar el overlay de compra si existe
-          this.closePurchaseOverlay();
-          // Ahora sí cambiar el tema
-          this.applyThemeChange();
-        }
-      }
-    } catch (error) {
-      console.error("Purchase error:", error);
-    }
-  }
-
-  // Overlay de compra de temas
-  private purchaseOverlay: Phaser.GameObjects.Container | null = null;
-
-  /**
-   * Muestra el overlay de compra de temas exclusivos
-   */
-  private showPurchaseOverlay(): void {
-    if (this.purchaseOverlay) return;
-
-    const { canvas } = GameSettings;
-
-    // Pausar el tiempo
-    this.gameUI.pauseTimer();
-
-    // Contenedor principal
-    this.purchaseOverlay = this.add.container(0, 0);
-    this.purchaseOverlay.setDepth(3000);
-
-    // Overlay muy oscuro que bloquea clicks
-    const overlay = this.add.graphics();
-    overlay.fillStyle(0x000000, 0.95);
-    overlay.fillRect(0, 0, canvas.width, canvas.height);
-    overlay.setInteractive(
-      new Phaser.Geom.Rectangle(0, 0, canvas.width, canvas.height),
-      Phaser.Geom.Rectangle.Contains,
-    );
-    overlay.on("pointerdown", () => {}); // Bloquear clicks
-    this.purchaseOverlay.add(overlay);
-
-    const fontFamily = "'Fredoka One', Arial Black, sans-serif";
-    const centerX = canvas.width / 2;
-
-    // Título
-    const title = this.add.text(centerX, 380, "EXCLUSIVE THEMES", {
-      fontSize: "48px",
-      fontFamily: fontFamily,
-      color: "#B7FF00",
-      stroke: "#000000",
-      strokeThickness: 8,
-    });
-    title.setOrigin(0.5);
-    this.purchaseOverlay.add(title);
-
-    // Descripción
-    const desc = this.add.text(
-      centerX,
-      470,
-      "Unlock 4 beautiful themes\nto customize your game!",
-      {
-        fontSize: "28px",
-        fontFamily: fontFamily,
-        color: "#ffffff",
-        stroke: "#000000",
-        strokeThickness: 3,
-        align: "center",
-      },
-    );
-    desc.setOrigin(0.5);
-    this.purchaseOverlay.add(desc);
-
-    // Botón UNLOCK
-    const btnWidth = 280;
-    const btnHeight = 70;
-    const unlockBtn = this.add.container(centerX, 600);
-    const unlockBg = this.add.graphics();
-    unlockBg.fillStyle(0x2d7d32, 1);
-    unlockBg.fillRoundedRect(-btnWidth / 2, 10, btnWidth, btnHeight, 14);
-    unlockBg.fillStyle(0x4caf50, 1);
-    unlockBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-    unlockBg.lineStyle(3, 0x2d7d32, 1);
-    unlockBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-    unlockBtn.add(unlockBg);
-
-    const unlockText = this.add.text(0, btnHeight / 2, "UNLOCK", {
-      fontSize: "36px",
-      fontFamily: fontFamily,
-      color: "#ffffff",
-      stroke: "#2d7d32",
-      strokeThickness: 4,
-    });
-    unlockText.setOrigin(0.5);
-    unlockBtn.add(unlockText);
-
-    unlockBtn.setSize(btnWidth, btnHeight + 10);
-    unlockBtn.setInteractive({ useHandCursor: true });
-
-    unlockBtn.on("pointerover", () => {
-      this.tweens.add({
-        targets: unlockBtn,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    unlockBtn.on("pointerout", () => {
-      this.tweens.add({
-        targets: unlockBtn,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    unlockBtn.on("pointerdown", () => {
-      this.purchaseExclusiveThemes();
-    });
-
-    this.purchaseOverlay.add(unlockBtn);
-
-    // Botón BACK
-    const backBtn = this.add.container(centerX, 700);
-    const backBg = this.add.graphics();
-    backBg.fillStyle(0x444444, 1);
-    backBg.fillRoundedRect(-btnWidth / 2, 10, btnWidth, btnHeight, 14);
-    backBg.fillStyle(0x666666, 1);
-    backBg.fillRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-    backBg.lineStyle(3, 0x444444, 1);
-    backBg.strokeRoundedRect(-btnWidth / 2, 0, btnWidth, btnHeight, 14);
-    backBtn.add(backBg);
-
-    const backText = this.add.text(0, btnHeight / 2, "BACK", {
-      fontSize: "36px",
-      fontFamily: fontFamily,
-      color: "#ffffff",
-      stroke: "#333333",
-      strokeThickness: 4,
-    });
-    backText.setOrigin(0.5);
-    backBtn.add(backText);
-
-    backBtn.setSize(btnWidth, btnHeight + 10);
-    backBtn.setInteractive({ useHandCursor: true });
-
-    backBtn.on("pointerover", () => {
-      this.tweens.add({
-        targets: backBtn,
-        scaleX: 1.05,
-        scaleY: 1.05,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    backBtn.on("pointerout", () => {
-      this.tweens.add({
-        targets: backBtn,
-        scaleX: 1,
-        scaleY: 1,
-        duration: 100,
-        ease: "Power2",
-      });
-    });
-
-    backBtn.on("pointerdown", () => {
-      this.closePurchaseOverlay();
-    });
-
-    this.purchaseOverlay.add(backBtn);
-
-    // Fade in
-    this.purchaseOverlay.setAlpha(0);
-    this.tweens.add({
-      targets: this.purchaseOverlay,
-      alpha: 1,
-      duration: 200,
-      ease: "Power2",
-    });
-  }
-
-  /**
-   * Cierra el overlay de compra y reanuda el juego
-   */
-  private closePurchaseOverlay(): void {
-    if (!this.purchaseOverlay) return;
-
-    this.tweens.add({
-      targets: this.purchaseOverlay,
-      alpha: 0,
-      duration: 200,
-      ease: "Power2",
-      onComplete: () => {
-        this.purchaseOverlay?.destroy();
-        this.purchaseOverlay = null;
-        // Reanudar el tiempo
-        this.gameUI.resumeTimer();
-      },
-    });
   }
 
   // Overlay de tip
@@ -1992,12 +1928,8 @@ export class MahjongScene extends Phaser.Scene {
    * Cambia al siguiente tema visual
    */
   private handleThemeChange(): void {
-    if (!this.hasExclusiveThemes) {
-      // Si no tiene el item, mostrar overlay de compra
-      this.showPurchaseOverlay();
-      return;
-    }
-
+    // Solo cambia tema si tiene 'ui-styles' (el botón ya está oculto si no)
+    if (!this.hasUiStyles) return;
     this.applyThemeChange();
   }
 

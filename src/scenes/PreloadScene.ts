@@ -53,17 +53,13 @@ export class PreloadScene extends Phaser.Scene {
     this.bootSprite = this.add.sprite(width / 2, height / 2, "bootSprite");
     this.bootSprite.setOrigin(0.5, 0.5);
 
-    // Escalar basado en altura manteniendo aspect ratio del frame (241:345)
-    const frameAspectRatio = 241 / 345; // ~0.698
-    const targetHeight = height * 0.42; // 42% del alto de pantalla
-    const targetWidth = targetHeight * frameAspectRatio * 0.85; // Reducir width 15% para corregir estiramiento
-
-    // Obtener tamaño real del frame desde la textura
+    // Escalar uniformemente basado en altura (mantiene aspect ratio natural del sprite)
+    // En full screen (>1080) el sprite se ve demasiado grande, usar porcentaje menor
+    const heightPercent = height > 1080 ? 0.32 : 0.42;
+    const targetHeight = height * heightPercent;
     const frame = this.bootSprite.frame;
-    const scaleX = targetWidth / frame.width;
-    const scaleY = targetHeight / frame.height;
-
-    this.bootSprite.setScale(scaleX, scaleY);
+    const uniformScale = targetHeight / frame.height;
+    this.bootSprite.setScale(uniformScale);
     this.bootSprite.play("boot");
 
     // Cuando termine la animación
@@ -77,33 +73,11 @@ export class PreloadScene extends Phaser.Scene {
   }
 
   private loadRemainingAssets(): void {
-    // WebFont loader para fuentes
-    this.load.script(
-      "webfont",
-      "https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js",
-    );
-
-    // Iniciar carga de fuentes cuando el script esté listo
-    this.load.on("filecomplete-script-webfont", () => {
-      // @ts-ignore
-      if (window.WebFont) {
-        // @ts-ignore
-        window.WebFont.load({
-          google: {
-            families: ["Fredoka One"],
-          },
-          active: () => {
-            console.log("Fonts loaded");
-            this.fontsLoaded = true;
-            this.checkTransition();
-          },
-          inactive: () => {
-            console.warn("Fonts failed to load");
-            this.fontsLoaded = true; // Continuar aunque falle
-            this.checkTransition();
-          },
-        });
-      }
+    // Cargar fuente via document.fonts (ya se carga via CSS <link> en index.html)
+    document.fonts.ready.then(() => {
+      console.log("Fonts loaded");
+      this.fontsLoaded = true;
+      this.checkTransition();
     });
 
     // --- ASSETS PRIORITARIOS ---

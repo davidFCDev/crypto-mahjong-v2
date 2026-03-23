@@ -13,6 +13,7 @@ export interface PowerUpCallbacks {
   onPauseTime?: () => boolean; // Retorna true si se pausó
   onHint?: () => boolean; // Retorna true si se encontró un hint
   onChangeTheme?: () => void; // Cambiar tema
+  onSave?: () => void; // Guardar progreso
 }
 
 export class GameUI extends Phaser.GameObjects.Container {
@@ -47,6 +48,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   private clockButton!: Phaser.GameObjects.Container;
   private keyButton!: Phaser.GameObjects.Container;
   private themeButton!: Phaser.GameObjects.Container; // Botón de tema
+  private saveButton!: Phaser.GameObjects.Container; // Botón de guardar
   private undoUsesLeft: number = 3;
   private clockUsesLeft: number = 1;
   private keyUsesLeft: number = 2;
@@ -96,7 +98,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Posicionar al inicio del acumulador (centrado del badge)
     const badgeX = handStartX + badgeWidth / 2;
 
-    this.levelBadge = this.scene.add.container(badgeX, 55);
+    this.levelBadge = this.scene.add.container(
+      badgeX,
+      55 + GameSettings.safeAreaTop,
+    );
     const badgeHeight = 75; // Misma altura que score
     const badgeDepth = 16;
     const borderRadius = 12;
@@ -169,7 +174,10 @@ export class GameUI extends Phaser.GameObjects.Container {
   private createScoreBadge(): void {
     const { canvas, ui } = GameSettings;
 
-    this.scoreBadge = this.scene.add.container(canvas.width / 2, 55);
+    this.scoreBadge = this.scene.add.container(
+      canvas.width / 2,
+      55 + GameSettings.safeAreaTop,
+    );
 
     const badgeWidth = 260; // Más ancho para scores de 6 dígitos (500.000)
     const badgeHeight = 75;
@@ -246,7 +254,7 @@ export class GameUI extends Phaser.GameObjects.Container {
     const theme = getCurrentTheme();
 
     const startX = 65; // Margen izquierdo
-    const startY = 220; // Debajo del score
+    const startY = 220 + GameSettings.safeAreaTop; // Debajo del score (con safe area)
     const heartSpacing = 60; // Espaciado vertical
 
     for (let i = 0; i < this.lives; i++) {
@@ -373,7 +381,10 @@ export class GameUI extends Phaser.GameObjects.Container {
     // Posicionar al final del acumulador (centrado del badge)
     const badgeX = handEndX - badgeWidth / 2;
 
-    this.timeBadge = this.scene.add.container(badgeX, 55);
+    this.timeBadge = this.scene.add.container(
+      badgeX,
+      55 + GameSettings.safeAreaTop,
+    );
     const badgeHeight = 75; // Misma altura que score
     const badgeDepth = 16;
     const borderRadius = 12;
@@ -492,6 +503,9 @@ export class GameUI extends Phaser.GameObjects.Container {
 
     // Botón de tema arriba a la derecha (misma altura que corazones)
     this.createThemeButton();
+
+    // Botón de guardar debajo del botón de tema
+    this.createSaveButton();
   }
 
   /**
@@ -500,7 +514,7 @@ export class GameUI extends Phaser.GameObjects.Container {
   private createThemeButton(): void {
     const { canvas } = GameSettings;
     const buttonX = canvas.width - 65; // Margen derecho
-    const buttonY = 220; // Misma altura que primer corazón
+    const buttonY = 220 + GameSettings.safeAreaTop; // Misma altura que primer corazón (con safe area)
     const buttonSize = 60;
 
     this.themeButton = this.scene.add.container(buttonX, buttonY);
@@ -574,6 +588,151 @@ export class GameUI extends Phaser.GameObjects.Container {
     });
 
     this.add(this.themeButton);
+  }
+
+  /**
+   * Oculta el botón de cambio de tema (si el jugador no tiene 'ui-styles')
+   */
+  public hideThemeButton(): void {
+    if (this.themeButton) {
+      this.themeButton.setVisible(false);
+      this.themeButton.disableInteractive();
+    }
+  }
+
+  /**
+   * Crea el botón de guardar partida (debajo del botón de tema)
+   */
+  private createSaveButton(): void {
+    const { canvas } = GameSettings;
+    const buttonX = canvas.width - 65;
+    const buttonY = 300 + GameSettings.safeAreaTop; // Debajo del botón de tema
+    const buttonSize = 60;
+
+    this.saveButton = this.scene.add.container(buttonX, buttonY);
+
+    const depth = 8;
+    const radius = buttonSize / 2;
+    const mainColor = 0x2196f3; // Azul
+    const borderColor = 0x1565c0;
+
+    const bg = this.scene.add.graphics();
+
+    // Sombra/profundidad 3D
+    bg.fillStyle(this.darkenColor(borderColor, 0.3), 1);
+    bg.fillCircle(0, depth, radius);
+
+    // Cara principal
+    bg.fillStyle(mainColor, 1);
+    bg.fillCircle(0, 0, radius);
+
+    // Borde
+    bg.lineStyle(3, borderColor, 1);
+    bg.strokeCircle(0, 0, radius);
+
+    this.saveButton.add(bg);
+
+    // Emoji de disquete 💾
+    const emoji = this.scene.add.text(0, 0, "💾", {
+      fontSize: "28px",
+      fontFamily: "Arial",
+    });
+    emoji.setOrigin(0.5);
+    this.saveButton.add(emoji);
+
+    // Hacer interactivo
+    this.saveButton.setSize(buttonSize, buttonSize + depth);
+    this.saveButton.setInteractive({ useHandCursor: true });
+
+    this.saveButton.on("pointerover", () => {
+      this.scene.tweens.add({
+        targets: this.saveButton,
+        scaleX: 1.1,
+        scaleY: 1.1,
+        duration: 100,
+        ease: "Back.easeOut",
+      });
+    });
+
+    this.saveButton.on("pointerout", () => {
+      this.scene.tweens.add({
+        targets: this.saveButton,
+        scaleX: 1,
+        scaleY: 1,
+        duration: 100,
+        ease: "Back.easeOut",
+      });
+    });
+
+    this.saveButton.on("pointerdown", () => {
+      this.scene.tweens.add({
+        targets: this.saveButton,
+        scaleX: 0.9,
+        scaleY: 0.9,
+        duration: 50,
+        yoyo: true,
+        onComplete: () => {
+          if (this.powerUpCallbacks.onSave) {
+            this.powerUpCallbacks.onSave();
+          }
+          // Feedback visual: flash verde
+          this.showSaveConfirmation();
+        },
+      });
+    });
+
+    // Oculto por defecto — MahjongScene lo muestra si tiene 'save-state'
+    this.saveButton.setVisible(false);
+    this.add(this.saveButton);
+  }
+
+  /**
+   * Muestra confirmación visual de guardado
+   */
+  private showSaveConfirmation(): void {
+    const checkMark = this.scene.add.text(
+      this.saveButton.x,
+      this.saveButton.y - 45,
+      "✅ Saved!",
+      {
+        fontSize: "20px",
+        fontFamily: "'Fredoka One', cursive",
+        color: "#4CAF50",
+        stroke: "#000000",
+        strokeThickness: 3,
+      },
+    );
+    checkMark.setOrigin(0.5);
+    this.add(checkMark);
+
+    this.scene.tweens.add({
+      targets: checkMark,
+      y: checkMark.y - 30,
+      alpha: 0,
+      duration: 1200,
+      ease: "Power2",
+      onComplete: () => checkMark.destroy(),
+    });
+  }
+
+  /**
+   * Oculta el botón de guardar
+   */
+  public hideSaveButton(): void {
+    if (this.saveButton) {
+      this.saveButton.setVisible(false);
+      this.saveButton.disableInteractive();
+    }
+  }
+
+  /**
+   * Muestra el botón de guardar
+   */
+  public showSaveButton(): void {
+    if (this.saveButton) {
+      this.saveButton.setVisible(true);
+      this.saveButton.setInteractive({ useHandCursor: true });
+    }
   }
 
   /**

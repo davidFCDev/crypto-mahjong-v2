@@ -11,10 +11,16 @@ const getTheme = () => getCurrentTheme();
 
 export const GameSettings = {
   // Canvas configuration
+  // Base: 720×1080 (2:3 ratio) - height se ajusta dinámicamente en main.ts
+  // según el viewport real para soportar full screen
   canvas: {
     width: 720,
-    height: 1280,
+    height: 1080, // 2:3 base - se actualiza en runtime
   },
+
+  // Safe area: zona muerta arriba para evitar notch/cámara en full screen
+  // Se configura dinámicamente en main.ts (0 para 2:3, ~60 para full screen)
+  safeAreaTop: 0,
 
   // Get current theme (for dynamic access)
   get theme() {
@@ -22,6 +28,7 @@ export const GameSettings = {
   },
 
   // Tile dimensions and styling - Forma vertical estilo Mahjong clásico
+  // Diseñado para full screen (1280px). Se escala en main.ts para 2:3
   tile: {
     width: 120,
     height: 160,
