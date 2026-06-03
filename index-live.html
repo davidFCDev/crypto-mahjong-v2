@@ -1,0 +1,4417 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>crypto-mahjong-v2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3/dist/phaser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@farcade/game-sdk@latest/dist/index.min.js"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: #000000;
+        font-family: "Fredoka One", cursive;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      canvas {
+        outline: none;
+        margin: 0;
+        display: block;
+        /* NO usar width: 100% !important — sobreescribe el FIT de Phaser y estira */
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      var N = class {
+          isAvailable = null;
+          checkAvailability() {
+            if (this.isAvailable !== null) return this.isAvailable;
+            try {
+              if (typeof window > "u" || !window.localStorage)
+                return ((this.isAvailable = !1), !1);
+              let e = "__localStorage_test__";
+              return (
+                window.localStorage.setItem(e, "test"),
+                window.localStorage.removeItem(e),
+                (this.isAvailable = !0),
+                !0
+              );
+            } catch (e) {
+              return (
+                console.warn("localStorage is not available:", e),
+                (this.isAvailable = !1),
+                !1
+              );
+            }
+          }
+          getItem(e) {
+            if (!this.checkAvailability()) return null;
+            try {
+              return window.localStorage.getItem(e);
+            } catch (t) {
+              return (
+                console.error(
+                  `Error reading from localStorage (key: ${e}):`,
+                  t,
+                ),
+                null
+              );
+            }
+          }
+          setItem(e, t) {
+            if (!this.checkAvailability()) return !1;
+            try {
+              return (window.localStorage.setItem(e, t), !0);
+            } catch (s) {
+              return (
+                s instanceof Error && s.name === "QuotaExceededError"
+                  ? console.error("localStorage quota exceeded")
+                  : console.error(
+                      `Error writing to localStorage (key: ${e}):`,
+                      s,
+                    ),
+                !1
+              );
+            }
+          }
+          removeItem(e) {
+            if (!this.checkAvailability()) return !1;
+            try {
+              return (window.localStorage.removeItem(e), !0);
+            } catch (t) {
+              return (
+                console.error(
+                  `Error removing from localStorage (key: ${e}):`,
+                  t,
+                ),
+                !1
+              );
+            }
+          }
+          clear() {
+            if (!this.checkAvailability()) return !1;
+            try {
+              return (window.localStorage.clear(), !0);
+            } catch (e) {
+              return (console.error("Error clearing localStorage:", e), !1);
+            }
+          }
+          keys() {
+            if (!this.checkAvailability()) return [];
+            try {
+              let e = [];
+              for (let t = 0; t < window.localStorage.length; t++) {
+                let s = window.localStorage.key(t);
+                s !== null && e.push(s);
+              }
+              return e;
+            } catch (e) {
+              return (console.error("Error getting localStorage keys:", e), []);
+            }
+          }
+          getFilteredKeys(e) {
+            return this.keys().filter(e);
+          }
+          removeItems(e) {
+            e.forEach((t) => this.removeItem(t));
+          }
+          get length() {
+            if (!this.checkAvailability()) return 0;
+            try {
+              return window.localStorage.length;
+            } catch (e) {
+              return (
+                console.error("Error getting localStorage length:", e),
+                0
+              );
+            }
+          }
+          getJSON(e, t = null) {
+            let s = this.getItem(e);
+            if (!s) return t;
+            try {
+              return JSON.parse(s);
+            } catch (i) {
+              return (
+                console.error(
+                  `Error parsing JSON from localStorage (key: ${e}):`,
+                  i,
+                ),
+                t
+              );
+            }
+          }
+          setJSON(e, t) {
+            try {
+              return this.setItem(e, JSON.stringify(t));
+            } catch (s) {
+              return (
+                console.error(
+                  `Error stringifying JSON for localStorage (key: ${e}):`,
+                  s,
+                ),
+                !1
+              );
+            }
+          }
+        },
+        fe = new N();
+      async function V(b, e) {
+        ((window.game = b), oe(b));
+      }
+      var U = null,
+        D = null;
+      function oe(b) {
+        "FarcadeSDK" in window &&
+          window.FarcadeSDK &&
+          (U && window.FarcadeSDK.off("toggle_mute", U),
+          D && window.FarcadeSDK.off("play_again", D),
+          b.canvas.setAttribute("tabindex", "-1"),
+          (U = (e) => {
+            let t = e;
+            ((b.sound.mute = t.isMuted),
+              window.parent &&
+                window.parent !== window &&
+                window.parent.postMessage(
+                  {
+                    type: "remix_sdk_event",
+                    event: {
+                      type: "toggle_mute",
+                      data: { isMuted: t.isMuted },
+                    },
+                  },
+                  "*",
+                ));
+          }),
+          window.FarcadeSDK.on("toggle_mute", U),
+          (D = () => {
+            try {
+              b.canvas.focus();
+            } catch {}
+          }),
+          window.FarcadeSDK.on("play_again", D));
+      }
+      var q = {
+          name: "classic",
+          displayName: "Classic",
+          background: {
+            main: "#f5deb3",
+            mainHex: 16113331,
+            backgroundImage:
+              "https://remix.gg/blob/zS0QCi0PfUjO/11%20%281%29-5rWcZQAXCAHAxPIlyY1z0F0WTVTLxD.webp?G141",
+            pattern: { type: "diamonds", color1: 16113331, color2: 14596231 },
+          },
+          badge: {
+            main: 3978097,
+            border: 3050327,
+            depth3D: 16,
+            textStroke: "#1a3a1a",
+          },
+          hand: { background: 3978097, slot: 3050327, slotBorder: 2263842 },
+          modal: {
+            main: 3978097,
+            border: 3050327,
+            titleColor: "#ffffff",
+            titleStroke: "#1a3a1a",
+            textColor: "#1a1a1a",
+            buttonTextColor: "#1a1a1a",
+          },
+          powerUps: {
+            undo: { main: 3447003, border: 2719929 },
+            clock: { main: 15844367, border: 13936640 },
+            key: { main: 15158332, border: 9109504 },
+          },
+          lives: { color: "#e74c3c", stroke: "#8b0000" },
+          tile: {
+            face: 16777215,
+            side: 13940886,
+            bottom: 12888184,
+            border: 11835496,
+            sideLight: 14731432,
+            bottomLight: 13678744,
+          },
+        },
+        ne = {
+          name: "ocean",
+          displayName: "Ocean",
+          background: {
+            main: "#1a3a4a",
+            mainHex: 1718858,
+            backgroundImage:
+              "https://remix.gg/blob/zS0QCi0PfUjO/ocean-gFx3EBS1vC6C2L6tsUBmPi26t4oL9C.webp?Cc2P",
+            pattern: { type: "waves", color1: 1718858, color2: 993848 },
+          },
+          badge: {
+            main: 2142890,
+            border: 35723,
+            depth3D: 16,
+            textStroke: "#0a3030",
+          },
+          hand: { background: 2142890, slot: 35723, slotBorder: 26214 },
+          modal: {
+            main: 2142890,
+            border: 35723,
+            titleColor: "#ffffff",
+            titleStroke: "#0a3030",
+            textColor: "#e0ffff",
+            buttonTextColor: "#0a3030",
+          },
+          powerUps: {
+            undo: { main: 4286945, border: 2771867 },
+            clock: { main: 52945, border: 35723 },
+            key: { main: 16739179, border: 12864845 },
+          },
+          lives: { color: "#ff6b6b", stroke: "#c44d4d" },
+          tile: {
+            face: 14745599,
+            side: 6266528,
+            bottom: 4885132,
+            border: 3832444,
+            sideLight: 8370362,
+            bottomLight: 6989994,
+          },
+        },
+        re = {
+          name: "sunset",
+          displayName: "Sunset",
+          background: {
+            main: "#ffb347",
+            mainHex: 16757575,
+            backgroundImage:
+              "https://remix.gg/blob/zS0QCi0PfUjO/atardecer-5hf7bIPQYd72dNAL5etCf8ztM7XqgP.webp?FPWJ",
+            pattern: { type: "polkadots", color1: 16757575, color2: 16777215 },
+          },
+          badge: {
+            main: 16769126,
+            border: 15124554,
+            depth3D: 16,
+            textStroke: "#8b6914",
+          },
+          hand: { background: 16769126, slot: 15124554, slotBorder: 13939258 },
+          modal: {
+            main: 16769126,
+            border: 15124554,
+            titleColor: "#6b4c00",
+            titleStroke: "#ffe066",
+            textColor: "#5d4500",
+            buttonTextColor: "#5d4500",
+          },
+          powerUps: {
+            undo: { main: 16773494, border: 15124554 },
+            clock: { main: 16766720, border: 14329120 },
+            key: { main: 16757575, border: 15114288 },
+          },
+          lives: { color: "#e74c3c", stroke: "#8b0000" },
+          tile: {
+            face: 16777200,
+            side: 16774557,
+            bottom: 16769154,
+            border: 15124554,
+            sideLight: 16776679,
+            bottomLight: 16774557,
+          },
+        },
+        le = {
+          name: "sakura",
+          displayName: "Sakura",
+          background: {
+            main: "#fce4ec",
+            mainHex: 16573676,
+            backgroundImage:
+              "https://remix.gg/blob/zS0QCi0PfUjO/sakura-ATSX9unarKHj5GvQP94CVzXvEjF4HZ.webp?f9jk",
+            pattern: { type: "circles", color1: 16573676, color2: 16301017 },
+          },
+          badge: {
+            main: 15753874,
+            border: 14162784,
+            depth3D: 16,
+            textStroke: "#5a0a25",
+          },
+          hand: { background: 15753874, slot: 14162784, slotBorder: 11342935 },
+          modal: {
+            main: 15753874,
+            border: 14162784,
+            titleColor: "#ffffff",
+            titleStroke: "#5a0a25",
+            textColor: "#3a1a25",
+            buttonTextColor: "#3a1a25",
+          },
+          powerUps: {
+            undo: { main: 8505220, border: 6732650 },
+            clock: { main: 16758605, border: 16754470 },
+            key: { main: 15753874, border: 14162784 },
+          },
+          lives: { color: "#e74c3c", stroke: "#8b0000" },
+          tile: {
+            face: 16777215,
+            side: 16301008,
+            bottom: 16027569,
+            border: 15483002,
+            sideLight: 16573676,
+            bottomLight: 16301008,
+          },
+        },
+        R = { classic: q, ocean: ne, sunset: re, sakura: le },
+        L = q;
+      function k() {
+        return L;
+      }
+      function G(b) {
+        return R[b] ? ((L = R[b]), !0) : !1;
+      }
+      function Z() {
+        return Object.keys(R);
+      }
+      function ee() {
+        let b = Object.keys(R),
+          t = (b.indexOf(L.name) + 1) % b.length;
+        return ((L = R[b[t]]), L);
+      }
+      var F = () => k(),
+        ce = {
+          canvas: { width: 720, height: 1080 },
+          safeAreaTop: 0,
+          get theme() {
+            return k();
+          },
+          tile: {
+            width: 120,
+            height: 160,
+            depth: 16,
+            padding: 2,
+            cornerRadius: 11,
+            shadowOffset: 16,
+            get colors() {
+              return (
+                F().tile || {
+                  face: 16777215,
+                  side: 13940886,
+                  bottom: 12888184,
+                  border: 11835496,
+                  highlight: 16777215,
+                  blocked: 8947848,
+                  blockedOverlay: 0,
+                  blockedAlpha: 0.45,
+                  sideLight: 14731432,
+                  bottomLight: 13678744,
+                }
+              );
+            },
+          },
+          board: {
+            offsetY: 80,
+            maxWidth: 620,
+            maxHeight: 850,
+            layerOffsetX: 0,
+            layerOffsetY: 11,
+          },
+          hand: {
+            maxSlots: 5,
+            slotWidth: 108,
+            slotHeight: 145,
+            slotPadding: 8,
+            bottomMargin: 130,
+            get backgroundColor() {
+              return F().hand.background;
+            },
+            get slotColor() {
+              return F().hand.slot;
+            },
+            get slotBorderColor() {
+              return F().hand.slotBorder;
+            },
+          },
+          rules: {
+            matchCount: 3,
+            scorePerMatch: 1700,
+            bonusPerLevel: 500,
+            animationSpeed: 150,
+          },
+          getLevelConfig: (b) => {
+            let i = Math.min(2 + Math.floor(b / 2), 2 + b),
+              a = Math.min(12, 4 + Math.floor(b / 2)),
+              n,
+              o;
+            return (
+              b <= 2
+                ? ((n = 2), (o = 4))
+                : b <= 4
+                  ? ((n = 3), (o = 5))
+                  : b <= 6
+                    ? ((n = 4), (o = 5 + Math.floor((b - 4) / 2)))
+                    : b <= 10
+                      ? ((n = 4 + Math.floor((b - 6) / 2)),
+                        (o = 7 + Math.floor((b - 6) / 2)))
+                      : ((n = 6 + Math.floor((b - 10) / 2)),
+                        (o = Math.min(12, 9 + Math.floor((b - 10) / 3)))),
+              {
+                level: b,
+                rows: 4,
+                cols: 4,
+                layers: n,
+                tileTypes: o,
+                tilesPerType: 3,
+                coverageRate: 1,
+              }
+            );
+          },
+          ui: {
+            headerHeight: 0,
+            fontSize: { title: 28, score: 22, level: 20, button: 18 },
+            get colors() {
+              let b = F();
+              return {
+                background: b.background.mainHex,
+                primary: b.badge.main,
+                secondary: 6737322,
+                accent: 16766720,
+                text: 16775388,
+                textSecondary: 11184810,
+                badge: b.badge.main,
+                badgeBorder: b.badge.border,
+              };
+            },
+          },
+        },
+        m = ce;
+      var de =
+          "https://remix.gg/blob/zS0QCi0PfUjO/japan1-h7Q5EJSRNkIhLRsmjr59uj2OVJ7vLR.mp3?7Mgg",
+        he = [
+          "https://remix.gg/blob/zS0QCi0PfUjO/japan2-UX2geRsXkauPcmjwLqcN8pyKkKX1u4.mp3?Pcxh",
+          "https://remix.gg/blob/zS0QCi0PfUjO/japan3-lZ1E47esXUjGBsCVs8Cm1JSwnH26uT.mp3?UVvJ",
+          "https://remix.gg/blob/zS0QCi0PfUjO/japan4-WoachgGDYPTmcoRaQOGrwPZ5MpGeyW.mp3?VzVh",
+        ],
+        _ = class {
+          cardAudio = null;
+          trioAudio = null;
+          shuffleAudio = null;
+          musicTracks = [];
+          currentMusicIndex = -1;
+          isMusicPlaying = !1;
+          isInitialized = !1;
+          isPrimaryTrackLoaded = !1;
+          additionalTracksLoaded = !1;
+          constructor() {}
+          preloadPrimaryTrack() {
+            if (this.isInitialized) return;
+            ((this.cardAudio = new Audio(
+              "https://remix.gg/blob/zS0QCi0PfUjO/card-2zyqL9eHK6xXdLVCMxjmWdIupnc2Qx.mp3?eoim",
+            )),
+              (this.cardAudio.volume = 0.08),
+              (this.cardAudio.preload = "auto"),
+              (this.trioAudio = new Audio(
+                "https://remix.gg/blob/zS0QCi0PfUjO/trio-Pn8FGqCg8FO38l0lOpVQEp7tU9fztk.mp3?J22q",
+              )),
+              (this.trioAudio.volume = 0.08),
+              (this.trioAudio.preload = "auto"),
+              (this.shuffleAudio = new Audio(
+                "https://remix.gg/blob/zS0QCi0PfUjO/card-2zyqL9eHK6xXdLVCMxjmWdIupnc2Qx.mp3?eoim",
+              )),
+              (this.shuffleAudio.volume = 0.12),
+              (this.shuffleAudio.preload = "auto"),
+              (this.shuffleAudio.playbackRate = 1.2));
+            let e = new Audio(de);
+            ((e.volume = 0.15),
+              (e.preload = "auto"),
+              (e.loop = !1),
+              e.addEventListener("ended", () => this.playRandomTrack()),
+              this.musicTracks.push(e),
+              this.cardAudio.load(),
+              this.trioAudio.load(),
+              this.shuffleAudio.load(),
+              e.load(),
+              (this.isPrimaryTrackLoaded = !0),
+              (this.isInitialized = !0),
+              setTimeout(() => this.lazyLoadAdditionalTracks(), 1e3));
+          }
+          lazyLoadAdditionalTracks() {
+            if (!this.additionalTracksLoaded) {
+              for (let e of he) {
+                let t = new Audio(e);
+                ((t.volume = 0.15),
+                  (t.preload = "auto"),
+                  (t.loop = !1),
+                  t.addEventListener("ended", () => this.playRandomTrack()),
+                  this.musicTracks.push(t));
+              }
+              this.additionalTracksLoaded = !0;
+            }
+          }
+          playRandomTrack() {
+            if (!this.isMusicPlaying || this.musicTracks.length === 0) return;
+            let e = Math.floor(Math.random() * this.musicTracks.length);
+            if (this.musicTracks.length > 1)
+              for (; e === this.currentMusicIndex; )
+                e = Math.floor(Math.random() * this.musicTracks.length);
+            this.currentMusicIndex = e;
+            let t = this.musicTracks[e];
+            ((t.currentTime = 0), t.play().catch(() => {}));
+          }
+          startMusic() {
+            if (this.isMusicPlaying || this.musicTracks.length === 0) return;
+            ((this.isMusicPlaying = !0), (this.currentMusicIndex = 0));
+            let e = this.musicTracks[0];
+            ((e.currentTime = 0), e.play().catch(() => {}));
+          }
+          stopMusic() {
+            ((this.isMusicPlaying = !1),
+              this.musicTracks.forEach((e) => {
+                (e.pause(), (e.currentTime = 0));
+              }));
+          }
+          playCardToHand() {
+            if (this.cardAudio) {
+              let e = this.cardAudio.cloneNode();
+              ((e.volume = 0.08), e.play().catch(() => {}));
+            }
+          }
+          playTrio() {
+            if (this.trioAudio) {
+              let e = this.trioAudio.cloneNode();
+              ((e.volume = 0.08), e.play().catch(() => {}));
+            }
+          }
+          playShuffle(e = 16) {
+            if (!this.cardAudio) return;
+            let t = Math.min(e, 12),
+              s = 40;
+            for (let i = 0; i < t; i++)
+              setTimeout(() => {
+                let a = this.cardAudio.cloneNode();
+                ((a.volume = 0.04 + Math.random() * 0.04),
+                  (a.playbackRate = 1 + Math.random() * 0.3),
+                  a.play().catch(() => {}));
+              }, i * s);
+          }
+        },
+        P = new _();
+      var W = ((l) => (
+          (l[(l.BITCOIN = 0)] = "BITCOIN"),
+          (l[(l.ETHEREUM = 1)] = "ETHEREUM"),
+          (l[(l.DOGE = 2)] = "DOGE"),
+          (l[(l.PEPE = 3)] = "PEPE"),
+          (l[(l.SHIBA = 4)] = "SHIBA"),
+          (l[(l.SOLANA = 5)] = "SOLANA"),
+          (l[(l.CARDANO = 6)] = "CARDANO"),
+          (l[(l.POLKADOT = 7)] = "POLKADOT"),
+          (l[(l.AVALANCHE = 8)] = "AVALANCHE"),
+          (l[(l.CHAINLINK = 9)] = "CHAINLINK"),
+          (l[(l.POLYGON = 10)] = "POLYGON"),
+          (l[(l.LITECOIN = 11)] = "LITECOIN"),
+          l
+        ))(W || {}),
+        O = {
+          0: {
+            main: 16225050,
+            accent: 5058304,
+            symbol: "\u20BF",
+            letter: "B",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/1-tfgDt6wKwhgkpKJW1twPmHg6rAOHLo.webp?jhm5",
+          },
+          1: {
+            main: 3947775,
+            accent: 657997,
+            symbol: "\u039E",
+            letter: "E",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/2-3i8JAyodt8kbxwwH0YjiAsUDirxmx7.webp?6AoF",
+          },
+          2: {
+            main: 14665808,
+            accent: 5062656,
+            symbol: "\xD0",
+            letter: "D",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/3-dzjcu8w0P45R8rsxCMKdy3sZ3pdIwC.webp?6cRk",
+          },
+          3: {
+            main: 51283,
+            accent: 15642,
+            symbol: "\u{1F438}",
+            letter: "P",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/4-jxrFEJIcMRsWZMDxBwGSRlQhWUpL9r.webp?i98M",
+          },
+          4: {
+            main: 16739072,
+            accent: 5054464,
+            symbol: "\u{1F415}",
+            letter: "S",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/5-ZvozVqo8KVSerdcckwQC6YAKDNqMa5.webp?gFSm",
+          },
+          5: {
+            main: 11141375,
+            accent: 2752592,
+            symbol: "\u25CE",
+            letter: "O",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/6-4jXawjGI2kOag70GKqI3TeZIgeNXot.webp?bDDy",
+          },
+          6: {
+            main: 26367,
+            accent: 6733,
+            symbol: "\u20B3",
+            letter: "A",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/7-EkUvygoc8Rp8yYpGimerPyoh8xucgV.webp?0QTq",
+          },
+          7: {
+            main: 16711808,
+            accent: 5046310,
+            symbol: "\u25CF",
+            letter: "K",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/8-MRrjJ4cYqR4HTH8WYBK2Bt5Z8GSuMB.webp?ShaT",
+          },
+          8: {
+            main: 15073280,
+            accent: 5046272,
+            symbol: "\u25B2",
+            letter: "X",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/9-qVK9NAXivgIxj4PKBqwK3NwOEj8MB2.webp?NUbJ",
+          },
+          9: {
+            main: 48340,
+            accent: 15682,
+            symbol: "\u2B21",
+            letter: "L",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/10-xmmDHKIHikDvzXk3XqlMa8tb0nFY3B.webp?rA5I",
+          },
+          10: {
+            main: 8069026,
+            accent: 2755128,
+            symbol: "\u2B22",
+            letter: "M",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/11-hRjJPOuUSYR5vwZP4D2O6YenlmvsIK.webp?YZr2",
+          },
+          11: {
+            main: 6323595,
+            accent: 1712935,
+            symbol: "\u0141",
+            letter: "C",
+            imageUrl:
+              "https://remix.gg/blob/zS0QCi0PfUjO/12-usqCjP7WU9a17mzQsqUj7PuMxgBnVQ.webp?Aafi",
+          },
+        };
+      var H = new Map(),
+        E = class extends Phaser.GameObjects.Container {
+          tileState;
+          tileImage;
+          blockedOverlay;
+          symbolText;
+          symbolImage;
+          isHovered = !1;
+          showBottom3D = !0;
+          tileWidth;
+          tileHeight;
+          tileDepth;
+          constructor(e, t, s, i, a = !0) {
+            (super(e, t, s),
+              (this.tileState = i),
+              (this.showBottom3D = a),
+              (this.tileWidth = m.tile.width),
+              (this.tileHeight = m.tile.height),
+              (this.tileDepth = m.tile.depth),
+              this.ensureTextures());
+            let n = this.getCurrentTextureName();
+            ((this.tileImage = e.add.image(0, 0, n)), this.add(this.tileImage));
+            let o = O[i.type],
+              c = this.tileWidth + 8,
+              r = this.tileHeight + this.tileDepth + 8,
+              d = 4,
+              h = 4,
+              l = d + this.tileWidth / 2,
+              u = h + this.tileHeight / 2,
+              f = c / 2,
+              S = r / 2,
+              p = l - f,
+              g = u - S,
+              v = `tile-icon-rounded-${i.type}`,
+              T = `tile-icon-${i.type}`,
+              x = e.textures.exists(v);
+            if (x || e.textures.exists(T)) {
+              let M = this.tileWidth - 16,
+                C = this.tileHeight - 16,
+                A = x ? v : T;
+              ((this.symbolImage = e.add.image(p, g, A)),
+                this.symbolImage.setDisplaySize(M, C),
+                this.add(this.symbolImage),
+                (this.symbolText = e.add.text(0, 0, "", { fontSize: "1px" })),
+                this.symbolText.setVisible(!1),
+                this.add(this.symbolText));
+            } else {
+              let w = Math.floor(this.tileWidth * 0.55);
+              ((this.symbolText = e.add.text(p, g, o.letter, {
+                fontSize: `${w}px`,
+                fontFamily:
+                  "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+                color: "#ffffff",
+                stroke: this.colorToHex(o.accent),
+                strokeThickness: 4,
+                shadow: {
+                  offsetX: 1,
+                  offsetY: 2,
+                  color: "#000000",
+                  blur: 0,
+                  fill: !0,
+                },
+              })),
+                this.symbolText.setOrigin(0.5),
+                this.add(this.symbolText));
+            }
+            ((this.blockedOverlay = e.add.image(0, 0, "tile-blocked-overlay")),
+              this.blockedOverlay.setVisible(!i.isAccessible),
+              this.add(this.blockedOverlay),
+              this.setSize(
+                this.tileWidth + this.tileDepth,
+                this.tileHeight + this.tileDepth,
+              ),
+              this.setInteractive({ useHandCursor: !0 }),
+              this.on("pointerover", this.onPointerOver, this),
+              this.on("pointerout", this.onPointerOut, this),
+              this.on("pointerdown", this.onPointerDown, this),
+              e.add.existing(this));
+          }
+          refreshTexture() {
+            this.ensureTextures();
+            let e = this.getCurrentTextureName();
+            this.tileImage.setTexture(e);
+          }
+          ensureTextures() {
+            let e = this.tileState.type,
+              t = this.getTextureName(e);
+            H.has(t) || (this.generateTileTexture(t, e, !0), H.set(t, !0));
+            let s = this.getTextureName(e) + "-flat";
+            (H.has(s) || (this.generateTileTexture(s, e, !1), H.set(s, !0)),
+              H.has("tile-blocked-overlay") ||
+                (this.generateBlockedOverlay(),
+                H.set("tile-blocked-overlay", !0)));
+          }
+          getTextureName(e) {
+            return `tile-${e}-${k().name}`;
+          }
+          getCurrentTextureName() {
+            let e = this.getTextureName(this.tileState.type);
+            return this.showBottom3D ? e : e + "-flat";
+          }
+          generateTileTexture(e, t, s) {
+            let i = this.tileWidth,
+              a = this.tileHeight,
+              n = this.tileDepth,
+              o = m.tile.cornerRadius,
+              c = O[t],
+              r = m.tile.colors,
+              d = i + 8,
+              h = a + n + 8,
+              l = this.scene.add.graphics(),
+              u = 4,
+              f = 4;
+            (s &&
+              (l.fillStyle(r.bottomLight || r.bottom, 1),
+              l.fillRoundedRect(u, f + n, i, a, o),
+              l.lineStyle(
+                1,
+                this.darkenColor(r.bottomLight || r.bottom, 0.15),
+                1,
+              ),
+              l.strokeRoundedRect(u, f + n, i, a, o)),
+              l.fillStyle(r.face, 1),
+              l.fillRoundedRect(u, f, i, a, o),
+              l.lineStyle(2, r.border, 1),
+              l.strokeRoundedRect(u, f, i, a, o));
+            let S = O[t],
+              p = 8,
+              g = i - p * 2,
+              v = a - p * 2,
+              T = o - 2;
+            (S.imageUrl
+              ? (l.lineStyle(2, r.border, 1),
+                l.strokeRoundedRect(u + p, f + p, g, v, T))
+              : (l.fillStyle(c.main, 1),
+                l.fillRoundedRect(u + p, f + p, g, v, T),
+                l.lineStyle(2, this.darkenColor(c.main, 0.35), 1),
+                l.strokeRoundedRect(u + p, f + p, g, v, T),
+                l.fillStyle(16777215, 0.25),
+                l.fillRoundedRect(u + p + 3, f + p + 3, g - 6, v * 0.3, {
+                  tl: T - 1,
+                  tr: T - 1,
+                  bl: 0,
+                  br: 0,
+                })),
+              l.lineStyle(1.5, 16777215, 0.4),
+              l.beginPath(),
+              l.moveTo(u + o, f + 1),
+              l.lineTo(u + i - o, f + 1),
+              l.strokePath(),
+              l.fillStyle(16777215, 0.15),
+              l.fillCircle(u + p + 8, f + p + 8, 4),
+              l.generateTexture(e, d, h),
+              l.destroy());
+          }
+          generateBlockedOverlay() {
+            let e = this.tileWidth,
+              t = this.tileHeight,
+              s = this.tileDepth,
+              i = m.tile.cornerRadius,
+              a = this.scene.add.graphics();
+            (a.fillStyle(1710618, 0.5),
+              a.fillRoundedRect(4, 4, e, t + s, i),
+              a.fillStyle(1710618, 0.55),
+              a.fillRoundedRect(4, 4, e, t, i),
+              a.lineStyle(1, 0, 0.3),
+              a.strokeRoundedRect(4, 4, e, t, i),
+              a.generateTexture("tile-blocked-overlay", e + 8, t + s + 8),
+              a.destroy());
+          }
+          darkenColor(e, t) {
+            let s = Math.floor(((e >> 16) & 255) * (1 - t)),
+              i = Math.floor(((e >> 8) & 255) * (1 - t)),
+              a = Math.floor((e & 255) * (1 - t));
+            return (s << 16) | (i << 8) | a;
+          }
+          colorToHex(e) {
+            return "#" + e.toString(16).padStart(6, "0");
+          }
+          onPointerOver() {
+            this.tileState.isAccessible &&
+              ((this.isHovered = !0),
+              this.scene.tweens.add({
+                targets: this.tileImage,
+                alpha: 0.85,
+                duration: 100,
+                ease: "Power2",
+              }));
+          }
+          onPointerOut() {
+            ((this.isHovered = !1),
+              this.scene.tweens.add({
+                targets: this.tileImage,
+                alpha: 1,
+                duration: 100,
+                ease: "Power2",
+              }));
+          }
+          onPointerDown() {
+            if (!this.tileState.isAccessible) {
+              this.scene.tweens.add({
+                targets: this,
+                x: this.x - 4,
+                duration: 40,
+                yoyo: !0,
+                repeat: 2,
+                ease: "Power2",
+              });
+              return;
+            }
+            (P.playCardToHand(), this.emit("tile-clicked", this.tileState));
+          }
+          updateState(e) {
+            ((this.tileState = { ...this.tileState, ...e }),
+              this.blockedOverlay.setVisible(!this.tileState.isAccessible));
+          }
+          updateBottom3D(e) {
+            if (this.showBottom3D === e) return;
+            this.showBottom3D = e;
+            let t = this.getCurrentTextureName();
+            this.tileImage.setTexture(t);
+          }
+          getState() {
+            return this.tileState;
+          }
+          animateToHand(e, t, s) {
+            this.scene.tweens.add({
+              targets: this,
+              x: e,
+              y: t,
+              scaleX: 0.75,
+              scaleY: 0.75,
+              duration: m.rules.animationSpeed,
+              ease: "Back.easeInOut",
+              onComplete: () => s?.(),
+            });
+          }
+          animateMatch(e) {
+            this.scene.tweens.add({
+              targets: this,
+              scaleX: 0,
+              scaleY: 0,
+              alpha: 0,
+              duration: m.rules.animationSpeed,
+              ease: "Back.easeIn",
+              onComplete: () => {
+                (e?.(), this.destroy());
+              },
+            });
+          }
+          setLayerDepth(e) {
+            let t = e * 1e3,
+              s = Math.floor(this.tileState.position.y * 100),
+              i = Math.floor(this.tileState.position.x);
+            this.setDepth(t + s + i);
+          }
+        };
+      var I = class {
+        static generateBoard(e) {
+          let t = [],
+            s = this.generatePositions(e),
+            i = this.generateTileTypes(s.length, e.tileTypes);
+          this.shuffleArray(i);
+          for (let a = 0; a < s.length; a++) {
+            let n = s[a],
+              o = i[a];
+            t.push({
+              id: `tile-${a}`,
+              type: o,
+              position: n,
+              isAccessible: !0,
+              isSelected: !1,
+              isInHand: !1,
+              isMatched: !1,
+            });
+          }
+          return (this.updateAccessibility(t), t);
+        }
+        static generatePositions(e) {
+          let t = [],
+            s = e.rows,
+            i = e.cols,
+            a = e.layers,
+            o = e.level >= 5,
+            c = [],
+            r = s,
+            d = 0;
+          for (let h = 0; h < a; h++)
+            (c.push(r), r > 1 && (o ? (d++, d >= 2 && (r--, (d = 0))) : r--));
+          for (let h = 0; h < a; h++) {
+            let l = c[h],
+              u = i,
+              S = (s - l) * 0.5;
+            if (l <= 0) break;
+            for (let p = 0; p < l; p++)
+              for (let g = 0; g < u; g++)
+                (h > 0 && a > 1 && Math.random() < 0.25) ||
+                  t.push({ x: g, y: p + S, z: h });
+          }
+          for (; t.length % 3 !== 0; ) {
+            let h = Math.max(...t.map((u) => u.z)),
+              l = t
+                .map((u, f) => ({ p: u, index: f }))
+                .filter((u) => u.p.z === h);
+            if (l.length > 0) {
+              let u = Math.floor(Math.random() * l.length),
+                f = l[u].index;
+              t.splice(f, 1);
+            } else break;
+          }
+          return t;
+        }
+        static calculateSupportCoverage(e, t, s, i) {
+          let a = 0;
+          for (let n of i) {
+            if (n.z !== s - 1) continue;
+            let o = Math.abs(n.x - e),
+              c = Math.abs(n.y - t);
+            if (o < 1 && c < 1) {
+              let r = 1 - o,
+                d = 1 - c,
+                h = r * d;
+              a += h;
+            }
+          }
+          return Math.min(a, 1);
+        }
+        static generateTileTypes(e, t) {
+          let s = [],
+            i = Math.floor(e / 3),
+            a = [];
+          for (let n = 0; n < t; n++) a.push(n);
+          this.shuffleArray(a);
+          for (let n = 0; n < i; n++) {
+            let o = n % t,
+              c = a[o];
+            s.push(c, c, c);
+          }
+          return (this.shuffleArray(s), s);
+        }
+        static updateAccessibility(e) {
+          for (let t of e) {
+            if (t.isInHand || t.isMatched) {
+              t.isAccessible = !1;
+              continue;
+            }
+            t.isAccessible = !this.isTileBlocked(t, e);
+          }
+        }
+        static isTileBlocked(e, t) {
+          let { x: s, y: i, z: a } = e.position;
+          for (let n of t) {
+            if (n.id === e.id || n.isInHand || n.isMatched || n.position.z <= a)
+              continue;
+            let o = Math.abs(n.position.x - s),
+              c = Math.abs(n.position.y - i);
+            if (o < 1 && c < 1) {
+              let r = 1 - o,
+                d = 1 - c;
+              if (r * d > 0.1) return !0;
+            }
+          }
+          return !1;
+        }
+        static shuffleArray(e) {
+          for (let t = e.length - 1; t > 0; t--) {
+            let s = Math.floor(Math.random() * (t + 1));
+            [e[t], e[s]] = [e[s], e[t]];
+          }
+        }
+        static calculateScreenPosition(e, t, s) {
+          let i = m.tile.width + m.tile.padding,
+            a = m.tile.height + m.tile.padding,
+            n = m.board.layerOffsetX ?? 0,
+            o = m.board.layerOffsetY ?? 6,
+            c = t.cols * i,
+            r = t.rows * a,
+            d = s.x + (s.width - c) / 2 + i / 2,
+            h = s.y + (s.height - r) / 2 + a / 2,
+            l = d + e.x * i - e.z * n,
+            u = h + e.y * a - e.z * o;
+          return { x: l, y: u };
+        }
+      };
+      var z = class extends Phaser.GameObjects.Container {
+        scoreBadge;
+        scoreText;
+        levelBadge;
+        levelText;
+        timeBadge;
+        timeText;
+        timeRemaining = 60;
+        timerEvent;
+        levelStartTime = 60;
+        levelStartScore = 0;
+        lives = 2;
+        heartContainers = [];
+        handBg;
+        handSlots = [];
+        handTileSprites = new Map();
+        undoButton;
+        clockButton;
+        keyButton;
+        themeButton;
+        saveButton;
+        undoUsesLeft = 3;
+        clockUsesLeft = 1;
+        keyUsesLeft = 2;
+        undoCountText;
+        clockCountText;
+        keyCountText;
+        powerUpCallbacks = {};
+        currentScore = 0;
+        currentLevel = 1;
+        constructor(e) {
+          (super(e, 0, 0),
+            this.createLevelBadge(),
+            this.createScoreBadge(),
+            this.createLivesDisplay(),
+            this.createTimeBadge(),
+            this.createPowerUpButtons(),
+            this.createHand(),
+            e.add.existing(this),
+            this.setDepth(1e3));
+        }
+        setPowerUpCallbacks(e) {
+          this.powerUpCallbacks = e;
+        }
+        createLevelBadge() {
+          let { canvas: e, ui: t, hand: s } = m,
+            a = s.maxSlots * (s.slotWidth + s.slotPadding) - s.slotPadding + 30,
+            n = (e.width - a) / 2,
+            o = 110,
+            c = n + o / 2;
+          this.levelBadge = this.scene.add.container(c, 55 + m.safeAreaTop);
+          let r = 75,
+            d = 16,
+            h = 12,
+            l = this.scene.add.graphics(),
+            u = t.colors.badge || 6076508,
+            f = t.colors.badgeBorder || 5023820;
+          (l.fillStyle(f, 1),
+            l.fillRoundedRect(-o / 2, d, o, r, h),
+            l.lineStyle(2, this.darkenColor(f, 0.3), 1),
+            l.strokeRoundedRect(-o / 2, d, o, r, h),
+            l.fillStyle(u, 1),
+            l.fillRoundedRect(-o / 2, 0, o, r, h),
+            l.lineStyle(2, f, 1),
+            l.strokeRoundedRect(-o / 2, 0, o, r, h),
+            this.levelBadge.add(l),
+            (this.levelText = this.scene.add.text(0, r / 2, "Lv.1", {
+              fontSize: "32px",
+              fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+              color: "#ffffff",
+              stroke: "#1a3a1a",
+              strokeThickness: 3,
+            })),
+            this.levelText.setOrigin(0.5),
+            this.levelBadge.add(this.levelText),
+            this.add(this.levelBadge));
+        }
+        createScoreBadge() {
+          let { canvas: e, ui: t } = m;
+          this.scoreBadge = this.scene.add.container(
+            e.width / 2,
+            55 + m.safeAreaTop,
+          );
+          let s = 260,
+            i = 75,
+            a = 16,
+            n = 12,
+            o = this.scene.add.graphics(),
+            c = t.colors.badge || 6076508,
+            r = t.colors.badgeBorder || 5023820;
+          (o.fillStyle(r, 1),
+            o.fillRoundedRect(-s / 2, a, s, i, n),
+            o.lineStyle(2, this.darkenColor(r, 0.3), 1),
+            o.strokeRoundedRect(-s / 2, a, s, i, n),
+            o.fillStyle(c, 1),
+            o.fillRoundedRect(-s / 2, 0, s, i, n),
+            o.lineStyle(2, r, 1),
+            o.strokeRoundedRect(-s / 2, 0, s, i, n),
+            this.scoreBadge.add(o),
+            (this.scoreText = this.scene.add.text(0, i / 2, "0", {
+              fontSize: "42px",
+              fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+              color: "#ffffff",
+              stroke: "#1a3a1a",
+              strokeThickness: 4,
+            })),
+            this.scoreText.setOrigin(0.5),
+            this.scoreBadge.add(this.scoreText),
+            this.add(this.scoreBadge));
+        }
+        createLivesDisplay() {
+          let { canvas: e } = m,
+            t = k(),
+            s = 65,
+            i = 220 + m.safeAreaTop,
+            a = 60;
+          for (let n = 0; n < this.lives; n++) {
+            let o = this.scene.add.container(s, i + n * a),
+              c = this.scene.add.text(0, 0, "\u2665", {
+                fontFamily: "Arial",
+                fontSize: "56px",
+                color: t.lives.color,
+                stroke: t.lives.stroke,
+                strokeThickness: 5,
+                shadow: {
+                  offsetX: 2,
+                  offsetY: 2,
+                  color: "#000000",
+                  blur: 4,
+                  fill: !0,
+                },
+              });
+            (c.setOrigin(0.5),
+              o.add(c),
+              this.heartContainers.push(o),
+              this.add(o));
+          }
+        }
+        repositionHearts() {}
+        loseLife() {
+          if (this.lives <= 0) return !1;
+          this.lives--;
+          let e = this.heartContainers[this.lives];
+          if (e) {
+            let t = e.getAt(0);
+            t &&
+              this.scene.tweens.add({
+                targets: e,
+                scaleX: 1.3,
+                scaleY: 1.3,
+                duration: 100,
+                yoyo: !0,
+                repeat: 2,
+                ease: "Power2",
+                onComplete: () => {
+                  let s = k();
+                  (t.setStyle({
+                    fontFamily: "Arial",
+                    fontSize: "56px",
+                    color: "transparent",
+                    stroke: s.lives.stroke,
+                    strokeThickness: 3,
+                  }),
+                    t.setShadow(0, 0, "#000000", 0, !1, !1));
+                },
+              });
+          }
+          return this.lives > 0;
+        }
+        getLives() {
+          return this.lives;
+        }
+        resetLives() {
+          this.lives = 2;
+          let e = k();
+          this.heartContainers.forEach((t, s) => {
+            (t.setScale(1), t.setAlpha(1));
+            let i = t.getAt(0);
+            i &&
+              (i.setStyle({
+                fontFamily: "Arial",
+                fontSize: "56px",
+                color: e.lives.color,
+                stroke: e.lives.stroke,
+                strokeThickness: 5,
+              }),
+              i.setShadow(2, 2, "#000000", 4, !0, !0));
+          });
+        }
+        createTimeBadge() {
+          let { canvas: e, ui: t, hand: s } = m,
+            a = s.maxSlots * (s.slotWidth + s.slotPadding) - s.slotPadding + 30,
+            n = (e.width - a) / 2 + a,
+            o = 90,
+            c = n - o / 2;
+          this.timeBadge = this.scene.add.container(c, 55 + m.safeAreaTop);
+          let r = 75,
+            d = 16,
+            h = 12,
+            l = this.scene.add.graphics(),
+            u = t.colors.badge || 6076508,
+            f = t.colors.badgeBorder || 5023820;
+          (l.fillStyle(f, 1),
+            l.fillRoundedRect(-o / 2, d, o, r, h),
+            l.lineStyle(2, this.darkenColor(f, 0.3), 1),
+            l.strokeRoundedRect(-o / 2, d, o, r, h),
+            l.fillStyle(u, 1),
+            l.fillRoundedRect(-o / 2, 0, o, r, h),
+            l.lineStyle(2, f, 1),
+            l.strokeRoundedRect(-o / 2, 0, o, r, h),
+            this.timeBadge.add(l),
+            (this.timeText = this.scene.add.text(0, r / 2, "60", {
+              fontSize: "32px",
+              fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+              color: "#ffffff",
+              stroke: "#1a3a1a",
+              strokeThickness: 3,
+            })),
+            this.timeText.setOrigin(0.5),
+            this.timeBadge.add(this.timeText),
+            this.add(this.timeBadge));
+        }
+        createPowerUpButtons() {
+          let { canvas: e, hand: t } = m,
+            i = e.height - t.bottomMargin - t.slotHeight / 2 - 80,
+            a = 70,
+            n = 100,
+            o = e.width / 2,
+            r = k().powerUps;
+          ((this.undoButton = this.createPowerUpButton(
+            o - n,
+            i,
+            a,
+            r.undo,
+            "undo",
+            this.undoUsesLeft,
+          )),
+            (this.clockButton = this.createPowerUpButton(
+              o,
+              i,
+              a,
+              r.clock,
+              "clock",
+              this.clockUsesLeft,
+            )),
+            (this.keyButton = this.createPowerUpButton(
+              o + n,
+              i,
+              a,
+              r.key,
+              "key",
+              this.keyUsesLeft,
+            )),
+            this.add(this.undoButton),
+            this.add(this.clockButton),
+            this.add(this.keyButton),
+            this.createThemeButton(),
+            this.createSaveButton());
+        }
+        createThemeButton() {
+          let { canvas: e } = m,
+            t = e.width - 65,
+            s = 220 + m.safeAreaTop,
+            i = 60;
+          this.themeButton = this.scene.add.container(t, s);
+          let a = 8,
+            n = i / 2,
+            o = 10181046,
+            c = 7091331,
+            r = this.scene.add.graphics();
+          (r.fillStyle(this.darkenColor(c, 0.3), 1),
+            r.fillCircle(0, a, n),
+            r.fillStyle(o, 1),
+            r.fillCircle(0, 0, n),
+            r.lineStyle(3, c, 1),
+            r.strokeCircle(0, 0, n),
+            this.themeButton.add(r));
+          let d = this.scene.add.text(0, 0, "\u{1F3A8}", {
+            fontSize: "32px",
+            fontFamily: "Arial",
+          });
+          (d.setOrigin(0.5),
+            this.themeButton.add(d),
+            this.themeButton.setSize(i, i + a),
+            this.themeButton.setInteractive({ useHandCursor: !0 }),
+            this.themeButton.on("pointerover", () => {
+              this.scene.tweens.add({
+                targets: this.themeButton,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100,
+                ease: "Back.easeOut",
+              });
+            }),
+            this.themeButton.on("pointerout", () => {
+              this.scene.tweens.add({
+                targets: this.themeButton,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Back.easeOut",
+              });
+            }),
+            this.themeButton.on("pointerdown", () => {
+              this.scene.tweens.add({
+                targets: this.themeButton,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 50,
+                yoyo: !0,
+                onComplete: () => {
+                  this.powerUpCallbacks.onChangeTheme &&
+                    this.powerUpCallbacks.onChangeTheme();
+                },
+              });
+            }),
+            this.add(this.themeButton));
+        }
+        hideThemeButton() {
+          this.themeButton &&
+            (this.themeButton.setVisible(!1),
+            this.themeButton.disableInteractive());
+        }
+        createSaveButton() {
+          let { canvas: e } = m,
+            t = e.width - 65,
+            s = 300 + m.safeAreaTop,
+            i = 60;
+          this.saveButton = this.scene.add.container(t, s);
+          let a = 8,
+            n = i / 2,
+            o = 2201331,
+            c = 1402304,
+            r = this.scene.add.graphics();
+          (r.fillStyle(this.darkenColor(c, 0.3), 1),
+            r.fillCircle(0, a, n),
+            r.fillStyle(o, 1),
+            r.fillCircle(0, 0, n),
+            r.lineStyle(3, c, 1),
+            r.strokeCircle(0, 0, n),
+            this.saveButton.add(r));
+          let d = this.scene.add.text(0, 0, "\u{1F4BE}", {
+            fontSize: "28px",
+            fontFamily: "Arial",
+          });
+          (d.setOrigin(0.5),
+            this.saveButton.add(d),
+            this.saveButton.setSize(i, i + a),
+            this.saveButton.setInteractive({ useHandCursor: !0 }),
+            this.saveButton.on("pointerover", () => {
+              this.scene.tweens.add({
+                targets: this.saveButton,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100,
+                ease: "Back.easeOut",
+              });
+            }),
+            this.saveButton.on("pointerout", () => {
+              this.scene.tweens.add({
+                targets: this.saveButton,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Back.easeOut",
+              });
+            }),
+            this.saveButton.on("pointerdown", () => {
+              this.scene.tweens.add({
+                targets: this.saveButton,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 50,
+                yoyo: !0,
+                onComplete: () => {
+                  (this.powerUpCallbacks.onSave &&
+                    this.powerUpCallbacks.onSave(),
+                    this.showSaveConfirmation());
+                },
+              });
+            }),
+            this.saveButton.setVisible(!1),
+            this.add(this.saveButton));
+        }
+        showSaveConfirmation() {
+          let e = this.scene.add.text(
+            this.saveButton.x,
+            this.saveButton.y - 45,
+            "\u2705 Saved!",
+            {
+              fontSize: "20px",
+              fontFamily: "'Fredoka One', cursive",
+              color: "#4CAF50",
+              stroke: "#000000",
+              strokeThickness: 3,
+            },
+          );
+          (e.setOrigin(0.5),
+            this.add(e),
+            this.scene.tweens.add({
+              targets: e,
+              y: e.y - 30,
+              alpha: 0,
+              duration: 1200,
+              ease: "Power2",
+              onComplete: () => e.destroy(),
+            }));
+        }
+        hideSaveButton() {
+          this.saveButton &&
+            (this.saveButton.setVisible(!1),
+            this.saveButton.disableInteractive());
+        }
+        showSaveButton() {
+          this.saveButton &&
+            (this.saveButton.setVisible(!0),
+            this.saveButton.setInteractive({ useHandCursor: !0 }));
+        }
+        createPowerUpButton(e, t, s, i, a, n) {
+          let o = this.scene.add.container(e, t),
+            c = 10,
+            r = s / 2,
+            d = this.scene.add.graphics();
+          (d.fillStyle(this.darkenColor(i.border, 0.3), 1),
+            d.fillCircle(0, c, r),
+            d.fillStyle(i.main, 1),
+            d.fillCircle(0, 0, r),
+            d.lineStyle(3, i.border, 1),
+            d.strokeCircle(0, 0, r),
+            o.add(d));
+          let h = this.scene.add.graphics();
+          if (
+            (h.lineStyle(4, 16777215, 1),
+            a === "undo"
+              ? (h.beginPath(),
+                h.arc(
+                  0,
+                  0,
+                  18,
+                  Phaser.Math.DegToRad(-45),
+                  Phaser.Math.DegToRad(180),
+                  !1,
+                ),
+                h.strokePath(),
+                h.beginPath(),
+                h.moveTo(-24, -6),
+                h.lineTo(-18, -16),
+                h.lineTo(-12, -6),
+                h.strokePath())
+              : a === "clock"
+                ? (h.strokeCircle(0, 0, 18),
+                  h.beginPath(),
+                  h.moveTo(0, 0),
+                  h.lineTo(0, -12),
+                  h.moveTo(0, 0),
+                  h.lineTo(9, 0),
+                  h.strokePath())
+                : a === "key"
+                  ? (h.strokeCircle(-7, -7, 9),
+                    h.beginPath(),
+                    h.moveTo(0, 0),
+                    h.lineTo(14, 14),
+                    h.moveTo(9, 9),
+                    h.lineTo(14, 9),
+                    h.moveTo(12, 12),
+                    h.lineTo(17, 12),
+                    h.strokePath())
+                  : a === "theme" &&
+                    (h.strokeEllipse(0, 0, 40, 32),
+                    h.strokeCircle(5, -3, 3),
+                    h.fillStyle(16777215, 1),
+                    h.fillCircle(-8, -5, 2),
+                    h.fillCircle(-8, 5, 2),
+                    h.fillCircle(5, 5, 2)),
+            o.add(h),
+            n >= 0)
+          ) {
+            let f = this.scene.add.graphics();
+            (f.fillStyle(2236962, 1),
+              f.fillCircle(r - 4, -r + 4, 28 / 2),
+              f.lineStyle(2, 4473924, 1),
+              f.strokeCircle(r - 4, -r + 4, 28 / 2),
+              o.add(f));
+            let S = this.scene.add.text(r - 4, -r + 4, n.toString(), {
+              fontSize: "18px",
+              fontFamily: "'Fredoka One', cursive",
+              color: "#ffffff",
+            });
+            (S.setOrigin(0.5),
+              o.add(S),
+              a === "undo"
+                ? (this.undoCountText = S)
+                : a === "clock"
+                  ? (this.clockCountText = S)
+                  : a === "key" && (this.keyCountText = S));
+          }
+          let l = this.scene.add.circle(0, 0, r);
+          return (
+            l.setInteractive({ useHandCursor: !0 }),
+            l.setAlpha(0.001),
+            o.add(l),
+            l.on("pointerdown", () => this.onPowerUpClick(a)),
+            l.on("pointerover", () => {
+              this.scene.tweens.add({
+                targets: o,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 100,
+                ease: "Back.easeOut",
+              });
+            }),
+            l.on("pointerout", () => {
+              this.scene.tweens.add({
+                targets: o,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Back.easeOut",
+              });
+            }),
+            o
+          );
+        }
+        onPowerUpClick(e) {
+          if (e === "theme") {
+            this.powerUpCallbacks.onChangeTheme &&
+              this.scene.tweens.add({
+                targets: this.themeButton,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 50,
+                yoyo: !0,
+                onComplete: () => {
+                  this.powerUpCallbacks.onChangeTheme();
+                },
+              });
+            return;
+          }
+          let t, s, i, a;
+          if (
+            (e === "undo"
+              ? ((t = this.undoUsesLeft),
+                (s = this.powerUpCallbacks.onUndo),
+                (i = this.undoCountText),
+                (a = this.undoButton))
+              : e === "clock"
+                ? ((t = this.clockUsesLeft),
+                  (s = this.powerUpCallbacks.onPauseTime),
+                  (i = this.clockCountText),
+                  (a = this.clockButton))
+                : ((t = this.keyUsesLeft),
+                  (s = this.powerUpCallbacks.onHint),
+                  (i = this.keyCountText),
+                  (a = this.keyButton)),
+            t <= 0)
+          ) {
+            this.scene.tweens.add({
+              targets: a,
+              x: a.x - 5,
+              duration: 50,
+              yoyo: !0,
+              repeat: 3,
+              ease: "Linear",
+            });
+            return;
+          }
+          (s ? s() : !1) &&
+            (e === "undo"
+              ? (this.undoUsesLeft--, (t = this.undoUsesLeft))
+              : e === "clock"
+                ? (this.clockUsesLeft--, (t = this.clockUsesLeft))
+                : (this.keyUsesLeft--, (t = this.keyUsesLeft)),
+            i.setText(t.toString()),
+            this.scene.tweens.add({
+              targets: a,
+              scaleX: 0.9,
+              scaleY: 0.9,
+              duration: 100,
+              yoyo: !0,
+              ease: "Back.easeOut",
+            }),
+            t <= 0 && a.setAlpha(0.5));
+        }
+        createHand() {
+          let { canvas: e, hand: t } = m,
+            s = e.height - t.bottomMargin,
+            a = t.maxSlots * (t.slotWidth + t.slotPadding) - t.slotPadding + 30,
+            n = (e.width - a) / 2,
+            o = t.slotHeight + 20,
+            c = 16,
+            r = 12,
+            d = t.backgroundColor,
+            h = t.slotBorderColor;
+          ((this.handBg = this.scene.add.graphics()),
+            this.handBg.fillStyle(this.darkenColor(d, 0.25), 1),
+            this.handBg.fillRoundedRect(n, s - o / 2 + c, a, o, r),
+            this.handBg.lineStyle(2, this.darkenColor(h, 0.3), 1),
+            this.handBg.strokeRoundedRect(n, s - o / 2 + c, a, o, r),
+            this.handBg.fillStyle(d, 1),
+            this.handBg.fillRoundedRect(n, s - o / 2, a, o, r),
+            this.handBg.lineStyle(2, h, 1),
+            this.handBg.strokeRoundedRect(n, s - o / 2, a, o, r),
+            this.add(this.handBg));
+          for (let l = 0; l < t.maxSlots; l++) {
+            let u = this.createSlot(l);
+            (this.handSlots.push(u), this.add(u));
+          }
+        }
+        createSlot(e) {
+          let { hand: t } = m,
+            s = this.getSlotPosition(e),
+            i = this.scene.add.container(s.x, s.y),
+            a = this.scene.add.graphics();
+          return (
+            a.fillStyle(t.slotColor, 1),
+            a.fillRoundedRect(
+              -t.slotWidth / 2,
+              -t.slotHeight / 2,
+              t.slotWidth,
+              t.slotHeight,
+              8,
+            ),
+            a.lineStyle(2, t.slotBorderColor, 1),
+            a.strokeRoundedRect(
+              -t.slotWidth / 2,
+              -t.slotHeight / 2,
+              t.slotWidth,
+              t.slotHeight,
+              8,
+            ),
+            i.add(a),
+            i
+          );
+        }
+        getSlotPosition(e) {
+          let { canvas: t, hand: s } = m,
+            i = s.maxSlots * s.slotWidth + (s.maxSlots - 1) * s.slotPadding;
+          return {
+            x:
+              (t.width - i) / 2 +
+              s.slotWidth / 2 +
+              e * (s.slotWidth + s.slotPadding),
+            y: t.height - s.bottomMargin,
+          };
+        }
+        updateHand(e) {
+          (this.handTileSprites.forEach((t, s) => {
+            e.some((i) => i.tile?.id === s) ||
+              (t.destroy(), this.handTileSprites.delete(s));
+          }),
+            e.forEach((t, s) => {
+              if (t.tile && !this.handTileSprites.has(t.tile.id)) {
+                let i = this.createMiniTile(t.tile),
+                  a = this.getSlotPosition(s);
+                (i.setPosition(a.x, a.y),
+                  this.add(i),
+                  this.handTileSprites.set(t.tile.id, i));
+              }
+            }),
+            e.forEach((t, s) => {
+              if (t.tile) {
+                let i = this.handTileSprites.get(t.tile.id);
+                if (i) {
+                  let a = this.getSlotPosition(s);
+                  this.scene.tweens.add({
+                    targets: i,
+                    x: a.x,
+                    y: a.y,
+                    duration: 150,
+                    ease: "Power2",
+                  });
+                }
+              }
+            }));
+        }
+        createMiniTile(e) {
+          let t = this.scene.add.container(0, 0),
+            { hand: s, tile: i } = m,
+            a = k(),
+            n = `tile-${e.type}-${a.name}`;
+          if (!this.scene.textures.exists(n))
+            return this.createFallbackMiniTile(e);
+          let o = this.scene.add.image(0, 0, n),
+            c = i.width + 8,
+            r = i.height + i.depth + 8,
+            d = s.slotWidth / c,
+            h = s.slotHeight / r;
+          (o.setScale(d, h), o.setOrigin(0.5, 0.5), t.add(o));
+          let l = `tile-icon-rounded-${e.type}`,
+            u = `tile-icon-${e.type}`,
+            f = this.scene.textures.exists(l);
+          if (f || this.scene.textures.exists(u)) {
+            let p = f ? l : u,
+              g = 8,
+              v = i.width - g * 2,
+              T = i.height - g * 2,
+              x = -(i.depth * h) / 2,
+              y = this.scene.add.image(0, x, p);
+            (y.setDisplaySize(v * d, T * h), t.add(y));
+          }
+          return t;
+        }
+        createFallbackMiniTile(e) {
+          let t = this.scene.add.container(0, 0),
+            s = O[e.type],
+            { hand: i } = m,
+            a = m.tile.colors,
+            n = i.slotWidth - 6,
+            o = i.slotHeight - 6,
+            c = 5,
+            r = this.scene.add.graphics();
+          (r.fillStyle(a.face, 1),
+            r.fillRoundedRect(-n / 2, -o / 2, n, o, c),
+            r.lineStyle(1.5, a.border, 1),
+            r.strokeRoundedRect(-n / 2, -o / 2, n, o, c),
+            t.add(r));
+          let d = Math.floor(n * 0.4),
+            h = this.scene.add.text(0, 0, s.letter, {
+              fontSize: `${d}px`,
+              fontFamily: "'Fredoka One', sans-serif",
+              color: "#ffffff",
+            });
+          return (h.setOrigin(0.5), t.add(h), t);
+        }
+        animateMatch(e, t) {
+          let s = [],
+            i = [];
+          if (
+            (e.forEach((r) => {
+              let d = this.handTileSprites.get(r);
+              if (d) {
+                i.push({ x: d.x, y: d.y });
+                let h = this.scene.add.container(d.x, d.y);
+                (d.list.forEach((l) => {
+                  if (l instanceof Phaser.GameObjects.Image) {
+                    let u = this.scene.add.image(l.x, l.y, l.texture.key);
+                    (u.setScale(l.scaleX, l.scaleY),
+                      u.setOrigin(l.originX, l.originY),
+                      h.add(u));
+                  }
+                }),
+                  h.setDepth(1e3),
+                  this.add(h),
+                  s.push(h),
+                  d.destroy(),
+                  this.handTileSprites.delete(r));
+              }
+            }),
+            s.length === 0)
+          ) {
+            t?.();
+            return;
+          }
+          t && t();
+          let a = [...i].sort((r, d) => r.x - d.x),
+            n = a[Math.floor(a.length / 2)],
+            o = n.x,
+            c = n.y - 180;
+          s.forEach((r, d) => {
+            let h = d * 60;
+            this.scene.tweens.add({
+              targets: r,
+              x: o + (d - 1) * 50,
+              y: c,
+              scaleX: 1.15,
+              scaleY: 1.15,
+              duration: 350,
+              delay: h,
+              ease: "Cubic.easeOut",
+              onComplete: () => {
+                this.scene.tweens.add({
+                  targets: r,
+                  x: o,
+                  y: c - 30,
+                  rotation: (d - 1) * 0.25,
+                  scaleX: 1,
+                  scaleY: 1,
+                  duration: 280,
+                  ease: "Sine.easeInOut",
+                  onComplete: () => {
+                    (d === s.length - 1 &&
+                      (this.createMatchParticles(o, c - 30),
+                      this.createFlashEffect(o, c - 30)),
+                      this.scene.tweens.add({
+                        targets: r,
+                        scaleX: 0,
+                        scaleY: 0,
+                        alpha: 0,
+                        rotation: r.rotation + 0.5,
+                        duration: 200,
+                        ease: "Cubic.easeIn",
+                        onComplete: () => {
+                          r.destroy();
+                        },
+                      }));
+                  },
+                });
+              },
+            });
+          });
+        }
+        createMatchParticles(e, t) {
+          let s = [16766720, 16739179, 5164484, 16770669, 12865023, 4521864],
+            i = 20;
+          for (let a = 0; a < i; a++) {
+            let n = (a / i) * Math.PI * 2,
+              o = 150 + Math.random() * 100,
+              c = 10 + Math.random() * 8,
+              r = s[Math.floor(Math.random() * s.length)],
+              d = this.scene.add.graphics();
+            (d.fillStyle(r, 1),
+              d.fillCircle(0, 0, c),
+              d.setPosition(e, t),
+              d.setAlpha(1),
+              d.setDepth(1001),
+              this.add(d));
+            let h = e + Math.cos(n) * o,
+              l = t + Math.sin(n) * o;
+            this.scene.tweens.add({
+              targets: d,
+              x: h,
+              y: l + 40,
+              alpha: 0,
+              scaleX: 0.2,
+              scaleY: 0.2,
+              duration: 600 + Math.random() * 300,
+              ease: "Power2.easeOut",
+              onComplete: () => d.destroy(),
+            });
+          }
+          for (let a = 0; a < 12; a++) {
+            let n = this.scene.add.text(e, t, "\u2726", {
+              fontSize: `${24 + Math.random() * 16}px`,
+              color: "#ffd700",
+            });
+            (n.setOrigin(0.5), n.setDepth(1001), this.add(n));
+            let o = Math.random() * Math.PI * 2,
+              c = 80 + Math.random() * 80;
+            this.scene.tweens.add({
+              targets: n,
+              x: e + Math.cos(o) * c,
+              y: t + Math.sin(o) * c - 30,
+              alpha: 0,
+              scaleX: 0.3,
+              scaleY: 0.3,
+              rotation: Math.random() * 3,
+              duration: 700 + Math.random() * 300,
+              ease: "Power2.easeOut",
+              onComplete: () => n.destroy(),
+            });
+          }
+        }
+        createFlashEffect(e, t) {
+          let s = this.scene.add.graphics();
+          (s.fillStyle(16777215, 0.8),
+            s.fillCircle(0, 0, 60),
+            s.setPosition(e, t),
+            s.setAlpha(0),
+            s.setBlendMode(Phaser.BlendModes.ADD),
+            this.add(s),
+            this.scene.tweens.add({
+              targets: s,
+              alpha: 0.9,
+              scaleX: 1.5,
+              scaleY: 1.5,
+              duration: 100,
+              ease: "Power2.easeOut",
+              onComplete: () => {
+                this.scene.tweens.add({
+                  targets: s,
+                  alpha: 0,
+                  scaleX: 2,
+                  scaleY: 2,
+                  duration: 200,
+                  ease: "Power2.easeOut",
+                  onComplete: () => s.destroy(),
+                });
+              },
+            }));
+        }
+        createMatchExplosion(e, t) {
+          (this.createMatchParticles(e, t), this.createFlashEffect(e, t));
+        }
+        updateLevel(e) {
+          ((this.currentLevel = e), this.levelText.setText(`Lv.${e}`));
+          let t = 45;
+          (e > 1 && (t = 45 + (e - 1) * 5), this.resetTimer(t));
+        }
+        resetTimer(e = 60) {
+          ((this.timeRemaining = e),
+            (this.levelStartTime = e),
+            (this.levelStartScore = this.currentScore),
+            this.timeText.setText(e.toString()),
+            this.timerEvent && this.timerEvent.destroy(),
+            (this.timerEvent = this.scene.time.addEvent({
+              delay: 1e3,
+              callback: this.updateTimer,
+              callbackScope: this,
+              loop: !0,
+            })));
+        }
+        getLevelTime() {
+          return this.levelStartTime - this.timeRemaining;
+        }
+        getLevelScore() {
+          return this.currentScore - this.levelStartScore;
+        }
+        updateTimer() {
+          (this.timeRemaining--,
+            this.timeText.setText(this.timeRemaining.toString()),
+            this.timeRemaining <= 0 &&
+              (this.timerEvent && this.timerEvent.destroy(),
+              this.emit("time-up")));
+        }
+        stopTimer() {
+          this.timerEvent && this.timerEvent.destroy();
+        }
+        pauseTimer() {
+          return this.timerEvent && this.timeRemaining > 0
+            ? ((this.timerEvent.paused = !0),
+              this.scene.tweens.add({
+                targets: this.timeBadge,
+                alpha: 0.5,
+                duration: 200,
+                yoyo: !0,
+                repeat: 2,
+                onComplete: () => {
+                  this.timeBadge.setAlpha(1);
+                },
+              }),
+              !0)
+            : !1;
+        }
+        resumeTimer() {
+          this.timerEvent && (this.timerEvent.paused = !1);
+        }
+        isTimerPaused() {
+          return this.timerEvent?.paused ?? !1;
+        }
+        updateScore(e) {
+          let t = this.currentScore;
+          ((this.currentScore = e),
+            this.scene.tweens.addCounter({
+              from: t,
+              to: e,
+              duration: 250,
+              onUpdate: (s) => {
+                let i = s.getValue();
+                i !== null && this.scoreText.setText(`${Math.floor(i)}`);
+              },
+            }),
+            this.scene.tweens.add({
+              targets: this.scoreBadge,
+              scaleX: 1.1,
+              scaleY: 1.1,
+              duration: 120,
+              yoyo: !0,
+              ease: "Power2",
+            }));
+        }
+        showWinMessage(e) {
+          let { canvas: t } = m,
+            s = this.scene.add.graphics();
+          (s.fillStyle(0, 0.75),
+            s.fillRect(0, 0, t.width, t.height),
+            this.add(s));
+          let i = 450,
+            a = 340,
+            n = 20,
+            o = 16,
+            c = k(),
+            r = c.modal.main,
+            d = c.modal.border,
+            h = this.scene.add.container(t.width / 2, t.height / 2),
+            l = this.scene.add.graphics(),
+            u = -a / 2;
+          (l.fillStyle(d, 1),
+            l.fillRoundedRect(-i / 2, u + o, i, a, n),
+            l.lineStyle(2, this.darkenColor(d, 0.3), 1),
+            l.strokeRoundedRect(-i / 2, u + o, i, a, n),
+            l.fillStyle(r, 1),
+            l.fillRoundedRect(-i / 2, u, i, a, n),
+            l.lineStyle(2, d, 1),
+            l.strokeRoundedRect(-i / 2, u, i, a, n),
+            h.add(l));
+          let f = this.scene.add.text(0, u + 50, "LEVEL COMPLETE!", {
+            fontSize: "38px",
+            fontFamily: "'Fredoka One', Arial Black, sans-serif",
+            color: c.modal.titleColor,
+            stroke: c.modal.titleStroke,
+            strokeThickness: 5,
+            align: "center",
+          });
+          (f.setOrigin(0.5), h.add(f));
+          let S = this.getLevelTime(),
+            p = this.getLevelScore(),
+            g = this.scene.add.text(0, u + 115, `TIME: ${S}s`, {
+              fontSize: "24px",
+              fontFamily: "'Fredoka One', sans-serif",
+              color: c.modal.textColor,
+            });
+          (g.setOrigin(0.5), h.add(g));
+          let v = this.scene.add.text(0, u + 160, `SCORE: +${p}`, {
+            fontSize: "24px",
+            fontFamily: "'Fredoka One', sans-serif",
+            color: c.modal.textColor,
+          });
+          (v.setOrigin(0.5), h.add(v));
+          let T = this.scene.add.graphics();
+          (T.lineStyle(2, 16777215, 0.3),
+            T.lineBetween(-150, u + 200, 150, u + 200),
+            h.add(T));
+          let x = this.scene.add.container(0, u + 245),
+            y = 250,
+            w = 58,
+            M = 8,
+            C = this.scene.add.graphics();
+          (C.fillStyle(14540253, 1),
+            C.fillRoundedRect(-y / 2, M, y, w, 14),
+            C.fillStyle(16777215, 1),
+            C.fillRoundedRect(-y / 2, 0, y, w, 14),
+            C.lineStyle(2, d, 1),
+            C.strokeRoundedRect(-y / 2, 0, y, w, 14),
+            x.add(C));
+          let A = this.scene.add.text(0, w / 2, "NEXT LEVEL \u2192", {
+            fontSize: "24px",
+            fontFamily: "'Fredoka One', Arial Black, sans-serif",
+            color: c.modal.buttonTextColor,
+          });
+          (A.setOrigin(0.5),
+            x.add(A),
+            x.setSize(y, w + M),
+            x.setInteractive({ useHandCursor: !0 }),
+            x.on("pointerover", () => {
+              this.scene.tweens.add({
+                targets: x,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            x.on("pointerout", () => {
+              this.scene.tweens.add({
+                targets: x,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            x.on("pointerdown", () => {
+              (h.destroy(), s.destroy(), e());
+            }),
+            h.add(x),
+            this.add(h),
+            h.setScale(0),
+            this.scene.tweens.add({
+              targets: h,
+              scaleX: 1,
+              scaleY: 1,
+              duration: 400,
+              ease: "Back.easeOut",
+            }));
+        }
+        showTryAgainMessage(e, reason = "blocked") {
+          let { canvas: t } = m,
+            s = this.scene.add.graphics();
+          (s.fillStyle(0, 0.75),
+            s.fillRect(0, 0, t.width, t.height),
+            this.add(s));
+          let i = 450,
+            a = 300,
+            n = 20,
+            o = 16,
+            c = k(),
+            r = c.modal.main,
+            d = c.modal.border,
+            h = this.scene.add.container(t.width / 2, t.height / 2),
+            l = this.scene.add.graphics(),
+            u = -a / 2;
+          (l.fillStyle(d, 1),
+            l.fillRoundedRect(-i / 2, u + o, i, a, n),
+            l.lineStyle(2, this.darkenColor(d, 0.3), 1),
+            l.strokeRoundedRect(-i / 2, u + o, i, a, n),
+            l.fillStyle(r, 1),
+            l.fillRoundedRect(-i / 2, u, i, a, n),
+            l.lineStyle(2, d, 1),
+            l.strokeRoundedRect(-i / 2, u, i, a, n),
+            h.add(l));
+          let f = this.scene.add.text(
+            0,
+            u + 55,
+            reason === "time-up" ? "TIME'S UP!" : "HAND FULL!",
+            {
+              fontSize: "38px",
+              fontFamily: "'Fredoka One', Arial Black, sans-serif",
+              color: c.modal.titleColor,
+              stroke: c.modal.titleStroke,
+              strokeThickness: 5,
+              align: "center",
+            },
+          );
+          (f.setOrigin(0.5), h.add(f));
+          let S = this.scene.add.text(
+            0,
+            u + 115,
+            `${this.lives} life remaining`,
+            {
+              fontSize: "24px",
+              fontFamily: "'Fredoka One', sans-serif",
+              color: c.modal.textColor,
+              align: "center",
+            },
+          );
+          (S.setOrigin(0.5), h.add(S));
+          let p = this.scene.add.graphics();
+          (p.lineStyle(2, 16777215, 0.3),
+            p.lineBetween(-150, u + 155, 150, u + 155),
+            h.add(p));
+          let g = this.scene.add.container(0, u + 200),
+            v = 250,
+            T = 58,
+            x = 8,
+            y = this.scene.add.graphics();
+          (y.fillStyle(14540253, 1),
+            y.fillRoundedRect(-v / 2, x, v, T, 14),
+            y.fillStyle(16777215, 1),
+            y.fillRoundedRect(-v / 2, 0, v, T, 14),
+            y.lineStyle(2, d, 1),
+            y.strokeRoundedRect(-v / 2, 0, v, T, 14),
+            g.add(y));
+          let w = this.scene.add.text(0, T / 2, "TRY AGAIN", {
+            fontSize: "24px",
+            fontFamily: "'Fredoka One', Arial Black, sans-serif",
+            color: c.modal.buttonTextColor,
+          });
+          (w.setOrigin(0.5),
+            g.add(w),
+            g.setSize(v, T + x),
+            g.setInteractive({ useHandCursor: !0 }),
+            g.on("pointerover", () => {
+              this.scene.tweens.add({
+                targets: g,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            g.on("pointerout", () => {
+              this.scene.tweens.add({
+                targets: g,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            g.on("pointerdown", () => {
+              (h.destroy(), s.destroy(), e());
+            }),
+            h.add(g),
+            this.add(h),
+            h.setScale(0),
+            this.scene.tweens.add({
+              targets: h,
+              scaleX: 1,
+              scaleY: 1,
+              duration: 400,
+              ease: "Back.easeOut",
+            }));
+        }
+        darkenColor(e, t) {
+          let s = Math.floor(((e >> 16) & 255) * (1 - t)),
+            i = Math.floor(((e >> 8) & 255) * (1 - t)),
+            a = Math.floor((e & 255) * (1 - t));
+          return (s << 16) | (i << 8) | a;
+        }
+        colorToHex(e) {
+          return "#" + e.toString(16).padStart(6, "0");
+        }
+        lightenColor(e, t) {
+          let s = Math.min(255, Math.floor(((e >> 16) & 255) * (1 + t))),
+            i = Math.min(255, Math.floor(((e >> 8) & 255) * (1 + t))),
+            a = Math.min(255, Math.floor((e & 255) * (1 + t)));
+          return (s << 16) | (i << 8) | a;
+        }
+        refreshTheme() {
+          let { ui: e, hand: t, canvas: s } = m,
+            i = k(),
+            a = e.colors.badge || 6076508,
+            n = e.colors.badgeBorder || 5023820,
+            o = t.backgroundColor,
+            c = t.slotBorderColor,
+            r = t.slotColor,
+            d = this.levelBadge.getAt(0);
+          d &&
+            (d.clear(),
+            d.fillStyle(n, 1),
+            d.fillRoundedRect(-110 / 2, 16, 110, 75, 12),
+            d.lineStyle(2, this.darkenColor(n, 0.3), 1),
+            d.strokeRoundedRect(-110 / 2, 16, 110, 75, 12),
+            d.fillStyle(a, 1),
+            d.fillRoundedRect(-110 / 2, 0, 110, 75, 12),
+            d.lineStyle(2, n, 1),
+            d.strokeRoundedRect(-110 / 2, 0, 110, 75, 12));
+          let h = this.scoreBadge.getAt(0);
+          h &&
+            (h.clear(),
+            h.fillStyle(n, 1),
+            h.fillRoundedRect(-260 / 2, 16, 260, 75, 12),
+            h.lineStyle(2, this.darkenColor(n, 0.3), 1),
+            h.strokeRoundedRect(-260 / 2, 16, 260, 75, 12),
+            h.fillStyle(a, 1),
+            h.fillRoundedRect(-260 / 2, 0, 260, 75, 12),
+            h.lineStyle(2, n, 1),
+            h.strokeRoundedRect(-260 / 2, 0, 260, 75, 12));
+          let l = this.timeBadge.getAt(0);
+          l &&
+            (l.clear(),
+            l.fillStyle(n, 1),
+            l.fillRoundedRect(-90 / 2, 16, 90, 75, 12),
+            l.lineStyle(2, this.darkenColor(n, 0.3), 1),
+            l.strokeRoundedRect(-90 / 2, 16, 90, 75, 12),
+            l.fillStyle(a, 1),
+            l.fillRoundedRect(-90 / 2, 0, 90, 75, 12),
+            l.lineStyle(2, n, 1),
+            l.strokeRoundedRect(-90 / 2, 0, 90, 75, 12));
+          let u = s.height - t.bottomMargin,
+            S = t.maxSlots * (t.slotWidth + t.slotPadding) - t.slotPadding + 30,
+            p = (s.width - S) / 2,
+            g = t.slotHeight + 20,
+            v = 16,
+            T = 12;
+          (this.handBg.clear(),
+            this.handBg.fillStyle(this.darkenColor(o, 0.25), 1),
+            this.handBg.fillRoundedRect(p, u - g / 2 + v, S, g, T),
+            this.handBg.lineStyle(2, this.darkenColor(c, 0.3), 1),
+            this.handBg.strokeRoundedRect(p, u - g / 2 + v, S, g, T),
+            this.handBg.fillStyle(o, 1),
+            this.handBg.fillRoundedRect(p, u - g / 2, S, g, T),
+            this.handBg.lineStyle(2, c, 1),
+            this.handBg.strokeRoundedRect(p, u - g / 2, S, g, T),
+            this.handSlots.forEach((x) => {
+              let y = x.getAt(0);
+              y &&
+                (y.clear(),
+                y.fillStyle(r, 1),
+                y.fillRoundedRect(
+                  -t.slotWidth / 2,
+                  -t.slotHeight / 2,
+                  t.slotWidth,
+                  t.slotHeight,
+                  8,
+                ),
+                y.lineStyle(2, c, 1),
+                y.strokeRoundedRect(
+                  -t.slotWidth / 2,
+                  -t.slotHeight / 2,
+                  t.slotWidth,
+                  t.slotHeight,
+                  8,
+                ));
+            }),
+            this.heartContainers.forEach((x, y) => {
+              let w = x.getAt(0);
+              w &&
+                y < this.lives &&
+                w.setStyle({
+                  fontFamily: "Arial",
+                  fontSize: "56px",
+                  color: i.lives.color,
+                  stroke: i.lives.stroke,
+                  strokeThickness: 5,
+                });
+            }));
+        }
+      };
+      var j = class {
+        slots;
+        maxSlots;
+        constructor() {
+          ((this.maxSlots = m.hand.maxSlots),
+            (this.slots = this.initializeSlots()));
+        }
+        initializeSlots() {
+          let e = [];
+          for (let t = 0; t < this.maxSlots; t++)
+            e.push({ index: t, tile: null, isOccupied: !1 });
+          return e;
+        }
+        addTile(e) {
+          let t = this.slots.find((s) => !s.isOccupied);
+          return t
+            ? ((e.isInHand = !0),
+              (e.isAccessible = !1),
+              (t.tile = e),
+              (t.isOccupied = !0),
+              t.index)
+            : -1;
+        }
+        compactSlots() {
+          let e = this.slots
+            .filter((t) => t.isOccupied && t.tile)
+            .map((t) => t.tile);
+          this.slots.forEach((t) => {
+            ((t.tile = null), (t.isOccupied = !1));
+          });
+          for (let t = 0; t < e.length; t++)
+            ((this.slots[t].tile = e[t]), (this.slots[t].isOccupied = !0));
+        }
+        checkMatch() {
+          let e = this.getTilesInHand(),
+            t = new Map();
+          for (let s of e) {
+            let i = t.get(s.type) || [];
+            (i.push(s), t.set(s.type, i));
+          }
+          for (let [s, i] of t)
+            if (i.length >= m.rules.matchCount)
+              return {
+                matched: !0,
+                tiles: i.slice(0, m.rules.matchCount),
+                scoreGained: m.rules.scorePerMatch,
+              };
+          return { matched: !1, tiles: [], scoreGained: 0 };
+        }
+        removeMatchedTiles(e) {
+          let t = new Set(e.map((s) => s.id));
+          for (let s of this.slots)
+            s.tile &&
+              t.has(s.tile.id) &&
+              ((s.tile.isMatched = !0), (s.tile = null), (s.isOccupied = !1));
+          this.compactSlots();
+        }
+        getTilesInHand() {
+          return this.slots
+            .filter((e) => e.isOccupied && e.tile)
+            .map((e) => e.tile);
+        }
+        getSlots() {
+          return this.slots;
+        }
+        isFull() {
+          return this.slots.every((e) => e.isOccupied);
+        }
+        isEmpty() {
+          return this.slots.every((e) => !e.isOccupied);
+        }
+        getTileCount() {
+          return this.slots.filter((e) => e.isOccupied).length;
+        }
+        getSlotPosition(e) {
+          let { slotWidth: t, slotPadding: s, bottomMargin: i } = m.hand,
+            a = m.canvas.width,
+            n = m.canvas.height,
+            o = this.maxSlots * t + (this.maxSlots - 1) * s;
+          return { x: (a - o) / 2 + t / 2 + e * (t + s), y: n - i };
+        }
+        reset() {
+          this.slots = this.initializeSlots();
+        }
+        removeLastTile() {
+          for (let e = this.maxSlots - 1; e >= 0; e--)
+            if (this.slots[e].isOccupied && this.slots[e].tile) {
+              let t = this.slots[e].tile;
+              return (
+                (this.slots[e].tile = null),
+                (this.slots[e].isOccupied = !1),
+                (t.isInHand = !1),
+                (t.isAccessible = !0),
+                t
+              );
+            }
+          return null;
+        }
+      };
+      var X = class extends Phaser.Scene {
+        handManager;
+        gameUI;
+        gameState = {
+          currentLevel: 1,
+          score: 0,
+          tiles: [],
+          hand: [],
+          isPlaying: !1,
+          isGameOver: !1,
+          isWin: !1,
+        };
+        tileSprites = new Map();
+        boardContainer;
+        backgroundObject = null;
+        currentLevelConfig;
+        boardBounds = {
+          x: 5,
+          y: 145 + m.safeAreaTop,
+          width: m.canvas.width - 10,
+          height:
+            m.canvas.height -
+            (160 + m.safeAreaTop) -
+            m.hand.bottomMargin -
+            m.hand.slotHeight / 2 -
+            90,
+        };
+        isAnimating = !1;
+        hasUiStyles = !1;
+        hasJustATip = !1;
+        hasSaveState = !1;
+        constructor() {
+          super({ key: "MahjongScene" });
+        }
+        preload() {
+          (Object.values(W).forEach((e) => {
+            if (typeof e == "number") {
+              let t = O[e];
+              t.imageUrl && this.load.image(`tile-icon-${e}`, t.imageUrl);
+            }
+          }),
+            Object.values(R).forEach((e) => {
+              e.background.backgroundImage &&
+                this.load.image(`bg-${e.name}`, e.background.backgroundImage);
+            }));
+        }
+        create() {
+          if (
+            ((this.gameState = {
+              currentLevel: 1,
+              score: 0,
+              tiles: [],
+              hand: [],
+              isPlaying: !1,
+              isGameOver: !1,
+              isWin: !1,
+            }),
+            (this.isAnimating = !1),
+            this.checkPurchasedItems(),
+            this.createBackground(),
+            this.createRoundedTileImages(),
+            (this.handManager = new j()),
+            (this.gameUI = new z(this)),
+            this.gameUI.setPowerUpCallbacks({
+              onUndo: () => this.handleUndo(),
+              onPauseTime: () => this.handlePauseTime(),
+              onHint: () => this.handleHint(),
+              onChangeTheme: () => this.handleThemeChange(),
+              onSave: () => this.saveAndExit(),
+            }),
+            this.hasUiStyles || this.gameUI.hideThemeButton(),
+            this.hasSaveState && this.gameUI.showSaveButton(),
+            this.gameUI.on("time-up", () => {
+              this.handleTimeUp();
+            }),
+            (this.boardContainer = this.add.container(0, 0)),
+            this.setupPlayAgainListener())
+          );
+          {
+            let t = this.loadSavedState();
+            if (t) {
+              if (
+                ((this.gameState.score = t.score),
+                this.gameUI.updateScore(t.score),
+                t.lives < 2)
+              )
+                for (let s = 0; s < 2 - t.lives; s++) this.gameUI.loseLife();
+              this.startLevel(t.level);
+            } else this.startLevel(1);
+          }
+        }
+        showTutorial() {
+          let { canvas: e } = m,
+            t = this.add.container(0, 0);
+          t.setDepth(2e3);
+          let s = this.add.graphics();
+          (s.fillStyle(0, 0.97),
+            s.fillRect(0, 0, e.width, e.height),
+            s.setInteractive(
+              new Phaser.Geom.Rectangle(0, 0, e.width, e.height),
+              Phaser.Geom.Rectangle.Contains,
+            ),
+            s.on("pointerdown", () => {}),
+            t.add(s));
+          let i = "'Fredoka One', Arial Black, sans-serif",
+            n = k().powerUps,
+            o = this.add.text(e.width / 2, 120, "HOW TO PLAY", {
+              fontSize: "48px",
+              fontFamily: i,
+              color: "#B7FF00",
+              stroke: "#000000",
+              strokeThickness: 8,
+            });
+          (o.setOrigin(0.5), t.add(o));
+          let c = this.add.text(e.width / 2, 220, "Match 3 identical tiles", {
+            fontSize: "32px",
+            fontFamily: i,
+            color: "#ffffff",
+            stroke: "#000000",
+            strokeThickness: 4,
+          });
+          (c.setOrigin(0.5), t.add(c));
+          let r = this.add.text(e.width / 2, 280, "Clear the board before", {
+            fontSize: "32px",
+            fontFamily: i,
+            color: "#ffffff",
+            stroke: "#000000",
+            strokeThickness: 4,
+          });
+          (r.setOrigin(0.5), t.add(r));
+          let d = this.add.text(e.width / 2, 340, "time runs out!", {
+            fontSize: "32px",
+            fontFamily: i,
+            color: "#ff6b6b",
+            stroke: "#000000",
+            strokeThickness: 4,
+          });
+          (d.setOrigin(0.5), t.add(d));
+          let h = this.add.text(e.width / 2, 440, "POWER-UPS", {
+            fontSize: "36px",
+            fontFamily: i,
+            color: "#B7FF00",
+            stroke: "#000000",
+            strokeThickness: 6,
+          });
+          (h.setOrigin(0.5), t.add(h));
+          let l = e.width / 2,
+            u = 70,
+            f = 530,
+            S = 100;
+          [
+            {
+              type: "undo",
+              name: "Undo",
+              desc: "Return last tile",
+              colors: n.undo,
+            },
+            {
+              type: "clock",
+              name: "Freeze",
+              desc: "Pause timer",
+              colors: n.clock,
+            },
+            { type: "key", name: "Hint", desc: "Remove a pair", colors: n.key },
+          ].forEach((x, y) => {
+            let w = f + y * S,
+              M = l - 120,
+              C = this.add.graphics();
+            (C.fillStyle(x.colors.main, 1),
+              C.fillCircle(M, w, u / 2),
+              C.lineStyle(3, x.colors.border, 1),
+              C.strokeCircle(M, w, u / 2),
+              t.add(C));
+            let A = this.add.text(l - 30, w - 12, x.name, {
+              fontSize: "28px",
+              fontFamily: i,
+              color: "#ffffff",
+              stroke: "#000000",
+              strokeThickness: 4,
+            });
+            (A.setOrigin(0, 0.5), t.add(A));
+            let $ = this.add.text(l - 30, w + 18, x.desc, {
+              fontSize: "20px",
+              fontFamily: i,
+              color: "#aaaaaa",
+            });
+            ($.setOrigin(0, 0.5), t.add($));
+          });
+          let g = this.add.container(e.width / 2, 880),
+            v = this.add.graphics();
+          (v.fillStyle(2981170, 1),
+            v.fillRoundedRect(-100, 8, 200, 55, 14),
+            v.fillStyle(5025616, 1),
+            v.fillRoundedRect(-100, 0, 200, 55, 14),
+            v.lineStyle(3, 2981170, 1),
+            v.strokeRoundedRect(-100, 0, 200, 55, 14),
+            g.add(v));
+          let T = this.add.text(0, 55 / 2, "LET'S GO!", {
+            fontSize: "26px",
+            fontFamily: i,
+            color: "#ffffff",
+            stroke: "#2d7d32",
+            strokeThickness: 3,
+          });
+          (T.setOrigin(0.5),
+            g.add(T),
+            g.setSize(200, 63),
+            g.setInteractive({ useHandCursor: !0 }),
+            g.on("pointerover", () => {
+              this.tweens.add({
+                targets: g,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            g.on("pointerout", () => {
+              this.tweens.add({
+                targets: g,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            g.on("pointerdown", () => {
+              (localStorage.setItem("crypto-mahjong-tutorial-seen", "true"),
+                this.tweens.add({
+                  targets: t,
+                  alpha: 0,
+                  duration: 200,
+                  ease: "Power2",
+                  onComplete: () => {
+                    (t.destroy(), this.startLevel(1));
+                  },
+                }));
+            }),
+            t.add(g),
+            t.setAlpha(0),
+            this.tweens.add({
+              targets: t,
+              alpha: 1,
+              duration: 300,
+              ease: "Power2",
+            }));
+        }
+        setupPlayAgainListener() {
+          try {
+            let e = window.FarcadeSDK;
+            e?.onPlayAgain &&
+              e.onPlayAgain(() => {
+                this.scene.restart();
+              });
+          } catch {}
+        }
+        createRoundedTileImages() {
+          let t = m.tile.width - 16,
+            s = m.tile.height - 16,
+            i = m.tile.cornerRadius - 2;
+          Object.values(W).forEach((a) => {
+            if (typeof a == "number" && O[a].imageUrl) {
+              let o = `tile-icon-${a}`,
+                c = `tile-icon-rounded-${a}`;
+              if (this.textures.exists(c)) return;
+              let r = this.textures.get(o);
+              if (!r || r.key === "__MISSING") return;
+              let d = document.createElement("canvas");
+              ((d.width = t), (d.height = s));
+              let h = d.getContext("2d");
+              if (!h) return;
+              (h.beginPath(),
+                h.roundRect(0, 0, t, s, i),
+                h.closePath(),
+                h.clip());
+              let l = r.getSourceImage();
+              (h.drawImage(l, 0, 0, t, s), this.textures.addCanvas(c, d));
+            }
+          });
+        }
+        createBackground() {
+          let { canvas: e } = m,
+            t = k();
+          this.backgroundObject &&
+            (this.backgroundObject.destroy(), (this.backgroundObject = null));
+          let s = `bg-${t.name}`;
+          if (t.background.backgroundImage && this.textures.exists(s)) {
+            let n = this.add.image(e.width / 2, e.height / 2, s);
+            (n.setDisplaySize(e.width, e.height),
+              n.setDepth(-3),
+              (this.backgroundObject = n));
+            return;
+          }
+          let i = t.background.pattern,
+            a = this.add.graphics();
+          switch (
+            (a.setDepth(-3),
+            (this.backgroundObject = a),
+            a.fillStyle(i.color1, 1),
+            a.fillRect(0, 0, e.width, e.height),
+            i.type)
+          ) {
+            case "diamonds":
+              this.drawDiamondsPattern(a, i.color2);
+              break;
+            case "waves":
+              this.drawWavesPattern(a, i.color2);
+              break;
+            case "hexagons":
+              this.drawHexagonsPattern(a, i.color2);
+              break;
+            case "circles":
+              this.drawCirclesPattern(a, i.color2);
+              break;
+            case "polkadots":
+              this.drawPolkadotsPattern(a, i.color1, i.color2);
+              break;
+          }
+        }
+        drawDiamondsPattern(e, t) {
+          let { canvas: s } = m,
+            i = 80,
+            a = 100,
+            n = 0;
+          for (let o = -a / 2; o < s.height + a; o += a / 2) {
+            let c = 0,
+              r = (n % 2) * (i / 2);
+            for (let d = -i / 2 + r; d < s.width + i; d += i)
+              ((n + c) % 2 === 0 &&
+                (e.fillStyle(t, 1),
+                e.beginPath(),
+                e.moveTo(d, o - a / 2),
+                e.lineTo(d + i / 2, o),
+                e.lineTo(d, o + a / 2),
+                e.lineTo(d - i / 2, o),
+                e.closePath(),
+                e.fillPath()),
+                c++);
+            n++;
+          }
+        }
+        drawWavesPattern(e, t) {
+          let { canvas: s } = m,
+            i = 40,
+            a = 120,
+            n = 20;
+          e.lineStyle(3, t, 0.6);
+          for (let o = 0; o < s.height + i * 2; o += i) {
+            let c = ((o / i) % 2) * (a / 2);
+            (e.beginPath(), e.moveTo(-a + c, o));
+            for (let r = -a + c; r < s.width + a; r += a)
+              (e.lineTo(r + a * 0.25, o - n),
+                e.lineTo(r + a * 0.5, o),
+                e.lineTo(r + a * 0.75, o + n),
+                e.lineTo(r + a, o));
+            e.strokePath();
+          }
+          e.fillStyle(t, 0.3);
+          for (let o = 0; o < 30; o++) {
+            let c = Math.random() * s.width,
+              r = Math.random() * s.height,
+              d = 3 + Math.random() * 8;
+            e.fillCircle(c, r, d);
+          }
+        }
+        drawHexagonsPattern(e, t) {
+          let { canvas: s } = m,
+            i = 50,
+            a = i * 2,
+            n = Math.sqrt(3) * i;
+          e.lineStyle(2, t, 0.5);
+          let o = 0;
+          for (let c = -n; c < s.height + n * 2; c += n * 0.75) {
+            let r = (o % 2) * (a * 0.75);
+            for (let d = -a + r; d < s.width + a * 2; d += a * 1.5)
+              this.drawHexagon(e, d, c, i);
+            o++;
+          }
+        }
+        drawHexagon(e, t, s, i) {
+          e.beginPath();
+          for (let a = 0; a < 6; a++) {
+            let n = (Math.PI / 3) * a - Math.PI / 6,
+              o = t + i * Math.cos(n),
+              c = s + i * Math.sin(n);
+            a === 0 ? e.moveTo(o, c) : e.lineTo(o, c);
+          }
+          (e.closePath(), e.strokePath());
+        }
+        drawCirclesPattern(e, t) {
+          let { canvas: s } = m,
+            i = k();
+          if (i.name === "sunset") {
+            let n = s.height / 20;
+            for (let o = 0; o < 20; o++) {
+              let c = o / 19,
+                r = Math.round(255 + 0 * c),
+                d = Math.round(179 + -85 * c),
+                h = Math.round(71 + 27 * c),
+                l = (r << 16) | (d << 8) | h;
+              (e.fillStyle(l, 1), e.fillRect(0, o * n, s.width, n + 1));
+            }
+          }
+          for (let a = 0; a < 18; a++) {
+            let n = Math.random() * s.width,
+              o = Math.random() * s.height,
+              c = 60 + Math.random() * 80,
+              r = 0.12 + Math.random() * 0.15;
+            (e.fillStyle(t, r), e.fillCircle(n, o, c));
+          }
+          i.name === "sakura" && this.drawSakuraFlowers(e, t);
+        }
+        drawSakuraFlowers(e, t) {
+          let { canvas: s } = m,
+            i = 100;
+          for (let a = 0; a < s.height + i; a += i) {
+            let n = ((a / i) % 2) * (i / 2);
+            for (let o = n; o < s.width + i; o += i) {
+              for (let d = 0; d < 5; d++) {
+                let h = ((Math.PI * 2) / 5) * d - Math.PI / 2,
+                  l = o + Math.cos(h) * 18,
+                  u = a + Math.sin(h) * 18;
+                (e.fillStyle(t, 0.5), e.fillCircle(l, u, 12));
+              }
+              (e.fillStyle(16771899, 0.6), e.fillCircle(o, a, 6));
+            }
+          }
+        }
+        drawPolkadotsPattern(e, t, s) {
+          let { canvas: i } = m,
+            a = 20,
+            n = i.height / a;
+          for (let d = 0; d < a; d++) {
+            let h = d / (a - 1),
+              l = Math.round(255 + 0 * h),
+              u = Math.round(179 + -85 * h),
+              f = Math.round(71 + 27 * h),
+              S = (l << 16) | (u << 8) | f;
+            (e.fillStyle(S, 1), e.fillRect(0, d * n, i.width, n + 1));
+          }
+          let o = 18,
+            c = 80,
+            r = 80;
+          for (let d = 0; d < Math.ceil(i.height / r) + 1; d++) {
+            let h = (d % 2) * (c / 2);
+            for (let l = 0; l < Math.ceil(i.width / c) + 1; l++) {
+              let u = l * c + h,
+                f = d * r;
+              (e.fillStyle(s, 0.25), e.fillCircle(u, f, o));
+            }
+          }
+        }
+        startLevel(e) {
+          (this.clearLevel(),
+            (this.currentLevelConfig = m.getLevelConfig(e)),
+            (this.gameState.currentLevel = e),
+            (this.gameState.isPlaying = !0),
+            (this.gameState.isGameOver = !1),
+            (this.gameState.isWin = !1),
+            (this.gameState.tiles = I.generateBoard(this.currentLevelConfig)),
+            e === 1 && P.startMusic(),
+            P.playShuffle(this.gameState.tiles.length),
+            this.createTileSprites(),
+            this.gameUI.updateLevel(e),
+            this.gameUI.updateHand(this.handManager.getSlots()),
+            this.animateBoardEntry());
+        }
+        clearLevel() {
+          ((this.isAnimating = !1),
+            this.tileSprites.forEach((e) => e.destroy()),
+            this.tileSprites.clear(),
+            this.handManager.reset(),
+            (this.gameState.tiles = []));
+        }
+        createTileSprites() {
+          for (let e of this.gameState.tiles) {
+            let t = I.calculateScreenPosition(
+                e.position,
+                this.currentLevelConfig,
+                this.boardBounds,
+              ),
+              s = !this.hasAdjacentTileBelow(e),
+              i = new E(this, t.x, t.y, e, s);
+            (i.setLayerDepth(e.position.z),
+              i.on("tile-clicked", (a) => this.onTileClicked(a)),
+              this.tileSprites.set(e.id, i),
+              this.boardContainer.add(i));
+          }
+        }
+        hasAdjacentTileBelow(e) {
+          let t = e.position;
+          return this.gameState.tiles.some((s) => {
+            if (
+              s.id === e.id ||
+              s.isInHand ||
+              s.isMatched ||
+              s.position.z !== t.z
+            )
+              return !1;
+            let i = s.position.y - t.y;
+            return !(i < 0.4 || i > 1.1 || Math.abs(s.position.x - t.x) > 0.6);
+          });
+        }
+        updateTiles3DEffect() {
+          for (let e of this.gameState.tiles) {
+            if (e.isInHand || e.isMatched) continue;
+            let t = this.tileSprites.get(e.id);
+            if (t) {
+              let s = !this.hasAdjacentTileBelow(e);
+              t.updateBottom3D(s);
+            }
+          }
+        }
+        animateBoardEntry() {
+          this.isAnimating = !0;
+          let e = Array.from(this.tileSprites.values());
+          (e.sort((t, s) => {
+            let i = t.getState(),
+              a = s.getState();
+            return (
+              i.position.z - a.position.z ||
+              i.position.y - a.position.y ||
+              i.position.x - a.position.x
+            );
+          }),
+            e.forEach((t, s) => {
+              (t.setAlpha(0),
+                t.setScale(0),
+                this.tweens.add({
+                  targets: t,
+                  alpha: 1,
+                  scaleX: 1,
+                  scaleY: 1,
+                  duration: 300,
+                  delay: s * 30,
+                  ease: "Back.easeOut",
+                  onComplete: () => {
+                    s === e.length - 1 && (this.isAnimating = !1);
+                  },
+                }));
+            }));
+        }
+        onTileClicked(e) {
+          if (
+            this.isAnimating ||
+            !this.gameState.isPlaying ||
+            this.handManager.isFull()
+          )
+            return;
+          (this.triggerHapticFeedback(), (this.isAnimating = !0));
+          let t = this.gameState.tiles.find((n) => n.id === e.id);
+          if (!t) {
+            this.isAnimating = !1;
+            return;
+          }
+          let s = this.handManager.getTileCount(),
+            i = this.gameUI.getSlotPosition(s),
+            a = this.tileSprites.get(e.id);
+          if (!a) {
+            this.isAnimating = !1;
+            return;
+          }
+          ((t.isInHand = !0),
+            (t.isAccessible = !1),
+            this.updateBoardAccessibility(),
+            this.updateTiles3DEffect(),
+            a.animateToHand(i.x, i.y, () => {
+              (a.destroy(),
+                this.tileSprites.delete(t.id),
+                this.handManager.addTile(t),
+                this.gameUI.updateHand(this.handManager.getSlots()),
+                this.checkForMatch());
+            }),
+            this.time.delayedCall(50, () => {
+              this.handManager.isFull() || (this.isAnimating = !1);
+            }));
+        }
+        checkForMatch() {
+          let e = this.handManager.checkMatch();
+          e.matched
+            ? this.time.delayedCall(100, () => {
+                this.triggerHapticFeedback();
+                let t = e.tiles.map((s) => s.id);
+                (this.gameUI.animateMatch(t, () => {
+                  (this.handManager.removeMatchedTiles(e.tiles),
+                    (this.gameState.score += e.scoreGained),
+                    this.gameUI.updateScore(this.gameState.score),
+                    this.gameUI.updateHand(this.handManager.getSlots()),
+                    this.checkWinCondition(),
+                    (this.isAnimating = !1));
+                }),
+                  this.time.delayedCall(500, () => {
+                    P.playTrio();
+                  }));
+              })
+            : this.handManager.isFull()
+              ? this.handleLoseLife("blocked")
+              : (this.isAnimating = !1);
+        }
+        updateBoardAccessibility() {
+          I.updateAccessibility(this.gameState.tiles);
+          for (let e of this.gameState.tiles) {
+            if (e.isInHand || e.isMatched) continue;
+            let t = this.tileSprites.get(e.id);
+            t && t.updateState({ isAccessible: e.isAccessible });
+          }
+        }
+        checkWinCondition() {
+          if (
+            this.gameState.tiles.filter((t) => !t.isInHand && !t.isMatched)
+              .length === 0 &&
+            this.handManager.isEmpty()
+          ) {
+            ((this.gameState.isWin = !0), (this.gameState.isPlaying = !1));
+            let t = this.gameState.currentLevel * m.rules.bonusPerLevel;
+            ((this.gameState.score += t),
+              this.gameUI.updateScore(this.gameState.score),
+              this.gameUI.stopTimer());
+            let s = this.gameState.currentLevel + 1;
+            if (this.hasSaveState)
+              try {
+                let i = window.FarcadeSDK;
+                i?.singlePlayer?.actions?.saveGameState &&
+                  i.singlePlayer.actions.saveGameState({
+                    gameState: {
+                      level: s,
+                      score: this.gameState.score,
+                      lives: this.gameUI.getLives(),
+                    },
+                  });
+              } catch (i) {}
+            this.time.delayedCall(500, () => {
+              this.gameUI.showWinMessage(() => {
+                this.startLevel(s);
+              });
+            });
+          }
+        }
+        handleTimeUp() {
+          this.gameState.isPlaying && this.handleLoseLife("time-up");
+        }
+        handleLoseLife(reason = "blocked") {
+          (this.triggerHapticFeedback(),
+            this.gameUI.stopTimer(),
+            this.gameUI.loseLife()
+              ? this.gameUI.showTryAgainMessage(() => {
+                  this.startLevel(this.gameState.currentLevel);
+                }, reason)
+              : this.gameOver());
+        }
+        gameOver() {
+          ((this.gameState.isGameOver = !0),
+            (this.gameState.isPlaying = !1),
+            (this.isAnimating = !1),
+            P.stopMusic(),
+            this.clearSavedState());
+          try {
+            let e = window.FarcadeSDK;
+            e?.singlePlayer?.actions?.gameOver
+              ? e.singlePlayer.actions.gameOver({ score: this.gameState.score })
+              : e?.gameOver
+                ? e.gameOver({ score: this.gameState.score })
+                : e?.actions?.gameOver &&
+                  e.actions.gameOver({ score: this.gameState.score });
+          } catch {}
+        }
+        triggerHapticFeedback() {
+          try {
+            let e = window.FarcadeSDK;
+            e?.singlePlayer?.actions?.hapticFeedback
+              ? e.singlePlayer.actions.hapticFeedback()
+              : e?.hapticFeedback && e.hapticFeedback();
+          } catch {}
+        }
+        restartGame() {
+          ((this.gameState.score = 0),
+            this.gameUI.updateScore(0),
+            this.gameUI.resetLives(),
+            this.startLevel(1));
+        }
+        saveAndExit() {
+          if (this.hasSaveState) {
+            try {
+              let e = window.FarcadeSDK;
+              if (e?.singlePlayer?.actions?.saveGameState) {
+                let t = {
+                  level: this.gameState.currentLevel,
+                  score: this.gameState.score,
+                  lives: this.gameUI.getLives(),
+                };
+                e.singlePlayer.actions.saveGameState({ gameState: t });
+              }
+            } catch (e) {}
+            ((this.gameState.isGameOver = !0),
+              (this.gameState.isPlaying = !1),
+              (this.isAnimating = !1),
+              P.stopMusic());
+            try {
+              let e = window.FarcadeSDK;
+              e?.singlePlayer?.actions?.gameOver
+                ? e.singlePlayer.actions.gameOver({
+                    score: this.gameState.score,
+                  })
+                : e?.gameOver
+                  ? e.gameOver({ score: this.gameState.score })
+                  : e?.actions?.gameOver &&
+                    e.actions.gameOver({ score: this.gameState.score });
+            } catch {}
+          }
+        }
+        saveGameProgress() {
+          if (this.hasSaveState)
+            try {
+              let e = window.FarcadeSDK;
+              if (e?.singlePlayer?.actions?.saveGameState) {
+                let t = {
+                  level: this.gameState.currentLevel,
+                  score: this.gameState.score,
+                  lives: this.gameUI.getLives(),
+                };
+                e.singlePlayer.actions.saveGameState({ gameState: t });
+              }
+            } catch (e) {}
+        }
+        clearSavedState() {
+          if (this.hasSaveState)
+            try {
+              let e = window.FarcadeSDK;
+              e?.singlePlayer?.actions?.saveGameState &&
+                e.singlePlayer.actions.saveGameState({ gameState: {} });
+            } catch (e) {}
+        }
+        loadSavedState() {
+          if (!this.hasSaveState) return null;
+          try {
+            let t = window.FarcadeSDK?.gameState;
+            if (t && typeof t.level == "number" && t.level > 1)
+              return {
+                level: t.level,
+                score: t.score || 0,
+                lives: t.lives ?? 2,
+              };
+          } catch (e) {}
+          return null;
+        }
+        handleUndo() {
+          if (!this.gameState.isPlaying || this.isAnimating) return !1;
+          let e = this.handManager.getTileCount() - 1;
+          if (e < 0) return !1;
+          let t = this.gameUI.getSlotPosition(e),
+            s = this.handManager.removeLastTile();
+          if (!s) return !1;
+          let i = this.gameState.tiles.find((c) => c.id === s.id);
+          if (!i) return !1;
+          ((i.isInHand = !1), (i.isAccessible = !0), (this.isAnimating = !0));
+          let a = I.calculateScreenPosition(
+              i.position,
+              this.currentLevelConfig,
+              this.boardBounds,
+            ),
+            n = !this.hasAdjacentTileBelow(i),
+            o = new E(this, t.x, t.y, i, n);
+          return (
+            o.on("tile-clicked", (c) => {
+              this.onTileClicked(c);
+            }),
+            this.tileSprites.set(i.id, o),
+            this.boardContainer.add(o),
+            o.setLayerDepth(i.position.z),
+            this.tweens.add({
+              targets: o,
+              x: a.x,
+              y: a.y,
+              duration: 350,
+              ease: "Back.easeOut",
+              onComplete: () => {
+                ((this.isAnimating = !1),
+                  this.updateBoardAccessibility(),
+                  this.updateTiles3DEffect());
+              },
+            }),
+            this.gameUI.updateHand(this.handManager.getSlots()),
+            P.playCardToHand(),
+            !0
+          );
+        }
+        handlePauseTime() {
+          if (!this.gameState.isPlaying) return !1;
+          let e = this.gameUI.pauseTimer();
+          return (e && P.playCardToHand(), e);
+        }
+        handleHint() {
+          if (!this.gameState.isPlaying || this.isAnimating) return !1;
+          let e = this.handManager.getTilesInHand(),
+            t = new Map();
+          for (let n of e) {
+            let o = t.get(n.type) || [];
+            (o.push(n), t.set(n.type, o));
+          }
+          let s = this.gameState.tiles.filter(
+              (n) => !n.isInHand && !n.isMatched,
+            ),
+            i = new Map();
+          for (let n of s) {
+            let o = i.get(n.type) || [];
+            (o.push(n), i.set(n.type, o));
+          }
+          let a = null;
+          for (let [n, o] of t)
+            if (o.length >= 2) {
+              let c = i.get(n) || [];
+              if (c.length >= 1) {
+                a = [...o.slice(0, 2), c[0]];
+                break;
+              }
+            }
+          if (!a) {
+            for (let [n, o] of t)
+              if (o.length >= 1) {
+                let c = i.get(n) || [];
+                if (c.length >= 2) {
+                  a = [o[0], c[0], c[1]];
+                  break;
+                }
+              }
+          }
+          if (!a) {
+            for (let [n, o] of i)
+              if (o.length >= 3) {
+                a = [o[0], o[1], o[2]];
+                break;
+              }
+          }
+          return a && a.length === 3
+            ? (this.performDirectMatch(a), P.playCardToHand(), !0)
+            : !1;
+        }
+        performDirectMatch(e) {
+          if (e.length !== 3) return;
+          this.isAnimating = !0;
+          let t = e.filter((o) => !o.isInHand),
+            s = e.filter((o) => o.isInHand);
+          (e.forEach((o) => {
+            o.isMatched = !0;
+          }),
+            s.length > 0 &&
+              (this.handManager.removeMatchedTiles(s),
+              this.gameUI.updateHand(this.handManager.getSlots())),
+            this.updateBoardAccessibility(),
+            this.updateTiles3DEffect());
+          let i = [];
+          t.forEach((o) => {
+            let c = this.tileSprites.get(o.id);
+            c &&
+              (this.boardContainer.remove(c),
+              this.add.existing(c),
+              c.setDepth(5e3 + i.length),
+              i.push(c),
+              this.tileSprites.delete(o.id));
+          });
+          let a = 360,
+            n = 900;
+          if (i.length > 0) {
+            let o = 0,
+              c = i.length;
+            i.forEach((r, d) => {
+              let h = d * 100;
+              this.tweens.add({
+                targets: r,
+                x: a + (d - (i.length - 1) / 2) * 60,
+                y: n,
+                scaleX: 1.1,
+                scaleY: 1.1,
+                duration: 350,
+                delay: h,
+                ease: "Cubic.easeOut",
+                onComplete: () => {
+                  this.tweens.add({
+                    targets: r,
+                    x: a,
+                    y: n - 30,
+                    rotation: (d - 1) * 0.2,
+                    scaleX: 1,
+                    scaleY: 1,
+                    duration: 250,
+                    ease: "Sine.easeInOut",
+                    onComplete: () => {
+                      (o++,
+                        o === c &&
+                          (this.gameUI.createMatchExplosion(a, n - 30),
+                          i.forEach((l) => {
+                            this.tweens.add({
+                              targets: l,
+                              scaleX: 0,
+                              scaleY: 0,
+                              alpha: 0,
+                              rotation: l.rotation + 0.5,
+                              duration: 200,
+                              ease: "Cubic.easeIn",
+                              onComplete: () => {
+                                l.destroy();
+                              },
+                            });
+                          }),
+                          (this.gameState.score += m.rules.scorePerMatch),
+                          this.gameUI.updateScore(this.gameState.score),
+                          P.playTrio(),
+                          this.time.delayedCall(300, () => {
+                            (this.checkWinCondition(), (this.isAnimating = !1));
+                          })));
+                    },
+                  });
+                },
+              });
+            });
+          } else
+            ((this.gameState.score += m.rules.scorePerMatch),
+              this.gameUI.updateScore(this.gameState.score),
+              this.gameUI.createMatchExplosion(a, n - 30),
+              P.playTrio(),
+              this.checkWinCondition(),
+              (this.isAnimating = !1));
+        }
+        checkPurchasedItems() {
+          try {
+            let e = window.FarcadeSDK;
+            e?.hasItem &&
+              ((this.hasUiStyles = e.hasItem("ui-styles")),
+              (this.hasJustATip = e.hasItem("just-a-tip")),
+              (this.hasSaveState = e.hasItem("save-state")));
+          } catch {
+            ((this.hasUiStyles = !1),
+              (this.hasJustATip = !1),
+              (this.hasSaveState = !1));
+          }
+        }
+        tipOverlay = null;
+        showTipOverlay() {
+          if (this.tipOverlay) return;
+          let { canvas: e } = m;
+          (this.gameUI.pauseTimer(),
+            (this.tipOverlay = this.add.container(0, 0)),
+            this.tipOverlay.setDepth(3e3));
+          let t = this.add.graphics();
+          (t.fillStyle(0, 0.95),
+            t.fillRect(0, 0, e.width, e.height),
+            t.setInteractive(
+              new Phaser.Geom.Rectangle(0, 0, e.width, e.height),
+              Phaser.Geom.Rectangle.Contains,
+            ),
+            t.on("pointerdown", () => {}),
+            this.tipOverlay.add(t));
+          let s = "'Fredoka One', Arial Black, sans-serif",
+            i = e.width / 2,
+            a = this.add.text(i, 380, "JUST A TIP", {
+              fontSize: "48px",
+              fontFamily: s,
+              color: "#B7FF00",
+              stroke: "#000000",
+              strokeThickness: 8,
+            });
+          (a.setOrigin(0.5), this.tipOverlay.add(a));
+          let n = this.add.text(
+            i,
+            470,
+            `In appreciation for the
+      continued development of the game`,
+            {
+              fontSize: "26px",
+              fontFamily: s,
+              color: "#ffffff",
+              stroke: "#000000",
+              strokeThickness: 3,
+              align: "center",
+            },
+          );
+          (n.setOrigin(0.5), this.tipOverlay.add(n));
+          let o = 280,
+            c = 70,
+            r = this.add.container(i, 600),
+            d = this.add.graphics();
+          (d.fillStyle(2981170, 1),
+            d.fillRoundedRect(-o / 2, 10, o, c, 14),
+            d.fillStyle(5025616, 1),
+            d.fillRoundedRect(-o / 2, 0, o, c, 14),
+            d.lineStyle(3, 2981170, 1),
+            d.strokeRoundedRect(-o / 2, 0, o, c, 14),
+            r.add(d));
+          let h = this.add.text(0, c / 2, "SUPPORT", {
+            fontSize: "36px",
+            fontFamily: s,
+            color: "#ffffff",
+            stroke: "#2d7d32",
+            strokeThickness: 4,
+          });
+          (h.setOrigin(0.5),
+            r.add(h),
+            r.setSize(o, c + 10),
+            r.setInteractive({ useHandCursor: !0 }),
+            r.on("pointerover", () => {
+              this.tweens.add({
+                targets: r,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            r.on("pointerout", () => {
+              this.tweens.add({
+                targets: r,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            r.on("pointerdown", () => {
+              this.purchaseJustATip();
+            }),
+            this.tipOverlay.add(r));
+          let l = this.add.graphics(),
+            u = 160,
+            f = 40;
+          (l.fillStyle(16766720, 1),
+            l.fillRoundedRect(i - u / 2, 660, u, f, 10),
+            l.lineStyle(2, 12092939, 1),
+            l.strokeRoundedRect(i - u / 2, 660, u, f, 10),
+            this.tipOverlay.add(l));
+          let S = this.add.text(i, 680, "500 credits", {
+            fontSize: "24px",
+            fontFamily: s,
+            color: "#5a4000",
+          });
+          (S.setOrigin(0.5), this.tipOverlay.add(S));
+          let p = this.add.container(i, 780),
+            g = this.add.graphics();
+          (g.fillStyle(4473924, 1),
+            g.fillRoundedRect(-o / 2, 10, o, c, 14),
+            g.fillStyle(6710886, 1),
+            g.fillRoundedRect(-o / 2, 0, o, c, 14),
+            g.lineStyle(3, 4473924, 1),
+            g.strokeRoundedRect(-o / 2, 0, o, c, 14),
+            p.add(g));
+          let v = this.add.text(0, c / 2, "BACK", {
+            fontSize: "36px",
+            fontFamily: s,
+            color: "#ffffff",
+            stroke: "#333333",
+            strokeThickness: 4,
+          });
+          (v.setOrigin(0.5),
+            p.add(v),
+            p.setSize(o, c + 10),
+            p.setInteractive({ useHandCursor: !0 }),
+            p.on("pointerover", () => {
+              this.tweens.add({
+                targets: p,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            p.on("pointerout", () => {
+              this.tweens.add({
+                targets: p,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            p.on("pointerdown", () => {
+              this.closeTipOverlay();
+            }),
+            this.tipOverlay.add(p),
+            this.tipOverlay.setAlpha(0),
+            this.tweens.add({
+              targets: this.tipOverlay,
+              alpha: 1,
+              duration: 200,
+              ease: "Power2",
+            }));
+        }
+        closeTipOverlay() {
+          this.tipOverlay &&
+            this.tweens.add({
+              targets: this.tipOverlay,
+              alpha: 0,
+              duration: 200,
+              ease: "Power2",
+              onComplete: () => {
+                (this.tipOverlay?.destroy(),
+                  (this.tipOverlay = null),
+                  this.gameUI.resumeTimer());
+              },
+            });
+        }
+        async purchaseJustATip() {
+          try {
+            let e = window.FarcadeSDK;
+            e?.purchase &&
+              (await e.purchase({ item: "just-a-tip" })).success &&
+              ((this.hasJustATip = !0),
+              this.gameUI.hideTipButton(),
+              this.closeTipOverlay());
+          } catch (e) {
+            console.error("Purchase error:", e);
+          }
+        }
+        handleTip() {
+          this.hasJustATip || this.showTipOverlay();
+        }
+        handleThemeChange() {
+          this.hasUiStyles && this.applyThemeChange();
+        }
+        applyThemeChange() {
+          (ee(),
+            this.createBackground(),
+            this.tileSprites.forEach((e) => {
+              e.refreshTexture();
+            }),
+            this.gameUI.refreshTheme());
+        }
+        update() {}
+      };
+      var Y = class extends Phaser.Scene {
+        styleModal = null;
+        tutorialModal = null;
+        hasExclusiveThemes = !1;
+        hasJustATip = !1;
+        styleButton = null;
+        constructor() {
+          super({ key: "MainMenuScene" });
+        }
+        create() {
+          let { canvas: e } = m,
+            t = e.width / 2;
+          (this.loadSavedTheme(),
+            this.createBackground(),
+            this.createCartoonTitle(t),
+            this.createMenuButtons(t));
+        }
+        createBackground() {
+          let { canvas: e } = m;
+          this.add
+            .image(e.width / 2, e.height / 2, "menu-bg")
+            .setDisplaySize(e.width, e.height);
+        }
+        createCartoonTitle(e) {
+          let t = this.add.container(e, 280),
+            s = "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive";
+          (this.createComicWord(
+            t,
+            "CRYPTO",
+            0,
+            0,
+            100,
+            [
+              { rotation: -8, scale: 1.1 },
+              { rotation: 5, scale: 1 },
+              { rotation: -3, scale: 1.15 },
+              { rotation: 6, scale: 0.95 },
+              { rotation: -4, scale: 1.05 },
+              { rotation: 7, scale: 1.1 },
+            ],
+            s,
+          ),
+            this.createComicWord(
+              t,
+              "MAHJONG",
+              0,
+              130,
+              110,
+              [
+                { rotation: 6, scale: 1.05 },
+                { rotation: -5, scale: 1.1 },
+                { rotation: 4, scale: 0.95 },
+                { rotation: -7, scale: 1.15 },
+                { rotation: 3, scale: 1 },
+                { rotation: -4, scale: 1.1 },
+                { rotation: 5, scale: 1.05 },
+              ],
+              s,
+            ),
+            this.createRemixedSubtitle(t, 0, 230, s));
+        }
+        createComicWord(e, t, s, i, a, n, o) {
+          let c = t.split(""),
+            r = a * 0.72,
+            d = (c.length - 1) * r,
+            h = s - d / 2;
+          c.forEach((l, u) => {
+            let f = n[u] || { rotation: 0, scale: 1 },
+              S = h + u * r;
+            for (let g = 6; g > 0; g--) {
+              let v = this.add.text(S + g * 2, i + g * 2, l, {
+                fontSize: `${a}px`,
+                fontFamily: o,
+                color: "#000000",
+              });
+              (v.setOrigin(0.5),
+                v.setRotation(Phaser.Math.DegToRad(f.rotation)),
+                v.setScale(f.scale),
+                v.setAlpha(g === 6 ? 0.8 : 0.4),
+                e.add(v));
+            }
+            let p = this.add.text(S, i, l, {
+              fontSize: `${a}px`,
+              fontFamily: o,
+              color: "#ffffff",
+              stroke: "#000000",
+              strokeThickness: 8,
+            });
+            (p.setOrigin(0.5),
+              p.setRotation(Phaser.Math.DegToRad(f.rotation)),
+              p.setScale(f.scale),
+              e.add(p));
+          });
+        }
+        createRemixedSubtitle(e, t, s, i) {
+          let o = "REMIXED".split(""),
+            c = 48 * 0.65,
+            r = (o.length - 1) * c,
+            d = t - r / 2,
+            h = [
+              { rotation: -4, scale: 1 },
+              { rotation: 3, scale: 1.05 },
+              { rotation: -2, scale: 0.98 },
+              { rotation: 4, scale: 1.02 },
+              { rotation: -3, scale: 1 },
+              { rotation: 2, scale: 1.03 },
+              { rotation: -4, scale: 1 },
+            ];
+          o.forEach((l, u) => {
+            let f = h[u] || { rotation: 0, scale: 1 },
+              S = d + u * c;
+            for (let g = 4; g > 0; g--) {
+              let v = this.add.text(S + g * 2, s + g * 2, l, {
+                fontSize: "48px",
+                fontFamily: i,
+                color: "#000000",
+              });
+              (v.setOrigin(0.5),
+                v.setRotation(Phaser.Math.DegToRad(f.rotation)),
+                v.setScale(f.scale),
+                v.setAlpha(g === 4 ? 0.6 : 0.3),
+                e.add(v));
+            }
+            let p = this.add.text(S, s, l, {
+              fontSize: "48px",
+              fontFamily: i,
+              color: "#B7FF00",
+              stroke: "#000000",
+              strokeThickness: 6,
+            });
+            (p.setOrigin(0.5),
+              p.setRotation(Phaser.Math.DegToRad(f.rotation)),
+              p.setScale(f.scale),
+              e.add(p));
+          });
+        }
+        createMenuButtons(e) {
+          (this.checkExclusiveThemes(),
+            this.createBadgeButton(
+              e,
+              640,
+              "START",
+              16726843,
+              9109504,
+              "#5a0000",
+              () => {
+                localStorage.getItem("crypto-mahjong-tutorial-seen")
+                  ? this.scene.start("MahjongScene")
+                  : this.showTutorial();
+              },
+            ),
+            this.createStyleButton(e, 800));
+        }
+        checkExclusiveThemes() {
+          try {
+            let e = window.FarcadeSDK;
+            e?.hasItem &&
+              ((this.hasExclusiveThemes = e.hasItem("exclusive-themes")),
+              (this.hasJustATip = e.hasItem("just-a-tip")));
+          } catch {
+            ((this.hasExclusiveThemes = !1), (this.hasJustATip = !1));
+          }
+        }
+        createStyleButton(e, t) {
+          let s = this.hasExclusiveThemes ? 3978097 : 6710886,
+            i = this.hasExclusiveThemes ? 1727002 : 4473924,
+            a = this.hasExclusiveThemes ? "#0a3a0a" : "#333333";
+          ((this.styleButton = this.createBadgeButton(
+            e,
+            t,
+            "THEME",
+            s,
+            i,
+            a,
+            () => {
+              this.hasExclusiveThemes
+                ? this.showStyleModal()
+                : this.purchaseExclusiveThemes();
+            },
+          )),
+            this.hasExclusiveThemes ||
+              this.addCreditsBadge(this.styleButton, 100),
+            this.createJustATipButton(e, t + 180));
+        }
+        createJustATipButton(e, t) {
+          if (this.hasJustATip) {
+            this.add
+              .text(e, t + 35, "Thank you", {
+                fontSize: "32px",
+                fontFamily: "'Fredoka One', Arial Black, sans-serif",
+                color: "#B7FF00",
+                stroke: "#000000",
+                strokeThickness: 4,
+              })
+              .setOrigin(0.5);
+            let i = window.FarcadeSDK,
+              a = i?.player?.displayName || i?.player?.username || "Player";
+            this.add
+              .text(e, t + 75, `@${a}`, {
+                fontSize: "36px",
+                fontFamily: "'Fredoka One', Arial Black, sans-serif",
+                color: "#000000",
+                stroke: "#ffffff",
+                strokeThickness: 4,
+              })
+              .setOrigin(0.5);
+          } else {
+            let s = this.createBadgeButton(
+              e,
+              t,
+              "JUST A TIP",
+              10181046,
+              7091331,
+              "#4a235a",
+              () => {
+                this.purchaseJustATip();
+              },
+            );
+            this.addCreditsBadge(s, 500);
+          }
+        }
+        async purchaseJustATip() {
+          try {
+            let e = window.FarcadeSDK;
+            e?.purchase &&
+              (await e.purchase({ item: "just-a-tip" })).success &&
+              ((this.hasJustATip = !0), this.scene.restart());
+          } catch (e) {
+            console.error("Purchase error:", e);
+          }
+        }
+        addCreditsBadge(e, t) {
+          let n = this.add.graphics();
+          (n.fillStyle(16766720, 1),
+            n.fillRoundedRect(-180 / 2, 96, 180, 42, 10),
+            n.lineStyle(3, 12092939, 1),
+            n.strokeRoundedRect(-180 / 2, 96, 180, 42, 10),
+            e.add(n));
+          let o = this.add.text(0, 96 + 42 / 2, `${t} credits`, {
+            fontSize: "24px",
+            fontFamily: "'Fredoka One', Arial Black, sans-serif",
+            color: "#5a4000",
+          });
+          (o.setOrigin(0.5), e.add(o));
+        }
+        async purchaseExclusiveThemes() {
+          try {
+            let e = window.FarcadeSDK;
+            e?.purchase &&
+              (await e.purchase({ item: "exclusive-themes" })).success &&
+              ((this.hasExclusiveThemes = !0), this.scene.restart());
+          } catch (e) {
+            console.error("Purchase error:", e);
+          }
+        }
+        createBadgeButton(e, t, s, i, a, n, o) {
+          let l = this.add.container(e, t),
+            u = this.add.graphics();
+          (u.fillStyle(a, 1),
+            u.fillRoundedRect(-340 / 2, 18, 340, 90, 14),
+            u.lineStyle(2, this.darkenColor(a, 0.3), 1),
+            u.strokeRoundedRect(-340 / 2, 18, 340, 90, 14),
+            u.fillStyle(i, 1),
+            u.fillRoundedRect(-340 / 2, 0, 340, 90, 14),
+            u.lineStyle(2, a, 1),
+            u.strokeRoundedRect(-340 / 2, 0, 340, 90, 14),
+            l.add(u));
+          let f = this.add.text(0, 90 / 2, s, {
+            fontSize: "44px",
+            fontFamily: "'Fredoka One', 'Comic Sans MS', 'Bangers', cursive",
+            color: "#ffffff",
+            stroke: n,
+            strokeThickness: 7,
+          });
+          return (
+            f.setOrigin(0.5),
+            l.add(f),
+            l.setSize(340, 108),
+            l.setInteractive({ useHandCursor: !0 }),
+            l.on("pointerover", () => {
+              this.tweens.add({
+                targets: l,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            l.on("pointerout", () => {
+              this.tweens.add({
+                targets: l,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            l.on("pointerdown", () => {
+              this.tweens.add({
+                targets: l,
+                y: t + 4,
+                duration: 50,
+                ease: "Power2",
+              });
+            }),
+            l.on("pointerup", () => {
+              this.tweens.add({
+                targets: l,
+                y: t,
+                duration: 50,
+                ease: "Power2",
+                onComplete: () => {
+                  o();
+                },
+              });
+            }),
+            l
+          );
+        }
+        darkenColor(e, t) {
+          let s = Math.floor(((e >> 16) & 255) * (1 - t)),
+            i = Math.floor(((e >> 8) & 255) * (1 - t)),
+            a = Math.floor((e & 255) * (1 - t));
+          return (s << 16) | (i << 8) | a;
+        }
+        showStyleModal() {
+          if (this.styleModal) return;
+          let { canvas: e } = m;
+          ((this.styleModal = this.add.container(0, 0)),
+            this.styleModal.setDepth(1e3));
+          let t = this.add.graphics();
+          (t.fillStyle(0, 0.97),
+            t.fillRect(0, 0, e.width, e.height),
+            t.setInteractive(
+              new Phaser.Geom.Rectangle(0, 0, e.width, e.height),
+              Phaser.Geom.Rectangle.Contains,
+            ),
+            t.on("pointerdown", () => {}),
+            this.styleModal.add(t));
+          let s = this.add.text(e.width / 2, 160, "SELECT THEME", {
+            fontSize: "52px",
+            fontFamily: "'Fredoka One', Arial Black, sans-serif",
+            color: "#ffffff",
+            stroke: "#000000",
+            strokeThickness: 8,
+          });
+          (s.setOrigin(0.5), this.styleModal.add(s));
+          let i = Z(),
+            a = 420,
+            n = 95,
+            o = 30,
+            c = 290;
+          i.forEach((d, h) => {
+            let l = R[d],
+              u = c + h * (n + o);
+            this.createThemeButton(e.width / 2, u, a, n, l, d);
+          });
+          let r = c + i.length * (n + o) + 40;
+          (this.createCloseButton(e.width / 2, r),
+            this.styleModal.setAlpha(0),
+            this.tweens.add({
+              targets: this.styleModal,
+              alpha: 1,
+              duration: 200,
+              ease: "Power2",
+            }));
+        }
+        createThemeButton(e, t, s, i, a, n) {
+          if (!this.styleModal) return;
+          let o = k().name === n,
+            c = 12,
+            r = this.add.container(e, t),
+            d = this.add.graphics();
+          (d.fillStyle(a.badge.border, 1),
+            d.fillRoundedRect(-s / 2, c, s, i, 14),
+            d.fillStyle(a.badge.main, 1),
+            d.fillRoundedRect(-s / 2, 0, s, i, 14),
+            d.lineStyle(2, a.badge.border, 1),
+            d.strokeRoundedRect(-s / 2, 0, s, i, 14),
+            r.add(d));
+          let h = o ? -20 : 0,
+            l = this.add.text(h, i / 2, a.displayName, {
+              fontSize: "28px",
+              fontFamily: "'Fredoka One', Arial Black, sans-serif",
+              color: "#ffffff",
+              stroke: a.badge.textStroke,
+              strokeThickness: 5,
+            });
+          if ((l.setOrigin(0.5), r.add(l), o)) {
+            let u = h + l.width / 2 + 30,
+              f = this.add.text(u, i / 2, "\u2714", {
+                fontSize: "36px",
+                fontFamily: "Arial",
+                color: "#00ff00",
+                stroke: "#006600",
+                strokeThickness: 4,
+              });
+            (f.setOrigin(0.5), r.add(f));
+          }
+          (r.setSize(s, i + c),
+            r.setInteractive({ useHandCursor: !0 }),
+            r.on("pointerover", () => {
+              this.tweens.add({
+                targets: r,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            r.on("pointerout", () => {
+              this.tweens.add({
+                targets: r,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            r.on("pointerdown", () => {
+              (G(n), this.saveThemeToStorage(n), this.closeStyleModal());
+            }),
+            this.styleModal.add(r));
+        }
+        createCloseButton(e, t) {
+          if (!this.styleModal) return;
+          let s = 200,
+            i = 55,
+            a = 8,
+            n = this.add.container(e, t),
+            o = this.add.graphics();
+          (o.fillStyle(13421772, 1),
+            o.fillRoundedRect(-s / 2, a, s, i, 14),
+            o.fillStyle(16777215, 1),
+            o.fillRoundedRect(-s / 2, 0, s, i, 14),
+            o.lineStyle(3, 3355443, 1),
+            o.strokeRoundedRect(-s / 2, 0, s, i, 14),
+            n.add(o));
+          let c = this.add.text(0, i / 2, "CLOSE", {
+            fontSize: "26px",
+            fontFamily: "'Fredoka One', Arial Black, sans-serif",
+            color: "#333333",
+          });
+          (c.setOrigin(0.5),
+            n.add(c),
+            n.setSize(s, i + a),
+            n.setInteractive({ useHandCursor: !0 }),
+            n.on("pointerover", () => {
+              this.tweens.add({
+                targets: n,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            n.on("pointerout", () => {
+              this.tweens.add({
+                targets: n,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            n.on("pointerdown", () => {
+              this.closeStyleModal();
+            }),
+            this.styleModal.add(n));
+        }
+        closeStyleModal() {
+          this.styleModal &&
+            this.tweens.add({
+              targets: this.styleModal,
+              scale: 0.8,
+              alpha: 0,
+              duration: 150,
+              ease: "Power2",
+              onComplete: () => {
+                (this.styleModal?.destroy(), (this.styleModal = null));
+              },
+            });
+        }
+        saveThemeToStorage(e) {
+          try {
+            let t = window.FarcadeSDK;
+            t?.singlePlayer?.actions?.saveGameState &&
+              t.singlePlayer.actions.saveGameState({
+                gameState: { selectedTheme: e },
+              });
+          } catch {
+            try {
+              localStorage.setItem("cryptoMahjong_theme", e);
+            } catch {
+              console.warn("Could not save theme preference");
+            }
+          }
+        }
+        loadSavedTheme() {
+          try {
+            let e = window.FarcadeSDK;
+            if (e?.gameState?.selectedTheme) {
+              G(e.gameState.selectedTheme);
+              return;
+            }
+          } catch {}
+          try {
+            let e = localStorage.getItem("cryptoMahjong_theme");
+            e && G(e);
+          } catch {}
+        }
+        showTutorial() {
+          if (this.tutorialModal) return;
+          let { canvas: e } = m;
+          ((this.tutorialModal = this.add.container(0, 0)),
+            this.tutorialModal.setDepth(2e3));
+          let t = this.add.graphics();
+          (t.fillStyle(0, 0.97),
+            t.fillRect(0, 0, e.width, e.height),
+            t.setInteractive(
+              new Phaser.Geom.Rectangle(0, 0, e.width, e.height),
+              Phaser.Geom.Rectangle.Contains,
+            ),
+            t.on("pointerdown", () => {}),
+            this.tutorialModal.add(t));
+          let s = "'Fredoka One', Arial Black, sans-serif",
+            a = k().powerUps,
+            n = this.add.text(e.width / 2, 120, "HOW TO PLAY", {
+              fontSize: "48px",
+              fontFamily: s,
+              color: "#B7FF00",
+              stroke: "#000000",
+              strokeThickness: 8,
+            });
+          (n.setOrigin(0.5), this.tutorialModal.add(n));
+          let o = this.add.text(e.width / 2, 220, "Match 3 identical tiles", {
+            fontSize: "32px",
+            fontFamily: s,
+            color: "#ffffff",
+            stroke: "#000000",
+            strokeThickness: 4,
+          });
+          (o.setOrigin(0.5), this.tutorialModal.add(o));
+          let c = this.add.text(e.width / 2, 280, "Clear the board before", {
+            fontSize: "32px",
+            fontFamily: s,
+            color: "#ffffff",
+            stroke: "#000000",
+            strokeThickness: 4,
+          });
+          (c.setOrigin(0.5), this.tutorialModal.add(c));
+          let r = this.add.text(e.width / 2, 340, "time runs out!", {
+            fontSize: "32px",
+            fontFamily: s,
+            color: "#ff6b6b",
+            stroke: "#000000",
+            strokeThickness: 4,
+          });
+          (r.setOrigin(0.5), this.tutorialModal.add(r));
+          let d = this.add.text(e.width / 2, 440, "POWER-UPS", {
+            fontSize: "36px",
+            fontFamily: s,
+            color: "#B7FF00",
+            stroke: "#000000",
+            strokeThickness: 6,
+          });
+          (d.setOrigin(0.5), this.tutorialModal.add(d));
+          let h = e.width / 2,
+            l = 70,
+            u = 530,
+            f = 100;
+          ([
+            {
+              type: "undo",
+              name: "Undo",
+              desc: "Return last tile",
+              colors: a.undo,
+            },
+            {
+              type: "clock",
+              name: "Freeze",
+              desc: "Pause timer",
+              colors: a.clock,
+            },
+            { type: "key", name: "Hint", desc: "Remove a pair", colors: a.key },
+          ].forEach((p, g) => {
+            let v = u + g * f,
+              T = h - 120;
+            this.createTutorialPowerUpButton(T, v, l, p.colors, p.type);
+            let x = h - 30,
+              y = this.add.text(x, v - 12, p.name, {
+                fontSize: "28px",
+                fontFamily: s,
+                color: "#ffffff",
+                stroke: "#000000",
+                strokeThickness: 4,
+              });
+            (y.setOrigin(0, 0.5), this.tutorialModal.add(y));
+            let w = this.add.text(x, v + 18, p.desc, {
+              fontSize: "20px",
+              fontFamily: s,
+              color: "#aaaaaa",
+            });
+            (w.setOrigin(0, 0.5), this.tutorialModal.add(w));
+          }),
+            this.createTutorialStartButton(e.width / 2, 880),
+            this.tutorialModal.setAlpha(0),
+            this.tweens.add({
+              targets: this.tutorialModal,
+              alpha: 1,
+              duration: 300,
+              ease: "Power2",
+            }));
+        }
+        createTutorialPowerUpButton(e, t, s, i, a) {
+          let o = s / 2,
+            c = this.add.graphics();
+          (c.fillStyle(this.darkenColor(i.border, 0.3), 1),
+            c.fillCircle(e, t + 10, o),
+            c.fillStyle(i.main, 1),
+            c.fillCircle(e, t, o),
+            c.lineStyle(3, i.border, 1),
+            c.strokeCircle(e, t, o),
+            this.tutorialModal.add(c));
+          let r = this.add.graphics();
+          (r.lineStyle(4, 16777215, 1),
+            a === "undo"
+              ? (r.beginPath(),
+                r.arc(
+                  e,
+                  t,
+                  18,
+                  Phaser.Math.DegToRad(-45),
+                  Phaser.Math.DegToRad(180),
+                  !1,
+                ),
+                r.strokePath(),
+                r.beginPath(),
+                r.moveTo(e - 18 - 6, t - 6),
+                r.lineTo(e - 18, t - 16),
+                r.lineTo(e - 18 + 6, t - 6),
+                r.strokePath())
+              : a === "clock"
+                ? (r.strokeCircle(e, t, 18),
+                  r.beginPath(),
+                  r.moveTo(e, t),
+                  r.lineTo(e, t - 12),
+                  r.moveTo(e, t),
+                  r.lineTo(e + 9, t),
+                  r.strokePath())
+                : a === "key" &&
+                  (r.strokeCircle(e - 7, t - 7, 9),
+                  r.beginPath(),
+                  r.moveTo(e, t),
+                  r.lineTo(e + 14, t + 14),
+                  r.moveTo(e + 9, t + 9),
+                  r.lineTo(e + 14, t + 9),
+                  r.moveTo(e + 12, t + 12),
+                  r.lineTo(e + 17, t + 12),
+                  r.strokePath()),
+            this.tutorialModal.add(r));
+        }
+        createTutorialStartButton(e, t) {
+          let s = "'Fredoka One', Arial Black, sans-serif",
+            o = this.add.container(e, t),
+            c = this.add.graphics();
+          (c.fillStyle(2981170, 1),
+            c.fillRoundedRect(-200 / 2, 8, 200, 55, 14),
+            c.fillStyle(5025616, 1),
+            c.fillRoundedRect(-200 / 2, 0, 200, 55, 14),
+            c.lineStyle(3, 2981170, 1),
+            c.strokeRoundedRect(-200 / 2, 0, 200, 55, 14),
+            o.add(c));
+          let r = this.add.text(0, 55 / 2, "LET'S GO!", {
+            fontSize: "26px",
+            fontFamily: s,
+            color: "#ffffff",
+            stroke: "#2d7d32",
+            strokeThickness: 3,
+          });
+          (r.setOrigin(0.5),
+            o.add(r),
+            o.setSize(200, 63),
+            o.setInteractive({ useHandCursor: !0 }),
+            o.on("pointerover", () => {
+              this.tweens.add({
+                targets: o,
+                scaleX: 1.05,
+                scaleY: 1.05,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            o.on("pointerout", () => {
+              this.tweens.add({
+                targets: o,
+                scaleX: 1,
+                scaleY: 1,
+                duration: 100,
+                ease: "Power2",
+              });
+            }),
+            o.on("pointerdown", () => {
+              (localStorage.setItem("crypto-mahjong-tutorial-seen", "true"),
+                this.closeTutorial());
+            }),
+            this.tutorialModal.add(o));
+        }
+        closeTutorial() {
+          this.tutorialModal &&
+            this.tweens.add({
+              targets: this.tutorialModal,
+              alpha: 0,
+              duration: 200,
+              ease: "Power2",
+              onComplete: () => {
+                (this.tutorialModal?.destroy(),
+                  (this.tutorialModal = null),
+                  this.scene.start("MahjongScene"));
+              },
+            });
+        }
+      };
+      var K = class extends Phaser.Scene {
+        fontsLoaded = !1;
+        assetsLoaded = !1;
+        constructor() {
+          super({ key: "PreloadScene" });
+        }
+        init() {
+          this.cameras.main.setBackgroundColor("#000000");
+        }
+        preload() {
+          this.load.image(
+            "menu-bg",
+            "https://remix.gg/blob/zS0QCi0PfUjO/mahjong-xLbaEqVFKWEylPL92Zn4ScyqpnczG8.webp?w5dj",
+          );
+          Object.values(R).forEach((e) => {
+            e.background.backgroundImage &&
+              this.load.image(`bg-${e.name}`, e.background.backgroundImage);
+          });
+          Object.values(W).forEach((e) => {
+            if (typeof e == "number") {
+              let t = O[e];
+              t.imageUrl && this.load.image(`tile-icon-${e}`, t.imageUrl);
+            }
+          });
+        }
+        create() {
+          document.fonts.ready.then(() => {
+            this.fontsLoaded = !0;
+            this.checkTransition();
+          });
+          P.preloadPrimaryTrack();
+          this.assetsLoaded = !0;
+          this.checkTransition();
+        }
+        checkTransition() {
+          this.assetsLoaded &&
+            this.fontsLoaded &&
+            this.scene.start("MahjongScene");
+        }
+      };
+      var J = 720,
+        ie = 1080,
+        te = window.innerWidth / window.innerHeight,
+        ue = 2 / 3,
+        B;
+      te < ue - 0.01 ? (B = Math.round(J / te)) : (B = ie);
+      m.canvas.height = B;
+      B > ie && (m.safeAreaTop = 120);
+      var se = 1280;
+      if (B < se) {
+        let b = B / se;
+        ((m.tile.width = Math.round(120 * b)),
+          (m.tile.height = Math.round(160 * b)),
+          (m.tile.depth = Math.round(16 * b)),
+          (m.tile.cornerRadius = Math.round(11 * b)),
+          (m.tile.shadowOffset = Math.round(16 * b)),
+          (m.hand.slotWidth = Math.round(108 * b)),
+          (m.hand.slotHeight = Math.round(145 * b)),
+          (m.board.maxHeight = Math.round(850 * b)),
+          (m.board.layerOffsetY = Math.round(11 * b)));
+      }
+      var me = {
+          type: Phaser.WEBGL,
+          width: J,
+          height: B,
+          scale: {
+            mode: Phaser.Scale.FIT,
+            parent: document.body,
+            width: J,
+            height: B,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+          },
+          backgroundColor: "#000000",
+          scene: [K, Y, X],
+          physics: { default: "arcade" },
+          fps: { target: 60 },
+          pixelArt: !1,
+          antialias: !0,
+        },
+        Q = new Phaser.Game(me);
+      window.game = Q;
+      Q.events.once("ready", () => {
+        V(Q, { multiplayer: !1 });
+      });
+    </script>
+  </body>
+</html>
